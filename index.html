@@ -410,251 +410,6 @@
             color: #6c7a9c;
         }
 
-        /* Media attachment styles */
-        .media-preview {
-            max-width: 100%;
-            max-height: 250px;
-            border-radius: 8px;
-            margin-top: 10px;
-            border: 1px solid #ddd;
-        }
-
-        .media-message-image {
-            max-width: 250px;
-            max-height: 250px;
-            border-radius: 8px;
-            cursor: pointer;
-            transition: transform 0.3s;
-        }
-
-        .media-message-image:hover {
-            transform: scale(1.03);
-        }
-
-        .media-message-video {
-            max-width: 250px;
-            max-height: 250px;
-            border-radius: 8px;
-            cursor: pointer;
-        }
-
-        .attachment-options {
-            display: none;
-            position: absolute;
-            bottom: 70px;
-            left: 15px;
-            background: white;
-            border-radius: 10px;
-            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
-            padding: 10px;
-            z-index: 100;
-        }
-
-        body.dark-mode .attachment-options {
-            background: #273859;
-        }
-
-        .attachment-button {
-            background: none;
-            border: none;
-            font-size: 1.2rem;
-            color: #bdc3c7;
-            cursor: pointer;
-            transition: all 0.3s;
-            padding: 8px;
-            border-radius: 50%;
-            width: 40px;
-            height: 40px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-        }
-
-        .attachment-button:hover {
-            color: var(--accent-color);
-            background-color: rgba(0,0,0,0.05);
-        }
-
-        body.dark-mode .attachment-button {
-            color: #6c7a9c;
-        }
-
-        body.dark-mode .attachment-button:hover {
-            background-color: rgba(255,255,255,0.1);
-        }
-
-        /* Voice recording button */
-        .voice-recording-container {
-            display: flex;
-            align-items: center;
-            background-color: #f1f1f1;
-            border-radius: 25px;
-            padding: 10px 15px;
-            margin-top: 10px;
-            gap: 10px;
-        }
-
-        body.dark-mode .voice-recording-container {
-            background-color: #273859;
-        }
-
-        .voice-recording-time {
-            color: var(--text-color);
-            font-size: 0.9rem;
-        }
-
-        body.dark-mode .voice-recording-time {
-            color: white;
-        }
-
-        .voice-recording-cancel {
-            color: #e74c3c;
-            cursor: pointer;
-            font-size: 1.2rem;
-        }
-
-        .voice-recording-send {
-            color: #2ecc71;
-            cursor: pointer;
-            font-size: 1.2rem;
-        }
-
-        .voice-animation {
-            display: flex;
-            align-items: center;
-            gap: 2px;
-        }
-
-        .voice-bar {
-            width: 3px;
-            height: 20px;
-            background-color: var(--accent-color);
-            border-radius: 3px;
-            animation: voiceWave 1s infinite;
-        }
-
-        .voice-bar:nth-child(1) { animation-delay: 0s; }
-        .voice-bar:nth-child(2) { animation-delay: 0.2s; }
-        .voice-bar:nth-child(3) { animation-delay: 0.4s; }
-        .voice-bar:nth-child(4) { animation-delay: 0.6s; }
-        .voice-bar:nth-child(5) { animation-delay: 0.8s; }
-
-        @keyframes voiceWave {
-            0%, 100% { height: 5px; }
-            50% { height: 20px; }
-        }
-
-        /* Audio player styles */
-        .audio-player {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            background: rgba(0,0,0,0.05);
-            padding: 8px 15px;
-            border-radius: 20px;
-            margin-top: 5px;
-        }
-
-        body.dark-mode .audio-player {
-            background: rgba(255,255,255,0.1);
-        }
-
-        .audio-play-button {
-            background: none;
-            border: none;
-            color: var(--accent-color);
-            font-size: 1.2rem;
-            cursor: pointer;
-        }
-
-        .audio-progress {
-            flex: 1;
-            height: 4px;
-            background: rgba(0,0,0,0.1);
-            border-radius: 2px;
-            position: relative;
-        }
-
-        body.dark-mode .audio-progress {
-            background: rgba(255,255,255,0.1);
-        }
-
-        .audio-progress-bar {
-            height: 100%;
-            background: var(--accent-color);
-            border-radius: 2px;
-            width: 0%;
-        }
-
-        .audio-time {
-            font-size: 0.75rem;
-            color: var(--text-color);
-            opacity: 0.8;
-        }
-
-        body.dark-mode .audio-time {
-            color: white;
-        }
-
-        /* Attachment button */
-        .attachment-main-button {
-            position: absolute;
-            left: 15px;
-            top: 50%;
-            transform: translateY(-50%);
-            background: none;
-            border: none;
-            font-size: 1.2rem;
-            color: #bdc3c7;
-            cursor: pointer;
-            transition: color 0.3s;
-        }
-
-        .attachment-main-button:hover {
-            color: var(--accent-color);
-        }
-
-        #message-input {
-            padding-left: 45px;
-        }
-
-        /* Lightbox for images */
-        .lightbox {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: rgba(0,0,0,0.9);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            z-index: 1000;
-            opacity: 0;
-            visibility: hidden;
-            transition: all 0.3s;
-        }
-
-        .lightbox.active {
-            opacity: 1;
-            visibility: visible;
-        }
-
-        .lightbox-image {
-            max-width: 90%;
-            max-height: 90%;
-            border-radius: 8px;
-        }
-
-        .lightbox-close {
-            position: absolute;
-            top: 20px;
-            right: 20px;
-            color: white;
-            font-size: 2rem;
-            cursor: pointer;
-        }
-
         /* Mobile responsiveness */
         @media (max-width: 600px) {
             .container {
@@ -678,16 +433,6 @@
             #username-input, #save-name-button {
                 width: 100%;
             }
-
-            .media-message-image, 
-            .media-message-video {
-                max-width: 200px;
-                max-height: 200px;
-            }
-        }
-
-        .file-input {
-            display: none;
         }
     </style>
 </head>
@@ -718,47 +463,10 @@
         </div>
         <div class="chat-input">
             <div class="message-input-container">
-                <button class="attachment-main-button" id="attachment-button">
-                    <i class="fas fa-paperclip"></i>
-                </button>
                 <input type="text" id="message-input" placeholder="Ketik pesan...">
                 <button class="emoji-button" id="emoji-button">
                     <i class="far fa-smile"></i>
                 </button>
-
-                <!-- Attachment options -->
-                <div id="attachment-options" class="attachment-options">
-                    <button class="attachment-button" id="image-button" title="Send Image">
-                        <i class="fas fa-image"></i>
-                    </button>
-                    <button class="attachment-button" id="video-button" title="Send Video">
-                        <i class="fas fa-video"></i>
-                    </button>
-                    <button class="attachment-button" id="voice-button" title="Record Voice">
-                        <i class="fas fa-microphone"></i>
-                    </button>
-                </div>
-
-                <!-- Hidden file inputs -->
-                <input type="file" id="image-upload" class="file-input" accept="image/*">
-                <input type="file" id="video-upload" class="file-input" accept="video/*">
-
-                <!-- Media preview container -->
-                <div id="media-preview-container"></div>
-                
-                <!-- Voice recording UI (initially hidden) -->
-                <div id="voice-recording-container" style="display: none;" class="voice-recording-container">
-                    <div class="voice-animation">
-                        <div class="voice-bar"></div>
-                        <div class="voice-bar"></div>
-                        <div class="voice-bar"></div>
-                        <div class="voice-bar"></div>
-                        <div class="voice-bar"></div>
-                    </div>
-                    <span id="recording-time" class="voice-recording-time">00:00</span>
-                    <i class="fas fa-times voice-recording-cancel" id="cancel-recording"></i>
-                    <i class="fas fa-check voice-recording-send" id="send-recording"></i>
-                </div>
             </div>
             <button id="send-button">
                 <i class="fas fa-paper-plane"></i>
@@ -766,33 +474,25 @@
         </div>
     </div>
 
-    <!-- Image Lightbox -->
-    <div class="lightbox" id="lightbox">
-        <span class="lightbox-close" id="lightbox-close">&times;</span>
-        <img src="" alt="Enlarged image" class="lightbox-image" id="lightbox-image">
-    </div>
-
     <!-- Firebase SDK -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/firebase/9.22.1/firebase-app-compat.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/firebase/9.22.1/firebase-database-compat.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/firebase/9.22.1/firebase-storage-compat.js"></script>
 
     <script>
         // Your Firebase configuration
         const firebaseConfig = {
-            apiKey: "AIzaSyDMLgKCNAazCZbQwl5KW8baBIIiSYWDcRk",
-            authDomain: "hengkichatbot-cd70a.firebaseapp.com",
-            projectId: "hengkichatbot-cd70a",
-            storageBucket: "hengkichatbot-cd70a.firebasestorage.app",
-            messagingSenderId: "967988890591",
-            appId: "1:967988890591:web:026aff19855b053ee3d26a",
-            measurementId: "G-MW46R6EC2E"
-        };
+  apiKey: "AIzaSyDMLgKCNAazCZbQwl5KW8baBIIiSYWDcRk",
+  authDomain: "hengkichatbot-cd70a.firebaseapp.com",
+  projectId: "hengkichatbot-cd70a",
+  storageBucket: "hengkichatbot-cd70a.firebasestorage.app",
+  messagingSenderId: "967988890591",
+  appId: "1:967988890591:web:026aff19855b053ee3d26a",
+  measurementId: "G-MW46R6EC2E"
+};
 
         // Initialize Firebase
         firebase.initializeApp(firebaseConfig);
         const database = firebase.database();
-        const storage = firebase.storage();
         const messagesRef = database.ref('messages');
         const onlineRef = database.ref('online');
         const connectedRef = database.ref('.info/connected');
@@ -806,21 +506,6 @@
         const themeToggle = document.getElementById('theme-toggle');
         const onlineCountElement = document.getElementById('online-count');
         const emojiButton = document.getElementById('emoji-button');
-        const attachmentButton = document.getElementById('attachment-button');
-        const attachmentOptions = document.getElementById('attachment-options');
-        const imageButton = document.getElementById('image-button');
-        const videoButton = document.getElementById('video-button');
-        const voiceButton = document.getElementById('voice-button');
-        const imageUpload = document.getElementById('image-upload');
-        const videoUpload = document.getElementById('video-upload');
-        const mediaPreviewContainer = document.getElementById('media-preview-container');
-        const voiceRecordingContainer = document.getElementById('voice-recording-container');
-        const recordingTime = document.getElementById('recording-time');
-        const cancelRecording = document.getElementById('cancel-recording');
-        const sendRecording = document.getElementById('send-recording');
-        const lightbox = document.getElementById('lightbox');
-        const lightboxImage = document.getElementById('lightbox-image');
-        const lightboxClose = document.getElementById('lightbox-close');
 
         // Load theme preference
         const isDarkMode = localStorage.getItem('darkMode') === 'true';
@@ -860,465 +545,166 @@
         });
 
         // Online presence
-let userId = 'user-' + Math.random().toString(36).substr(2, 9);
+        let userId = localStorage.getItem('userId');
+        if (!userId) {
+            userId = database.ref().push().key;
+            localStorage.setItem('userId', userId);
+        }
 
-connectedRef.on('value', (snap) => {
-    if (snap.val() === true) {
-        // User is online
-        const userRef = onlineRef.child(userId);
-        
-        // Add this user to the list of online users
-        userRef.set(true);
-        
-        // Remove from list when disconnected
-        userRef.onDisconnect().remove();
-        
-        // Update online count
+        connectedRef.on('value', (snap) => {
+            if (snap.val() === true) {
+                // User is online
+                const userRef = onlineRef.child(userId);
+                
+                // Add to online list
+                userRef.set(true);
+                
+                // Remove from list when disconnected
+                userRef.onDisconnect().remove();
+            }
+        });
+
+        // Count online users
         onlineRef.on('value', (snap) => {
             const count = snap.numChildren();
-            onlineCountElement.textContent = count + ' pengguna online';
+            onlineCountElement.textContent = `${count} Pengguna Online`;
         });
-    }
-});
 
-// Message handling
-function sendMessage(text, mediaUrl = null, mediaType = null) {
-    if (!text && !mediaUrl) return;
-    
-    const message = {
-        userId: userId,
-        username: username,
-        text: text,
-        timestamp: firebase.database.ServerValue.TIMESTAMP,
-        mediaUrl: mediaUrl,
-        mediaType: mediaType
-    };
-    
-    messagesRef.push(message);
-    messageInput.value = '';
-    mediaPreviewContainer.innerHTML = '';
-}
-
-// Send message on button click or Enter key
-sendButton.addEventListener('click', () => {
-    const text = messageInput.value.trim();
-    sendMessage(text);
-});
-
-messageInput.addEventListener('keypress', (e) => {
-    if (e.key === 'Enter') {
-        const text = messageInput.value.trim();
-        sendMessage(text);
-    }
-});
-
-// Format timestamp
-function formatTime(timestamp) {
-    const date = new Date(timestamp);
-    const hours = date.getHours().toString().padStart(2, '0');
-    const minutes = date.getMinutes().toString().padStart(2, '0');
-    return `${hours}:${minutes}`;
-}
-
-// Display messages
-messagesRef.on('child_added', (snapshot) => {
-    const message = snapshot.val();
-    const messageKey = snapshot.key;
-    
-    // Create message element
-    const messageElement = document.createElement('div');
-    messageElement.className = `message ${message.userId === userId ? 'user-message' : 'other-message'} new-message`;
-    
-    // Create message info
-    const messageInfo = document.createElement('div');
-    messageInfo.className = 'message-info';
-    
-    // Username and time
-    const usernameElement = document.createElement('span');
-    usernameElement.textContent = message.userId === userId ? 'Anda' : message.username;
-    
-    const timeElement = document.createElement('span');
-    timeElement.className = 'message-time';
-    timeElement.textContent = formatTime(message.timestamp);
-    
-    messageInfo.appendChild(usernameElement);
-    messageInfo.appendChild(timeElement);
-    
-    // Message text
-    const messageText = document.createElement('div');
-    messageText.className = 'message-text';
-    messageText.textContent = message.text;
-    
-    messageElement.appendChild(messageInfo);
-    messageElement.appendChild(messageText);
-    
-    // Add media if present
-    if (message.mediaUrl && message.mediaType) {
-        if (message.mediaType.startsWith('image/')) {
-            const img = document.createElement('img');
-            img.src = message.mediaUrl;
-            img.className = 'media-message-image';
-            img.alt = 'Shared image';
-            img.loading = 'lazy';
-            
-            // Open in lightbox on click
-            img.addEventListener('click', () => {
-                lightboxImage.src = message.mediaUrl;
-                lightbox.classList.add('active');
-            });
-            
-            messageElement.appendChild(img);
-        } else if (message.mediaType.startsWith('video/')) {
-            const video = document.createElement('video');
-            video.src = message.mediaUrl;
-            video.className = 'media-message-video';
-            video.controls = true;
-            messageElement.appendChild(video);
-        } else if (message.mediaType === 'audio/webm' || message.mediaType === 'audio/mp3') {
-            const audioPlayer = document.createElement('div');
-            audioPlayer.className = 'audio-player';
-            
-            const playButton = document.createElement('button');
-            playButton.className = 'audio-play-button';
-            playButton.innerHTML = '<i class="fas fa-play"></i>';
-            
-            const progressContainer = document.createElement('div');
-            progressContainer.className = 'audio-progress';
-            
-            const progressBar = document.createElement('div');
-            progressBar.className = 'audio-progress-bar';
-            
-            const timeDisplay = document.createElement('div');
-            timeDisplay.className = 'audio-time';
-            timeDisplay.textContent = '0:00';
-            
-            progressContainer.appendChild(progressBar);
-            audioPlayer.appendChild(playButton);
-            audioPlayer.appendChild(progressContainer);
-            audioPlayer.appendChild(timeDisplay);
-            
-            // Create audio element
-            const audio = document.createElement('audio');
-            audio.src = message.mediaUrl;
-            
-            // Play/pause toggle
-            let isPlaying = false;
-            playButton.addEventListener('click', () => {
-                if (isPlaying) {
-                    audio.pause();
-                    playButton.innerHTML = '<i class="fas fa-play"></i>';
-                } else {
-                    audio.play();
-                    playButton.innerHTML = '<i class="fas fa-pause"></i>';
-                }
-                isPlaying = !isPlaying;
-            });
-            
-            // Update progress
-            audio.addEventListener('timeupdate', () => {
-                const progress = (audio.currentTime / audio.duration) * 100;
-                progressBar.style.width = `${progress}%`;
-                
-                // Format time
-                const minutes = Math.floor(audio.currentTime / 60);
-                const seconds = Math.floor(audio.currentTime % 60).toString().padStart(2, '0');
-                timeDisplay.textContent = `${minutes}:${seconds}`;
-            });
-            
-            // Reset when ended
-            audio.addEventListener('ended', () => {
-                progressBar.style.width = '0%';
-                playButton.innerHTML = '<i class="fas fa-play"></i>';
-                isPlaying = false;
-            });
-            
-            // Click on progress bar to seek
-            progressContainer.addEventListener('click', (e) => {
-                const rect = progressContainer.getBoundingClientRect();
-                const pos = (e.clientX - rect.left) / rect.width;
-                audio.currentTime = pos * audio.duration;
-            });
-            
-            messageElement.appendChild(audioPlayer);
+        // Send a message
+        function sendMessage() {
+            const message = messageInput.value.trim();
+            if (message !== '') {
+                const newMessageRef = messagesRef.push();
+                newMessageRef.set({
+                    id: newMessageRef.key,
+                    username: username,
+                    text: message,
+                    timestamp: firebase.database.ServerValue.TIMESTAMP
+                });
+                messageInput.value = '';
+            }
         }
-    }
-    
-    // Add to chat and scroll to bottom
-    chatMessages.appendChild(messageElement);
-    chatMessages.scrollTop = chatMessages.scrollHeight;
-});
 
-// Attachment handling
-let attachmentMenuOpen = false;
-
-attachmentButton.addEventListener('click', () => {
-    attachmentMenuOpen = !attachmentMenuOpen;
-    attachmentOptions.style.display = attachmentMenuOpen ? 'flex' : 'none';
-});
-
-// Close attachment menu when clicking elsewhere
-document.addEventListener('click', (e) => {
-    if (attachmentMenuOpen && !attachmentButton.contains(e.target) && !attachmentOptions.contains(e.target)) {
-        attachmentMenuOpen = false;
-        attachmentOptions.style.display = 'none';
-    }
-});
-
-// Image upload
-imageButton.addEventListener('click', () => {
-    imageUpload.click();
-    attachmentMenuOpen = false;
-    attachmentOptions.style.display = 'none';
-});
-
-imageUpload.addEventListener('change', (e) => {
-    const file = e.target.files[0];
-    if (file && file.type.startsWith('image/')) {
-        handleMediaPreview(file);
-    }
-});
-
-// Video upload
-videoButton.addEventListener('click', () => {
-    videoUpload.click();
-    attachmentMenuOpen = false;
-    attachmentOptions.style.display = 'none';
-});
-
-videoUpload.addEventListener('change', (e) => {
-    const file = e.target.files[0];
-    if (file && file.type.startsWith('video/')) {
-        handleMediaPreview(file);
-    }
-});
-
-// Media preview
-function handleMediaPreview(file) {
-    const reader = new FileReader();
-    
-    reader.onload = (e) => {
-        mediaPreviewContainer.innerHTML = '';
-        
-        if (file.type.startsWith('image/')) {
-            const img = document.createElement('img');
-            img.src = e.target.result;
-            img.className = 'media-preview';
-            mediaPreviewContainer.appendChild(img);
-        } else if (file.type.startsWith('video/')) {
-            const video = document.createElement('video');
-            video.src = e.target.result;
-            video.className = 'media-preview';
-            video.controls = true;
-            mediaPreviewContainer.appendChild(video);
-        }
-        
-        // Add cancel button
-        const cancelButton = document.createElement('button');
-        cancelButton.innerHTML = '<i class="fas fa-times"></i>';
-        cancelButton.style.position = 'absolute';
-        cancelButton.style.top = '5px';
-        cancelButton.style.right = '5px';
-        cancelButton.style.background = 'rgba(0,0,0,0.5)';
-        cancelButton.style.color = 'white';
-        cancelButton.style.border = 'none';
-        cancelButton.style.borderRadius = '50%';
-        cancelButton.style.width = '25px';
-        cancelButton.style.height = '25px';
-        cancelButton.style.cursor = 'pointer';
-        
-        cancelButton.addEventListener('click', () => {
-            mediaPreviewContainer.innerHTML = '';
-            imageUpload.value = '';
-            videoUpload.value = '';
+        // Event listeners
+        sendButton.addEventListener('click', sendMessage);
+        messageInput.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') {
+                sendMessage();
+            }
         });
-        
-        mediaPreviewContainer.appendChild(cancelButton);
-        
-        // Send button now uploads media
-        sendButton.innerHTML = '<i class="fas fa-cloud-upload-alt"></i>';
-        
-        // Update send button click handler
-        const originalClickHandler = sendButton.onclick;
-        sendButton.onclick = () => {
-            // Upload file to Firebase Storage
-            const storageRef = storage.ref(`media/${Date.now()}_${file.name}`);
-            const uploadTask = storageRef.put(file);
-            
-            // Show upload progress
-            uploadTask.on('state_changed', 
-                (snapshot) => {
-                    const progress = (snapshot.bytesTransferred / snapshot.totalBytes) * 100;
-                    sendButton.innerHTML = `<i class="fas fa-sync fa-spin"></i>`;
-                },
-                (error) => {
-                    console.error('Upload failed:', error);
-                    sendButton.innerHTML = '<i class="fas fa-paper-plane"></i>';
-                },
-                () => {
-                    // Get download URL
-                    uploadTask.snapshot.ref.getDownloadURL().then((downloadURL) => {
-                        // Send message with media
-                        sendMessage(messageInput.value.trim(), downloadURL, file.type);
-                        
-                        // Reset UI
-                        mediaPreviewContainer.innerHTML = '';
-                        sendButton.innerHTML = '<i class="fas fa-paper-plane"></i>';
-                        sendButton.onclick = originalClickHandler;
-                        imageUpload.value = '';
-                        videoUpload.value = '';
-                    });
-                }
-            );
-        };
-    };
-    
-    reader.readAsDataURL(file);
-}
 
-// Voice recording
-let mediaRecorder;
-let audioChunks = [];
-let recordingStartTime;
-let recordingTimer;
+        // Emoji picker (simplified for this example)
+        const emojis = ['😊', '😂', '❤️', '👍', '🎉', '🔥', '😎', '🤔'];
+        let emojiPickerVisible = false;
+        let emojiPicker = null;
 
-voiceButton.addEventListener('click', () => {
-    attachmentMenuOpen = false;
-    attachmentOptions.style.display = 'none';
-    
-    if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
-        navigator.mediaDevices.getUserMedia({ audio: true })
-            .then(stream => {
-                mediaRecorder = new MediaRecorder(stream);
-                
-                mediaRecorder.ondataavailable = (e) => {
-                    audioChunks.push(e.data);
-                };
-                
-                mediaRecorder.onstop = () => {
-                    const audioBlob = new Blob(audioChunks, { type: 'audio/webm' });
-                    
-                    // Upload to Firebase Storage
-                    const storageRef = storage.ref(`media/audio_${Date.now()}.webm`);
-                    const uploadTask = storageRef.put(audioBlob);
-                    
-                    uploadTask.on('state_changed', 
-                        null,
-                        (error) => console.error('Upload failed:', error),
-                        () => {
-                            uploadTask.snapshot.ref.getDownloadURL().then((downloadURL) => {
-                                sendMessage('🎤 Audio Message', downloadURL, 'audio/webm');
-                            });
-                        }
-                    );
-                };
-                
-                // Start recording
-                mediaRecorder.start();
-                audioChunks = [];
-                
-                // Show recording UI
-                messageInput.style.display = 'none';
-                voiceRecordingContainer.style.display = 'flex';
-                
-                // Start timer
-                recordingStartTime = Date.now();
-                updateRecordingTime();
-                recordingTimer = setInterval(updateRecordingTime, 1000);
-            })
-            .catch(error => {
-                console.error('Error accessing microphone:', error);
-                alert('Tidak dapat mengakses mikrofon. Periksa pengaturan browser Anda.');
+        emojiButton.addEventListener('click', () => {
+            if (emojiPickerVisible) {
+                emojiPicker.remove();
+                emojiPickerVisible = false;
+                return;
+            }
+
+            emojiPicker = document.createElement('div');
+            emojiPicker.style.position = 'absolute';
+            emojiPicker.style.bottom = '70px';
+            emojiPicker.style.right = '20px';
+            emojiPicker.style.background = 'white';
+            emojiPicker.style.borderRadius = '10px';
+            emojiPicker.style.padding = '10px';
+            emojiPicker.style.display = 'flex';
+            emojiPicker.style.flexWrap = 'wrap';
+            emojiPicker.style.gap = '5px';
+            emojiPicker.style.boxShadow = '0 5px 15px rgba(0,0,0,0.1)';
+            emojiPicker.style.zIndex = '1000';
+
+            if (document.body.classList.contains('dark-mode')) {
+                emojiPicker.style.background = '#273859';
+            }
+
+            emojis.forEach(emoji => {
+                const emojiButton = document.createElement('button');
+                emojiButton.innerText = emoji;
+                emojiButton.style.background = 'none';
+                emojiButton.style.border = 'none';
+                emojiButton.style.fontSize = '1.5rem';
+                emojiButton.style.cursor = 'pointer';
+                emojiButton.style.transition = 'transform 0.2s';
+
+                emojiButton.addEventListener('mouseover', () => {
+                    emojiButton.style.transform = 'scale(1.2)';
+                });
+
+                emojiButton.addEventListener('mouseout', () => {
+                    emojiButton.style.transform = 'scale(1)';
+                });
+
+                emojiButton.addEventListener('click', () => {
+                    messageInput.value += emoji;
+                    emojiPicker.remove();
+                    emojiPickerVisible = false;
+                    messageInput.focus();
+                });
+
+                emojiPicker.appendChild(emojiButton);
             });
-    } else {
-        alert('Browser Anda tidak mendukung perekaman suara.');
-    }
-});
 
-function updateRecordingTime() {
-    const elapsedSeconds = Math.floor((Date.now() - recordingStartTime) / 1000);
-    const minutes = Math.floor(elapsedSeconds / 60).toString().padStart(2, '0');
-    const seconds = (elapsedSeconds % 60).toString().padStart(2, '0');
-    recordingTime.textContent = `${minutes}:${seconds}`;
-    
-    // Limit recording to 1 minute
-    if (elapsedSeconds >= 60) {
-        stopRecording();
-    }
-}
+            document.querySelector('.chat-input').appendChild(emojiPicker);
+            emojiPickerVisible = true;
+        });
 
-function stopRecording() {
-    if (mediaRecorder && mediaRecorder.state !== 'inactive') {
-        mediaRecorder.stop();
-        mediaRecorder.stream.getTracks().forEach(track => track.stop());
-    }
-    
-    clearInterval(recordingTimer);
-    messageInput.style.display = 'block';
-    voiceRecordingContainer.style.display = 'none';
-}
+        // Listen for new messages
+        messagesRef.orderByChild('timestamp').limitToLast(50).on('child_added', (snapshot) => {
+            const message = snapshot.val();
+            displayMessage(message);
+        });
 
-cancelRecording.addEventListener('click', () => {
-    audioChunks = [];
-    stopRecording();
-});
-
-sendRecording.addEventListener('click', () => {
-    stopRecording();
-});
-
-// Lightbox handling
-lightboxClose.addEventListener('click', () => {
-    lightbox.classList.remove('active');
-});
-
-// Close lightbox when clicking outside the image
-lightbox.addEventListener('click', (e) => {
-    if (e.target === lightbox) {
-        lightbox.classList.remove('active');
-    }
-});
-
-// Emoji support (basic implementation)
-emojiButton.addEventListener('click', () => {
-    // For this simple version, just add a few common emojis
-    const emojis = ['😀', '😂', '😍', '👍', '❤️', '😊', '🎉', '🔥', '👏', '🤔'];
-    const randomEmoji = emojis[Math.floor(Math.random() * emojis.length)];
-    messageInput.value += randomEmoji;
-    messageInput.focus();
-});
-
-// Auto scroll to bottom on new messages
-const scrollToBottom = () => {
-    chatMessages.scrollTop = chatMessages.scrollHeight;
-};
-
-// Load initial messages (limit to last 50)
-messagesRef.limitToLast(50).once('value', () => {
-    scrollToBottom();
-});
-
-// Message input active indicator
-messageInput.addEventListener('focus', () => {
-    messageInput.style.borderColor = var(--accent-color);
-});
-
-messageInput.addEventListener('blur', () => {
-    messageInput.style.borderColor = '';
-});
-
-// Initialize the app with a welcome message
-setTimeout(() => {
-    const welcomeMessage = {
-        userId: 'system',
-        username: 'System',
-        text: 'Selamat datang di Hengki ChatBox! Mulai kirim pesan untuk bergabung dalam percakapan.',
-        timestamp: Date.now(),
-    };
-    
-    // Only add if there are no messages yet
-    messagesRef.limitToFirst(1).once('value', (snapshot) => {
-        if (!snapshot.exists()) {
-            messagesRef.push(welcomeMessage);
+        // Display a message in the chat
+        function displayMessage(message) {
+            const messageElement = document.createElement('div');
+            messageElement.id = message.id;
+            
+            const isCurrentUser = message.username === username;
+            messageElement.className = `message ${isCurrentUser ? 'user-message' : 'other-message'} new-message`;
+            
+            const date = new Date(message.timestamp);
+            const formattedTime = date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+            
+            messageElement.innerHTML = `
+                <div class="message-info">
+                    ${message.username} 
+                    <span class="message-time">${formattedTime}</span>
+                </div>
+                <div class="message-text">${formatMessageText(message.text)}</div>
+            `;
+            
+            chatMessages.appendChild(messageElement);
+            chatMessages.scrollTop = chatMessages.scrollHeight;
+            
+            // Remove animation class after animation completes
+            setTimeout(() => {
+                messageElement.classList.remove('new-message');
+            }, 300);
         }
-    });
-}, 1000);
+
+        // Format message text (add emojis, links, etc.)
+        function formatMessageText(text) {
+            // Make URLs clickable
+            const urlRegex = /(https?:\/\/[^\s]+)/g;
+            text = text.replace(urlRegex, '<a href="$1" target="_blank" style="color: #3498db; text-decoration: underline;">$1</a>');
+            
+            return text;
+        }
+
+        // Initial welcome message
+        setTimeout(() => {
+            displayMessage({
+                id: 'welcome',
+                username: 'Hengki ChatBox',
+                text: 'Selamat datang di Hengki ChatBox! Mulai percakapan dengan mengirim pesan. 👋',
+                timestamp: Date.now()
+            });
+        }, 1000);
+    </script>
+</body>
+</html>
