@@ -1,710 +1,463 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Hengki - Chat Box Publik</title>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <style>
-        :root {
-            --primary-color: #8e44ad;
-            --secondary-color: #9b59b6;
-            --accent-color: #3498db;
-            --text-color: #2c3e50;
-            --light-color: #ecf0f1;
-            --bg-gradient: linear-gradient(135deg, #8e44ad, #3498db);
-            --message-own: #d6eaff;
-            --message-other: #f0e6fa;
-            --message-own-gradient: linear-gradient(135deg, #3498db, #2980b9);
-            --message-other-gradient: linear-gradient(135deg, #9b59b6, #8e44ad);
-        }
-
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-        }
-
-        body {
-            background: #f9f9f9;
-            background-image: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%239C92AC' fill-opacity='0.05'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            min-height: 100vh;
-            padding: 20px;
-        }
-
-        .container {
-            width: 100%;
-            max-width: 900px;
-            background-color: white;
-            border-radius: 16px;
-            overflow: hidden;
-            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
-            display: flex;
-            flex-direction: column;
-            height: 85vh;
-        }
-
-        .chat-header {
-            background: var(--bg-gradient);
-            color: white;
-            padding: 20px;
-            text-align: center;
-            position: relative;
-        }
-
-        .chat-header h2 {
-            font-size: 1.8rem;
-            font-weight: 600;
-            margin-bottom: 5px;
-        }
-
-        .chat-header p {
-            font-size: 0.9rem;
-            opacity: 0.9;
-        }
-
-        .online-indicator {
-            padding: 7px 12px;
-            background-color: rgba(255, 255, 255, 0.2);
-            border-radius: 20px;
-            font-size: 0.8rem;
-            display: inline-flex;
-            align-items: center;
-            margin-top: 10px;
-        }
-
-        .online-indicator .dot {
-            width: 8px;
-            height: 8px;
-            background-color: #2ecc71;
-            border-radius: 50%;
-            margin-right: 5px;
-            position: relative;
-        }
-
-        .online-indicator .dot:after {
-            content: '';
-            position: absolute;
-            width: 12px;
-            height: 12px;
-            background-color: rgba(46, 204, 113, 0.4);
-            border-radius: 50%;
-            top: -2px;
-            left: -2px;
-            animation: pulse 1.5s infinite;
-        }
-
-        @keyframes pulse {
-            0% {
-                transform: scale(1);
-                opacity: 0.7;
-            }
-            70% {
-                transform: scale(1.5);
-                opacity: 0;
-            }
-            100% {
-                transform: scale(1);
-                opacity: 0;
-            }
-        }
-
-        .user-info {
-            padding: 20px;
-            border-bottom: 1px solid #f1f1f1;
-            background-color: #f9f9f9;
-            display: flex;
-            align-items: center;
-            flex-wrap: wrap;
-            gap: 10px;
-        }
-
-        #username-input {
-            flex: 1;
-            padding: 12px 15px;
-            border: 1px solid #ddd;
-            border-radius: 8px;
-            font-size: 1rem;
-            min-width: 200px;
-            transition: border-color 0.3s;
-        }
-
-        #username-input:focus {
-            border-color: var(--accent-color);
-            outline: none;
-        }
-
-        #save-name-button {
-            padding: 12px 20px;
-            background: var(--accent-color);
-            color: white;
-            border: none;
-            border-radius: 8px;
-            cursor: pointer;
-            font-size: 1rem;
-            font-weight: 500;
-            transition: all 0.3s;
-        }
-
-        #save-name-button:hover {
-            background: #2980b9;
-            transform: translateY(-2px);
-            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-        }
-
-        .chat-messages {
-            flex: 1;
-            overflow-y: auto;
-            padding: 20px;
-            display: flex;
-            flex-direction: column;
-            gap: 15px;
-            background-color: #f9f9f9;
-            background-image: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%239C92AC' fill-opacity='0.05'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
-        }
-
-        .message {
-            max-width: 80%;
-            padding: 12px 15px;
-            border-radius: 16px;
-            position: relative;
-            animation: fadeIn 0.3s;
-            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
-        }
-
-        @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(10px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
-
-        .user-message {
-            align-self: flex-end;
-            background: var(--message-own);
-            color: var(--text-color);
-            border-bottom-right-radius: 4px;
-        }
-
-        .other-message {
-            align-self: flex-start;
-            background: var(--message-other);
-            color: var(--text-color);
-            border-bottom-left-radius: 4px;
-        }
-
-        .message-info {
-            display: flex;
-            align-items: center;
-            margin-bottom: 5px;
-            font-weight: 600;
-            font-size: 0.85rem;
-        }
-
-        .user-message .message-info {
-            color: #3498db;
-            justify-content: flex-end;
-        }
-
-        .other-message .message-info {
-            color: #9b59b6;
-        }
-
-        .message-time {
-            font-size: 0.75rem;
-            font-weight: normal;
-            opacity: 0.7;
-            margin-left: 5px;
-        }
-
-        .message-text {
-            line-height: 1.5;
-            word-break: break-word;
-        }
-
-        .chat-input {
-            display: flex;
-            padding: 15px;
-            background-color: white;
-            border-top: 1px solid #f1f1f1;
-            position: relative;
-        }
-
-        .message-input-container {
-            flex: 1;
-            position: relative;
-        }
-
-        #message-input {
-            width: 100%;
-            padding: 15px;
-            padding-right: 45px;
-            border: 1px solid #ddd;
-            border-radius: 25px;
-            font-size: 1rem;
-            transition: all 0.3s;
-        }
-
-        #message-input:focus {
-            outline: none;
-            border-color: var(--accent-color);
-            box-shadow: 0 0 0 3px rgba(52, 152, 219, 0.1);
-        }
-
-        .emoji-button {
-            position: absolute;
-            right: 15px;
-            top: 50%;
-            transform: translateY(-50%);
-            background: none;
-            border: none;
-            font-size: 1.2rem;
-            color: #bdc3c7;
-            cursor: pointer;
-            transition: color 0.3s;
-        }
-
-        .emoji-button:hover {
-            color: var(--accent-color);
-        }
-
-        #send-button {
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            width: 50px;
-            height: 50px;
-            background: var(--bg-gradient);
-            color: white;
-            border: none;
-            border-radius: 50%;
-            cursor: pointer;
-            margin-left: 10px;
-            transition: all 0.3s;
-            box-shadow: 0 3px 10px rgba(0, 0, 0, 0.1);
-        }
-
-        #send-button i {
-            font-size: 1.2rem;
-        }
-
-        #send-button:hover {
-            transform: scale(1.1);
-            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
-        }
-
-        .app-title {
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 10px;
-        }
-
-        .app-title i {
-            font-size: 1.5rem;
-        }
-
-        /* Animation for new messages */
-        @keyframes newMessage {
-            0% { transform: scale(0.8); opacity: 0; }
-            100% { transform: scale(1); opacity: 1; }
-        }
-
-        .new-message {
-            animation: newMessage 0.3s;
-        }
-
-        /* Dark mode toggle */
-        .theme-toggle {
-            position: absolute;
-            top: 15px;
-            right: 15px;
-            background: none;
-            border: none;
-            color: white;
-            font-size: 1.2rem;
-            cursor: pointer;
-            transition: transform 0.3s;
-        }
-
-        .theme-toggle:hover {
-            transform: rotate(30deg);
-        }
-
-        /* Scrollbar styling */
-        .chat-messages::-webkit-scrollbar {
-            width: 6px;
-        }
-
-        .chat-messages::-webkit-scrollbar-track {
-            background: #f1f1f1;
-        }
-
-        .chat-messages::-webkit-scrollbar-thumb {
-            background: #bdc3c7;
-            border-radius: 10px;
-        }
-
-        .chat-messages::-webkit-scrollbar-thumb:hover {
-            background: #95a5a6;
-        }
-
-        /* Dark mode */
-        body.dark-mode {
-            background-color: #1a1a2e;
-        }
-
-        body.dark-mode .container {
-            background-color: #16213e;
-            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
-        }
-
-        body.dark-mode .chat-header {
-            background: linear-gradient(135deg, #6a3093, #29539b);
-        }
-
-        body.dark-mode .user-info {
-            background-color: #1f2b46;
-            border-bottom: 1px solid #273859;
-        }
-
-        body.dark-mode #username-input {
-            background-color: #273859;
-            border: 1px solid #364f7e;
-            color: white;
-        }
-
-        body.dark-mode .chat-messages {
-            background-color: #1f2b46;
-            background-image: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%234A5683' fill-opacity='0.15'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
-        }
-
-        body.dark-mode .user-message {
-            background-color: #3a4a7b;
-            color: white;
-        }
-
-        body.dark-mode .other-message {
-            background-color: #2a3654;
-            color: white;
-        }
-
-        body.dark-mode .chat-input {
-            background-color: #16213e;
-            border-top: 1px solid #273859;
-        }
-
-        body.dark-mode #message-input {
-            background-color: #273859;
-            border: 1px solid #364f7e;
-            color: white;
-        }
-
-        body.dark-mode .emoji-button {
-            color: #4A5683;
-        }
-
-        body.dark-mode .message-input-container::placeholder {
-            color: #6c7a9c;
-        }
-
-        /* Mobile responsiveness */
-        @media (max-width: 600px) {
-            .container {
-                height: 95vh;
-                width: 100%;
-                border-radius: 10px;
-            }
-
-            .message {
-                max-width: 85%;
-            }
-
-            .chat-header h2 {
-                font-size: 1.5rem;
-            }
-
-            .user-info {
-                padding: 15px;
-            }
-
-            #username-input, #save-name-button {
-                width: 100%;
-            }
-        }
-    </style>
-</head>
-<body>
-    <div class="container">
-        <div class="chat-header">
-            <button class="theme-toggle" id="theme-toggle">
-                <i class="fas fa-moon"></i>
-            </button>
-            <div class="app-title">
-                <i class="fas fa-comment-dots"></i>
-                <h2>Hengki ChatBox</h2>
-            </div>
-            <p>Chat langsung dengan pengguna di seluruh dunia</p>
-            <div class="online-indicator">
-                <div class="dot"></div>
-                <span id="online-count">Menghubungkan...</span>
-            </div>
-        </div>
-        <div class="user-info">
-            <input type="text" id="username-input" placeholder="Masukkan nama pengguna Anda">
-            <button id="save-name-button">
-                <i class="fas fa-check"></i> Simpan Nama
-            </button>
-        </div>
-        <div id="chat-messages" class="chat-messages">
-            <!-- Messages will be displayed here -->
-        </div>
-        <div class="chat-input">
-            <div class="message-input-container">
-                <input type="text" id="message-input" placeholder="Ketik pesan...">
-                <button class="emoji-button" id="emoji-button">
-                    <i class="far fa-smile"></i>
-                </button>
-            </div>
-            <button id="send-button">
-                <i class="fas fa-paper-plane"></i>
-            </button>
-        </div>
-    </div>
-
-    <!-- Firebase SDK -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/firebase/9.22.1/firebase-app-compat.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/firebase/9.22.1/firebase-database-compat.js"></script>
-
-    <script>
-        // Your Firebase configuration
-        const firebaseConfig = {
-  apiKey: "AIzaSyDMLgKCNAazCZbQwl5KW8baBIIiSYWDcRk",
-  authDomain: "hengkichatbot-cd70a.firebaseapp.com",
-  projectId: "hengkichatbot-cd70a",
-  storageBucket: "hengkichatbot-cd70a.firebasestorage.app",
-  messagingSenderId: "967988890591",
-  appId: "1:967988890591:web:026aff19855b053ee3d26a",
-  measurementId: "G-MW46R6EC2E"
-};
-
-        // Initialize Firebase
-        firebase.initializeApp(firebaseConfig);
-        const database = firebase.database();
-        const messagesRef = database.ref('messages');
-        const onlineRef = database.ref('online');
-        const connectedRef = database.ref('.info/connected');
-
-        // DOM elements
-        const chatMessages = document.getElementById('chat-messages');
-        const messageInput = document.getElementById('message-input');
-        const sendButton = document.getElementById('send-button');
-        const usernameInput = document.getElementById('username-input');
-        const saveNameButton = document.getElementById('save-name-button');
-        const themeToggle = document.getElementById('theme-toggle');
-        const onlineCountElement = document.getElementById('online-count');
-        const emojiButton = document.getElementById('emoji-button');
-
-        // Load theme preference
-        const isDarkMode = localStorage.getItem('darkMode') === 'true';
-        if (isDarkMode) {
-            document.body.classList.add('dark-mode');
-            themeToggle.innerHTML = '<i class="fas fa-sun"></i>';
-        }
-
-        // Theme toggle
-        themeToggle.addEventListener('click', () => {
-            document.body.classList.toggle('dark-mode');
-            const isDark = document.body.classList.contains('dark-mode');
-            localStorage.setItem('darkMode', isDark);
-            themeToggle.innerHTML = isDark ? '<i class="fas fa-sun"></i>' : '<i class="fas fa-moon"></i>';
-        });
-
-        // Username handling
-        let username = localStorage.getItem('username') || 'User_' + Math.floor(Math.random() * 10000);
-        usernameInput.value = username;
-
-        saveNameButton.addEventListener('click', () => {
-            const newUsername = usernameInput.value.trim();
-            if (newUsername) {
-                username = newUsername;
-                localStorage.setItem('username', username);
-                
-                // Animate button and show check
-                saveNameButton.innerHTML = '<i class="fas fa-check"></i> Tersimpan!';
-                saveNameButton.style.backgroundColor = '#2ecc71';
-                
-                // Reset after 2 seconds
-                setTimeout(() => {
-                    saveNameButton.innerHTML = '<i class="fas fa-check"></i> Simpan Nama';
-                    saveNameButton.style.backgroundColor = '';
-                }, 2000);
-            }
-        });
-
-        // Online presence
-        let userId = localStorage.getItem('userId');
-        if (!userId) {
-            userId = database.ref().push().key;
-            localStorage.setItem('userId', userId);
-        }
-
-        connectedRef.on('value', (snap) => {
-            if (snap.val() === true) {
-                // User is online
-                const userRef = onlineRef.child(userId);
-                
-                // Add to online list
-                userRef.set(true);
-                
-                // Remove from list when disconnected
-                userRef.onDisconnect().remove();
-            }
-        });
-
-        // Count online users
+// Online presence
+let userId = 'user-' + Math.random().toString(36).substr(2, 9);
+
+connectedRef.on('value', (snap) => {
+    if (snap.val() === true) {
+        // User is online
+        const userRef = onlineRef.child(userId);
+        
+        // Add this user to the list of online users
+        userRef.set(true);
+        
+        // Remove from list when disconnected
+        userRef.onDisconnect().remove();
+        
+        // Update online count
         onlineRef.on('value', (snap) => {
             const count = snap.numChildren();
-            onlineCountElement.textContent = `${count} Pengguna Online`;
+            onlineCountElement.textContent = count + ' pengguna online';
         });
+    }
+});
 
-        // Send a message
-        function sendMessage() {
-            const message = messageInput.value.trim();
-            if (message !== '') {
-                const newMessageRef = messagesRef.push();
-                newMessageRef.set({
-                    id: newMessageRef.key,
-                    username: username,
-                    text: message,
-                    timestamp: firebase.database.ServerValue.TIMESTAMP
-                });
-                messageInput.value = '';
-            }
-        }
+// Message handling
+function sendMessage(text, mediaUrl = null, mediaType = null) {
+    if (!text && !mediaUrl) return;
+    
+    const message = {
+        userId: userId,
+        username: username,
+        text: text,
+        timestamp: firebase.database.ServerValue.TIMESTAMP,
+        mediaUrl: mediaUrl,
+        mediaType: mediaType
+    };
+    
+    messagesRef.push(message);
+    messageInput.value = '';
+    mediaPreviewContainer.innerHTML = '';
+}
 
-        // Event listeners
-        sendButton.addEventListener('click', sendMessage);
-        messageInput.addEventListener('keypress', (e) => {
-            if (e.key === 'Enter') {
-                sendMessage();
-            }
-        });
+// Send message on button click or Enter key
+sendButton.addEventListener('click', () => {
+    const text = messageInput.value.trim();
+    sendMessage(text);
+});
 
-        // Emoji picker (simplified for this example)
-        const emojis = ['😊', '😂', '❤️', '👍', '🎉', '🔥', '😎', '🤔'];
-        let emojiPickerVisible = false;
-        let emojiPicker = null;
+messageInput.addEventListener('keypress', (e) => {
+    if (e.key === 'Enter') {
+        const text = messageInput.value.trim();
+        sendMessage(text);
+    }
+});
 
-        emojiButton.addEventListener('click', () => {
-            if (emojiPickerVisible) {
-                emojiPicker.remove();
-                emojiPickerVisible = false;
-                return;
-            }
+// Format timestamp
+function formatTime(timestamp) {
+    const date = new Date(timestamp);
+    const hours = date.getHours().toString().padStart(2, '0');
+    const minutes = date.getMinutes().toString().padStart(2, '0');
+    return `${hours}:${minutes}`;
+}
 
-            emojiPicker = document.createElement('div');
-            emojiPicker.style.position = 'absolute';
-            emojiPicker.style.bottom = '70px';
-            emojiPicker.style.right = '20px';
-            emojiPicker.style.background = 'white';
-            emojiPicker.style.borderRadius = '10px';
-            emojiPicker.style.padding = '10px';
-            emojiPicker.style.display = 'flex';
-            emojiPicker.style.flexWrap = 'wrap';
-            emojiPicker.style.gap = '5px';
-            emojiPicker.style.boxShadow = '0 5px 15px rgba(0,0,0,0.1)';
-            emojiPicker.style.zIndex = '1000';
-
-            if (document.body.classList.contains('dark-mode')) {
-                emojiPicker.style.background = '#273859';
-            }
-
-            emojis.forEach(emoji => {
-                const emojiButton = document.createElement('button');
-                emojiButton.innerText = emoji;
-                emojiButton.style.background = 'none';
-                emojiButton.style.border = 'none';
-                emojiButton.style.fontSize = '1.5rem';
-                emojiButton.style.cursor = 'pointer';
-                emojiButton.style.transition = 'transform 0.2s';
-
-                emojiButton.addEventListener('mouseover', () => {
-                    emojiButton.style.transform = 'scale(1.2)';
-                });
-
-                emojiButton.addEventListener('mouseout', () => {
-                    emojiButton.style.transform = 'scale(1)';
-                });
-
-                emojiButton.addEventListener('click', () => {
-                    messageInput.value += emoji;
-                    emojiPicker.remove();
-                    emojiPickerVisible = false;
-                    messageInput.focus();
-                });
-
-                emojiPicker.appendChild(emojiButton);
+// Display messages
+messagesRef.on('child_added', (snapshot) => {
+    const message = snapshot.val();
+    const messageKey = snapshot.key;
+    
+    // Create message element
+    const messageElement = document.createElement('div');
+    messageElement.className = `message ${message.userId === userId ? 'user-message' : 'other-message'} new-message`;
+    
+    // Create message info
+    const messageInfo = document.createElement('div');
+    messageInfo.className = 'message-info';
+    
+    // Username and time
+    const usernameElement = document.createElement('span');
+    usernameElement.textContent = message.userId === userId ? 'Anda' : message.username;
+    
+    const timeElement = document.createElement('span');
+    timeElement.className = 'message-time';
+    timeElement.textContent = formatTime(message.timestamp);
+    
+    messageInfo.appendChild(usernameElement);
+    messageInfo.appendChild(timeElement);
+    
+    // Message text
+    const messageText = document.createElement('div');
+    messageText.className = 'message-text';
+    messageText.textContent = message.text;
+    
+    messageElement.appendChild(messageInfo);
+    messageElement.appendChild(messageText);
+    
+    // Add media if present
+    if (message.mediaUrl && message.mediaType) {
+        if (message.mediaType.startsWith('image/')) {
+            const img = document.createElement('img');
+            img.src = message.mediaUrl;
+            img.className = 'media-message-image';
+            img.alt = 'Shared image';
+            img.loading = 'lazy';
+            
+            // Open in lightbox on click
+            img.addEventListener('click', () => {
+                lightboxImage.src = message.mediaUrl;
+                lightbox.classList.add('active');
             });
-
-            document.querySelector('.chat-input').appendChild(emojiPicker);
-            emojiPickerVisible = true;
-        });
-
-        // Listen for new messages
-        messagesRef.orderByChild('timestamp').limitToLast(50).on('child_added', (snapshot) => {
-            const message = snapshot.val();
-            displayMessage(message);
-        });
-
-        // Display a message in the chat
-        function displayMessage(message) {
-            const messageElement = document.createElement('div');
-            messageElement.id = message.id;
             
-            const isCurrentUser = message.username === username;
-            messageElement.className = `message ${isCurrentUser ? 'user-message' : 'other-message'} new-message`;
+            messageElement.appendChild(img);
+        } else if (message.mediaType.startsWith('video/')) {
+            const video = document.createElement('video');
+            video.src = message.mediaUrl;
+            video.className = 'media-message-video';
+            video.controls = true;
+            messageElement.appendChild(video);
+        } else if (message.mediaType === 'audio/webm' || message.mediaType === 'audio/mp3') {
+            const audioPlayer = document.createElement('div');
+            audioPlayer.className = 'audio-player';
             
-            const date = new Date(message.timestamp);
-            const formattedTime = date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+            const playButton = document.createElement('button');
+            playButton.className = 'audio-play-button';
+            playButton.innerHTML = '<i class="fas fa-play"></i>';
             
-            messageElement.innerHTML = `
-                <div class="message-info">
-                    ${message.username} 
-                    <span class="message-time">${formattedTime}</span>
-                </div>
-                <div class="message-text">${formatMessageText(message.text)}</div>
-            `;
+            const progressContainer = document.createElement('div');
+            progressContainer.className = 'audio-progress';
             
-            chatMessages.appendChild(messageElement);
-            chatMessages.scrollTop = chatMessages.scrollHeight;
+            const progressBar = document.createElement('div');
+            progressBar.className = 'audio-progress-bar';
             
-            // Remove animation class after animation completes
-            setTimeout(() => {
-                messageElement.classList.remove('new-message');
-            }, 300);
-        }
-
-        // Format message text (add emojis, links, etc.)
-        function formatMessageText(text) {
-            // Make URLs clickable
-            const urlRegex = /(https?:\/\/[^\s]+)/g;
-            text = text.replace(urlRegex, '<a href="$1" target="_blank" style="color: #3498db; text-decoration: underline;">$1</a>');
+            const timeDisplay = document.createElement('div');
+            timeDisplay.className = 'audio-time';
+            timeDisplay.textContent = '0:00';
             
-            return text;
-        }
-
-        // Initial welcome message
-        setTimeout(() => {
-            displayMessage({
-                id: 'welcome',
-                username: 'Hengki ChatBox',
-                text: 'Selamat datang di Hengki ChatBox! Mulai percakapan dengan mengirim pesan. 👋',
-                timestamp: Date.now()
+            progressContainer.appendChild(progressBar);
+            audioPlayer.appendChild(playButton);
+            audioPlayer.appendChild(progressContainer);
+            audioPlayer.appendChild(timeDisplay);
+            
+            // Create audio element
+            const audio = document.createElement('audio');
+            audio.src = message.mediaUrl;
+            
+            // Play/pause toggle
+            let isPlaying = false;
+            playButton.addEventListener('click', () => {
+                if (isPlaying) {
+                    audio.pause();
+                    playButton.innerHTML = '<i class="fas fa-play"></i>';
+                } else {
+                    audio.play();
+                    playButton.innerHTML = '<i class="fas fa-pause"></i>';
+                }
+                isPlaying = !isPlaying;
             });
-        }, 1000);
-    </script>
-</body>
-</html>
+            
+            // Update progress
+            audio.addEventListener('timeupdate', () => {
+                const progress = (audio.currentTime / audio.duration) * 100;
+                progressBar.style.width = `${progress}%`;
+                
+                // Format time
+                const minutes = Math.floor(audio.currentTime / 60);
+                const seconds = Math.floor(audio.currentTime % 60).toString().padStart(2, '0');
+                timeDisplay.textContent = `${minutes}:${seconds}`;
+            });
+            
+            // Reset when ended
+            audio.addEventListener('ended', () => {
+                progressBar.style.width = '0%';
+                playButton.innerHTML = '<i class="fas fa-play"></i>';
+                isPlaying = false;
+            });
+            
+            // Click on progress bar to seek
+            progressContainer.addEventListener('click', (e) => {
+                const rect = progressContainer.getBoundingClientRect();
+                const pos = (e.clientX - rect.left) / rect.width;
+                audio.currentTime = pos * audio.duration;
+            });
+            
+            messageElement.appendChild(audioPlayer);
+        }
+    }
+    
+    // Add to chat and scroll to bottom
+    chatMessages.appendChild(messageElement);
+    chatMessages.scrollTop = chatMessages.scrollHeight;
+});
+
+// Attachment handling
+let attachmentMenuOpen = false;
+
+attachmentButton.addEventListener('click', () => {
+    attachmentMenuOpen = !attachmentMenuOpen;
+    attachmentOptions.style.display = attachmentMenuOpen ? 'flex' : 'none';
+});
+
+// Close attachment menu when clicking elsewhere
+document.addEventListener('click', (e) => {
+    if (attachmentMenuOpen && !attachmentButton.contains(e.target) && !attachmentOptions.contains(e.target)) {
+        attachmentMenuOpen = false;
+        attachmentOptions.style.display = 'none';
+    }
+});
+
+// Image upload
+imageButton.addEventListener('click', () => {
+    imageUpload.click();
+    attachmentMenuOpen = false;
+    attachmentOptions.style.display = 'none';
+});
+
+imageUpload.addEventListener('change', (e) => {
+    const file = e.target.files[0];
+    if (file && file.type.startsWith('image/')) {
+        handleMediaPreview(file);
+    }
+});
+
+// Video upload
+videoButton.addEventListener('click', () => {
+    videoUpload.click();
+    attachmentMenuOpen = false;
+    attachmentOptions.style.display = 'none';
+});
+
+videoUpload.addEventListener('change', (e) => {
+    const file = e.target.files[0];
+    if (file && file.type.startsWith('video/')) {
+        handleMediaPreview(file);
+    }
+});
+
+// Media preview
+function handleMediaPreview(file) {
+    const reader = new FileReader();
+    
+    reader.onload = (e) => {
+        mediaPreviewContainer.innerHTML = '';
+        
+        if (file.type.startsWith('image/')) {
+            const img = document.createElement('img');
+            img.src = e.target.result;
+            img.className = 'media-preview';
+            mediaPreviewContainer.appendChild(img);
+        } else if (file.type.startsWith('video/')) {
+            const video = document.createElement('video');
+            video.src = e.target.result;
+            video.className = 'media-preview';
+            video.controls = true;
+            mediaPreviewContainer.appendChild(video);
+        }
+        
+        // Add cancel button
+        const cancelButton = document.createElement('button');
+        cancelButton.innerHTML = '<i class="fas fa-times"></i>';
+        cancelButton.style.position = 'absolute';
+        cancelButton.style.top = '5px';
+        cancelButton.style.right = '5px';
+        cancelButton.style.background = 'rgba(0,0,0,0.5)';
+        cancelButton.style.color = 'white';
+        cancelButton.style.border = 'none';
+        cancelButton.style.borderRadius = '50%';
+        cancelButton.style.width = '25px';
+        cancelButton.style.height = '25px';
+        cancelButton.style.cursor = 'pointer';
+        
+        cancelButton.addEventListener('click', () => {
+            mediaPreviewContainer.innerHTML = '';
+            imageUpload.value = '';
+            videoUpload.value = '';
+        });
+        
+        mediaPreviewContainer.appendChild(cancelButton);
+        
+        // Send button now uploads media
+        sendButton.innerHTML = '<i class="fas fa-cloud-upload-alt"></i>';
+        
+        // Update send button click handler
+        const originalClickHandler = sendButton.onclick;
+        sendButton.onclick = () => {
+            // Upload file to Firebase Storage
+            const storageRef = storage.ref(`media/${Date.now()}_${file.name}`);
+            const uploadTask = storageRef.put(file);
+            
+            // Show upload progress
+            uploadTask.on('state_changed', 
+                (snapshot) => {
+                    const progress = (snapshot.bytesTransferred / snapshot.totalBytes) * 100;
+                    sendButton.innerHTML = `<i class="fas fa-sync fa-spin"></i>`;
+                },
+                (error) => {
+                    console.error('Upload failed:', error);
+                    sendButton.innerHTML = '<i class="fas fa-paper-plane"></i>';
+                },
+                () => {
+                    // Get download URL
+                    uploadTask.snapshot.ref.getDownloadURL().then((downloadURL) => {
+                        // Send message with media
+                        sendMessage(messageInput.value.trim(), downloadURL, file.type);
+                        
+                        // Reset UI
+                        mediaPreviewContainer.innerHTML = '';
+                        sendButton.innerHTML = '<i class="fas fa-paper-plane"></i>';
+                        sendButton.onclick = originalClickHandler;
+                        imageUpload.value = '';
+                        videoUpload.value = '';
+                    });
+                }
+            );
+        };
+    };
+    
+    reader.readAsDataURL(file);
+}
+
+// Voice recording
+let mediaRecorder;
+let audioChunks = [];
+let recordingStartTime;
+let recordingTimer;
+
+voiceButton.addEventListener('click', () => {
+    attachmentMenuOpen = false;
+    attachmentOptions.style.display = 'none';
+    
+    if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
+        navigator.mediaDevices.getUserMedia({ audio: true })
+            .then(stream => {
+                mediaRecorder = new MediaRecorder(stream);
+                
+                mediaRecorder.ondataavailable = (e) => {
+                    audioChunks.push(e.data);
+                };
+                
+                mediaRecorder.onstop = () => {
+                    const audioBlob = new Blob(audioChunks, { type: 'audio/webm' });
+                    
+                    // Upload to Firebase Storage
+                    const storageRef = storage.ref(`media/audio_${Date.now()}.webm`);
+                    const uploadTask = storageRef.put(audioBlob);
+                    
+                    uploadTask.on('state_changed', 
+                        null,
+                        (error) => console.error('Upload failed:', error),
+                        () => {
+                            uploadTask.snapshot.ref.getDownloadURL().then((downloadURL) => {
+                                sendMessage('🎤 Audio Message', downloadURL, 'audio/webm');
+                            });
+                        }
+                    );
+                };
+                
+                // Start recording
+                mediaRecorder.start();
+                audioChunks = [];
+                
+                // Show recording UI
+                messageInput.style.display = 'none';
+                voiceRecordingContainer.style.display = 'flex';
+                
+                // Start timer
+                recordingStartTime = Date.now();
+                updateRecordingTime();
+                recordingTimer = setInterval(updateRecordingTime, 1000);
+            })
+            .catch(error => {
+                console.error('Error accessing microphone:', error);
+                alert('Tidak dapat mengakses mikrofon. Periksa pengaturan browser Anda.');
+            });
+    } else {
+        alert('Browser Anda tidak mendukung perekaman suara.');
+    }
+});
+
+function updateRecordingTime() {
+    const elapsedSeconds = Math.floor((Date.now() - recordingStartTime) / 1000);
+    const minutes = Math.floor(elapsedSeconds / 60).toString().padStart(2, '0');
+    const seconds = (elapsedSeconds % 60).toString().padStart(2, '0');
+    recordingTime.textContent = `${minutes}:${seconds}`;
+    
+    // Limit recording to 1 minute
+    if (elapsedSeconds >= 60) {
+        stopRecording();
+    }
+}
+
+function stopRecording() {
+    if (mediaRecorder && mediaRecorder.state !== 'inactive') {
+        mediaRecorder.stop();
+        mediaRecorder.stream.getTracks().forEach(track => track.stop());
+    }
+    
+    clearInterval(recordingTimer);
+    messageInput.style.display = 'block';
+    voiceRecordingContainer.style.display = 'none';
+}
+
+cancelRecording.addEventListener('click', () => {
+    audioChunks = [];
+    stopRecording();
+});
+
+sendRecording.addEventListener('click', () => {
+    stopRecording();
+});
+
+// Lightbox handling
+lightboxClose.addEventListener('click', () => {
+    lightbox.classList.remove('active');
+});
+
+// Close lightbox when clicking outside the image
+lightbox.addEventListener('click', (e) => {
+    if (e.target === lightbox) {
+        lightbox.classList.remove('active');
+    }
+});
+
+// Emoji support (basic implementation)
+emojiButton.addEventListener('click', () => {
+    // For this simple version, just add a few common emojis
+    const emojis = ['😀', '😂', '😍', '👍', '❤️', '😊', '🎉', '🔥', '👏', '🤔'];
+    const randomEmoji = emojis[Math.floor(Math.random() * emojis.length)];
+    messageInput.value += randomEmoji;
+    messageInput.focus();
+});
+
+// Auto scroll to bottom on new messages
+const scrollToBottom = () => {
+    chatMessages.scrollTop = chatMessages.scrollHeight;
+};
+
+// Load initial messages (limit to last 50)
+messagesRef.limitToLast(50).once('value', () => {
+    scrollToBottom();
+});
+
+// Message input active indicator
+messageInput.addEventListener('focus', () => {
+    messageInput.style.borderColor = var(--accent-color);
+});
+
+messageInput.addEventListener('blur', () => {
+    messageInput.style.borderColor = '';
+});
+
+// Initialize the app with a welcome message
+setTimeout(() => {
+    const welcomeMessage = {
+        userId: 'system',
+        username: 'System',
+        text: 'Selamat datang di Hengki ChatBox! Mulai kirim pesan untuk bergabung dalam percakapan.',
+        timestamp: Date.now(),
+    };
+    
+    // Only add if there are no messages yet
+    messagesRef.limitToFirst(1).once('value', (snapshot) => {
+        if (!snapshot.exists()) {
+            messagesRef.push(welcomeMessage);
+        }
+    });
+}, 1000);
