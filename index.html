@@ -19,6 +19,7 @@
             --message-own-gradient: linear-gradient(135deg, #3498db, #2980b9);
             --message-other-gradient: linear-gradient(135deg, #9b59b6, #8e44ad);
             --message-ai-gradient: linear-gradient(135deg, #2ecc71, #27ae60);
+            --admin-color: #e74c3c;
         }
 
         * {
@@ -76,6 +77,19 @@
             background-color: rgba(255, 255, 255, 0.1);
             border-radius: 15px;
             display: inline-block;
+        }
+
+        .admin-badge {
+            background: linear-gradient(135deg, #e74c3c, #c0392b);
+            color: white;
+            padding: 3px 8px;
+            border-radius: 10px;
+            font-size: 0.7rem;
+            margin-left: 5px;
+            font-weight: 600;
+            display: inline-flex;
+            align-items: center;
+            gap: 3px;
         }
 
         .online-indicator {
@@ -167,6 +181,34 @@
             box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
         }
 
+        .admin-controls {
+            padding: 10px 20px;
+            background: linear-gradient(135deg, #e74c3c, #c0392b);
+            color: white;
+            display: none;
+            gap: 10px;
+            align-items: center;
+        }
+
+        .admin-controls.show {
+            display: flex;
+        }
+
+        .admin-btn {
+            padding: 5px 10px;
+            background: rgba(255, 255, 255, 0.2);
+            border: none;
+            color: white;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 0.8rem;
+            transition: all 0.3s;
+        }
+
+        .admin-btn:hover {
+            background: rgba(255, 255, 255, 0.3);
+        }
+
         .chat-messages {
             flex: 1;
             overflow-y: auto;
@@ -215,6 +257,60 @@
             max-width: 90%;
         }
 
+        .message:hover .message-actions {
+            opacity: 1;
+            transform: translateX(0);
+        }
+
+        .message-actions {
+            position: absolute;
+            top: 5px;
+            right: -40px;
+            display: flex;
+            flex-direction: column;
+            gap: 2px;
+            opacity: 0;
+            transform: translateX(10px);
+            transition: all 0.3s;
+        }
+
+        .message-action-btn {
+            width: 28px;
+            height: 28px;
+            border: none;
+            border-radius: 50%;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.7rem;
+            transition: all 0.3s;
+            background: rgba(0, 0, 0, 0.1);
+            color: #666;
+        }
+
+        .message-action-btn:hover {
+            transform: scale(1.1);
+        }
+
+        .edit-btn {
+            background: #f39c12;
+            color: white;
+        }
+
+        .edit-btn:hover {
+            background: #e67e22;
+        }
+
+        .delete-btn {
+            background: #e74c3c;
+            color: white;
+        }
+
+        .delete-btn:hover {
+            background: #c0392b;
+        }
+
         .message-info {
             display: flex;
             align-items: center;
@@ -246,6 +342,62 @@
         .message-text {
             line-height: 1.6;
             word-break: break-word;
+        }
+
+        .message-text.editing {
+            display: none;
+        }
+
+        .edit-input {
+            width: 100%;
+            padding: 8px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            font-size: 0.9rem;
+            resize: vertical;
+            min-height: 60px;
+            display: none;
+        }
+
+        .edit-input.active {
+            display: block;
+        }
+
+        .edit-controls {
+            display: none;
+            gap: 5px;
+            margin-top: 8px;
+        }
+
+        .edit-controls.active {
+            display: flex;
+        }
+
+        .edit-save-btn, .edit-cancel-btn {
+            padding: 4px 8px;
+            border: none;
+            border-radius: 3px;
+            cursor: pointer;
+            font-size: 0.8rem;
+            transition: all 0.3s;
+        }
+
+        .edit-save-btn {
+            background: #27ae60;
+            color: white;
+        }
+
+        .edit-save-btn:hover {
+            background: #2ecc71;
+        }
+
+        .edit-cancel-btn {
+            background: #95a5a6;
+            color: white;
+        }
+
+        .edit-cancel-btn:hover {
+            background: #7f8c8d;
         }
 
         /* Improved AI message formatting */
@@ -324,28 +476,6 @@
             padding: 2px 4px;
             border-radius: 3px;
             border-left: 3px solid #ffc107;
-        }
-
-        .ai-message .message-text .ai-table {
-            width: 100%;
-            border-collapse: collapse;
-            margin: 10px 0;
-            background: white;
-            border-radius: 8px;
-            overflow: hidden;
-            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
-        }
-
-        .ai-message .message-text .ai-table th {
-            background: #27ae60;
-            color: white;
-            padding: 10px;
-            text-align: left;
-        }
-
-        .ai-message .message-text .ai-table td {
-            padding: 8px 10px;
-            border-bottom: 1px solid #f1f1f1;
         }
 
         .ai-thinking {
@@ -561,24 +691,10 @@
             border-left-color: #2ecc71;
         }
 
-        body.dark-mode .ai-message .message-text .code-block {
-            background: #1a1a1a;
-            color: #f8f8f2;
-        }
-
-        body.dark-mode .ai-message .message-text .inline-code {
-            background: rgba(255, 255, 255, 0.1);
-            color: #ff6b6b;
-        }
-
-        body.dark-mode .ai-message .message-text .highlight {
-            background: rgba(255, 193, 7, 0.2);
-            border-left-color: #ffc107;
-        }
-
-        body.dark-mode .ai-message .message-text blockquote {
-            background: rgba(46, 204, 113, 0.1);
-            border-left-color: #2ecc71;
+        body.dark-mode .edit-input {
+            background-color: #273859;
+            border: 1px solid #364f7e;
+            color: white;
         }
 
         body.dark-mode .chat-input {
@@ -594,10 +710,6 @@
 
         body.dark-mode .emoji-button {
             color: #4A5683;
-        }
-
-        body.dark-mode .message-input-container::placeholder {
-            color: #6c7a9c;
         }
 
         /* Mobile responsiveness */
@@ -616,6 +728,10 @@
                 max-width: 95%;
             }
 
+            .message-actions {
+                right: -35px;
+            }
+
             .chat-header h2 {
                 font-size: 1.5rem;
             }
@@ -626,11 +742,6 @@
 
             #username-input, #save-name-button {
                 width: 100%;
-            }
-
-            .ai-message .message-text .code-block {
-                font-size: 0.8em;
-                padding: 8px 10px;
             }
         }
 
@@ -657,6 +768,63 @@
         .code-copy-btn.copied {
             color: #2ecc71;
         }
+
+        /* Confirmation modal */
+        .modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            display: none;
+            align-items: center;
+            justify-content: center;
+            z-index: 2000;
+        }
+
+        .modal.show {
+            display: flex;
+        }
+
+        .modal-content {
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            text-align: center;
+            max-width: 400px;
+            width: 90%;
+        }
+
+        body.dark-mode .modal-content {
+            background: #273859;
+            color: white;
+        }
+
+        .modal-buttons {
+            display: flex;
+            gap: 10px;
+            justify-content: center;
+            margin-top: 15px;
+        }
+
+        .modal-btn {
+            padding: 8px 16px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-weight: 500;
+        }
+
+        .modal-btn.confirm {
+            background: #e74c3c;
+            color: white;
+        }
+
+        .modal-btn.cancel {
+            background: #95a5a6;
+            color: white;
+        }
     </style>
 </head>
 <body>
@@ -678,15 +846,26 @@
                 <span id="online-count">Menghubungkan...</span>
             </div>
         </div>
+        
+        <div class="admin-controls" id="admin-controls">
+            <i class="fas fa-shield-alt"></i>
+            <span>Mode Admin Aktif</span>
+            <button class="admin-btn" onclick="clearAllMessages()">
+                <i class="fas fa-trash-alt"></i> Hapus Semua Chat
+            </button>
+        </div>
+
         <div class="user-info">
             <input type="text" id="username-input" placeholder="Masukkan nama pengguna Anda">
             <button id="save-name-button">
                 <i class="fas fa-check"></i> Simpan Nama
             </button>
         </div>
+        
         <div id="chat-messages" class="chat-messages">
             <!-- Messages will be displayed here -->
         </div>
+        
         <div class="chat-input">
             <div class="message-input-container">
                 <input type="text" id="message-input" placeholder="Ketik pesan... (atau /ai untuk chat dengan AI)">
@@ -697,6 +876,18 @@
             <button id="send-button">
                 <i class="fas fa-paper-plane"></i>
             </button>
+        </div>
+    </div>
+
+    <!-- Confirmation Modal -->
+    <div class="modal" id="confirmation-modal">
+        <div class="modal-content">
+            <h3 id="modal-title">Konfirmasi</h3>
+            <p id="modal-message">Apakah Anda yakin?</p>
+            <div class="modal-buttons">
+                <button class="modal-btn confirm" id="modal-confirm">Ya, Hapus</button>
+                <button class="modal-btn cancel" id="modal-cancel">Batal</button>
+            </div>
         </div>
     </div>
 
@@ -733,6 +924,16 @@
         const themeToggle = document.getElementById('theme-toggle');
         const onlineCountElement = document.getElementById('online-count');
         const emojiButton = document.getElementById('emoji-button');
+        const adminControls = document.getElementById('admin-controls');
+        const confirmationModal = document.getElementById('confirmation-modal');
+        const modalTitle = document.getElementById('modal-title');
+        const modalMessage = document.getElementById('modal-message');
+        const modalConfirm = document.getElementById('modal-confirm');
+        const modalCancel = document.getElementById('modal-cancel');
+
+        // Admin functionality
+        let isAdmin = false;
+        let currentEditingMessage = null;
 
         // Load theme preference
         const isDarkMode = localStorage.getItem('darkMode') === 'true';
@@ -749,15 +950,26 @@
             themeToggle.innerHTML = isDark ? '<i class="fas fa-sun"></i>' : '<i class="fas fa-moon"></i>';
         });
 
-        // Username handling
+        // Username handling with admin check
         let username = localStorage.getItem('username') || 'User_' + Math.floor(Math.random() * 10000);
         usernameInput.value = username;
+        checkAdminStatus();
+
+        function checkAdminStatus() {
+            isAdmin = username.toLowerCase() === 'hengki';
+            if (isAdmin) {
+                adminControls.classList.add('show');
+            } else {
+                adminControls.classList.remove('show');
+            }
+        }
 
         saveNameButton.addEventListener('click', () => {
             const newUsername = usernameInput.value.trim();
             if (newUsername) {
                 username = newUsername;
                 localStorage.setItem('username', username);
+                checkAdminStatus();
                 
                 saveNameButton.innerHTML = '<i class="fas fa-check"></i> Tersimpan!';
                 saveNameButton.style.backgroundColor = '#2ecc71';
@@ -768,6 +980,121 @@
                 }, 2000);
             }
         });
+
+        // Modal functions
+        function showModal(title, message, confirmText, onConfirm) {
+            modalTitle.textContent = title;
+            modalMessage.textContent = message;
+            modalConfirm.textContent = confirmText;
+            confirmationModal.classList.add('show');
+            
+            const handleConfirm = () => {
+                onConfirm();
+                hideModal();
+                modalConfirm.removeEventListener('click', handleConfirm);
+                modalCancel.removeEventListener('click', handleCancel);
+            };
+            
+            const handleCancel = () => {
+                hideModal();
+                modalConfirm.removeEventListener('click', handleConfirm);
+                modalCancel.removeEventListener('click', handleCancel);
+            };
+            
+            modalConfirm.addEventListener('click', handleConfirm);
+            modalCancel.addEventListener('click', handleCancel);
+        }
+
+        function hideModal() {
+            confirmationModal.classList.remove('show');
+        }
+
+        // Admin functions
+        function clearAllMessages() {
+            if (!isAdmin) return;
+            
+            showModal(
+                'Hapus Semua Chat',
+                'Apakah Anda yakin ingin menghapus semua pesan? Tindakan ini tidak dapat dibatalkan.',
+                'Ya, Hapus Semua',
+                () => {
+                    messagesRef.remove().then(() => {
+                        chatMessages.innerHTML = '';
+                        console.log('All messages cleared by admin');
+                    }).catch(error => {
+                        console.error('Error clearing messages:', error);
+                    });
+                }
+            );
+        }
+
+        function deleteMessage(messageId, messageElement) {
+            if (!isAdmin) return;
+            
+            showModal(
+                'Hapus Pesan',
+                'Apakah Anda yakin ingin menghapus pesan ini?',
+                'Ya, Hapus',
+                () => {
+                    messagesRef.child(messageId).remove().then(() => {
+                        messageElement.style.animation = 'fadeOut 0.3s forwards';
+                        setTimeout(() => {
+                            if (messageElement.parentNode) {
+                                messageElement.remove();
+                            }
+                        }, 300);
+                        console.log('Message deleted by admin:', messageId);
+                    }).catch(error => {
+                        console.error('Error deleting message:', error);
+                    });
+                }
+            );
+        }
+
+        function editMessage(messageId, messageElement, originalText) {
+            if (!isAdmin || currentEditingMessage) return;
+            
+            currentEditingMessage = messageId;
+            const messageText = messageElement.querySelector('.message-text');
+            const editInput = messageElement.querySelector('.edit-input');
+            const editControls = messageElement.querySelector('.edit-controls');
+            
+            // Show edit interface
+            messageText.classList.add('editing');
+            editInput.classList.add('active');
+            editControls.classList.add('active');
+            editInput.value = originalText;
+            editInput.focus();
+        }
+
+        function saveEdit(messageId, messageElement) {
+            const editInput = messageElement.querySelector('.edit-input');
+            const newText = editInput.value.trim();
+            
+            if (!newText) return;
+            
+            messagesRef.child(messageId).update({
+                text: newText,
+                edited: true,
+                editedAt: firebase.database.ServerValue.TIMESTAMP
+            }).then(() => {
+                cancelEdit(messageElement);
+                console.log('Message edited by admin:', messageId);
+            }).catch(error => {
+                console.error('Error editing message:', error);
+            });
+        }
+
+        function cancelEdit(messageElement) {
+            const messageText = messageElement.querySelector('.message-text');
+            const editInput = messageElement.querySelector('.edit-input');
+            const editControls = messageElement.querySelector('.edit-controls');
+            
+            messageText.classList.remove('editing');
+            editInput.classList.remove('active');
+            editControls.classList.remove('active');
+            currentEditingMessage = null;
+        }
 
         // Online presence
         let userId = localStorage.getItem('userId');
@@ -804,7 +1131,6 @@
                     .replace(/'/g, "&#039;");
             };
 
-            // Don't escape the text completely, but process it carefully
             let formatted = text;
 
             // Handle code blocks first (```language or ```)
@@ -860,32 +1186,6 @@
             const urlRegex = /(https?:\/\/[^\s]+)/g;
             formatted = formatted.replace(urlRegex, '<a href="$1" target="_blank" style="color: #3498db; text-decoration: underline;">$1</a>');
 
-            // Handle tables (simple markdown tables)
-            const tableRegex = /\|(.+)\|\n\|[-\s|:]+\|\n((?:\|.*\|\n?)+)/g;
-            formatted = formatted.replace(tableRegex, (match, header, rows) => {
-                const headerCells = header.split('|').map(cell => cell.trim()).filter(cell => cell);
-                const rowsArray = rows.trim().split('\n').map(row => 
-                    row.split('|').map(cell => cell.trim()).filter(cell => cell)
-                );
-
-                let tableHtml = '<table class="ai-table"><thead><tr>';
-                headerCells.forEach(cell => {
-                    tableHtml += `<th>${cell}</th>`;
-                });
-                tableHtml += '</tr></thead><tbody>';
-
-                rowsArray.forEach(row => {
-                    tableHtml += '<tr>';
-                    row.forEach(cell => {
-                        tableHtml += `<td>${cell}</td>`;
-                    });
-                    tableHtml += '</tr>';
-                });
-
-                tableHtml += '</tbody></table>';
-                return tableHtml;
-            });
-
             return formatted;
         }
 
@@ -923,7 +1223,6 @@
             } catch (error) {
                 console.error('AI Error:', error);
                 
-                // Provide more specific error messages
                 if (error.name === 'NetworkError' || error.message.includes('fetch')) {
                     return 'Maaf, terjadi masalah koneksi. Silakan periksa koneksi internet Anda dan coba lagi.';
                 } else if (error.message.includes('429')) {
@@ -1133,13 +1432,63 @@
             emojiPickerVisible = true;
         });
 
-        // Listen for new messages
+        // Listen for new messages with real-time updates
         messagesRef.orderByChild('timestamp').limitToLast(50).on('child_added', (snapshot) => {
             const message = snapshot.val();
             displayMessage(message);
         });
 
-        // Enhanced display message function
+        // Listen for message updates (edits)
+        messagesRef.on('child_changed', (snapshot) => {
+            const message = snapshot.val();
+            const messageElement = document.getElementById(message.id);
+            if (messageElement) {
+                updateMessageDisplay(messageElement, message);
+            }
+        });
+
+        // Listen for message deletions
+        messagesRef.on('child_removed', (snapshot) => {
+            const message = snapshot.val();
+            const messageElement = document.getElementById(message.id);
+            if (messageElement) {
+                messageElement.style.animation = 'fadeOut 0.3s forwards';
+                setTimeout(() => {
+                    if (messageElement.parentNode) {
+                        messageElement.remove();
+                    }
+                }, 300);
+            }
+        });
+
+        // Update message display for edits
+        function updateMessageDisplay(messageElement, message) {
+            const messageText = messageElement.querySelector('.message-text');
+            const isAI = message.isAI || message.username === 'AI Assistant';
+            
+            let formattedText;
+            if (isAI) {
+                formattedText = formatAIResponse(message.text);
+            } else {
+                formattedText = formatRegularMessage(message.text);
+            }
+            
+            messageText.innerHTML = formattedText;
+            
+            // Add edited indicator
+            if (message.edited) {
+                const editedIndicator = messageElement.querySelector('.edited-indicator');
+                if (!editedIndicator) {
+                    const indicator = document.createElement('span');
+                    indicator.className = 'edited-indicator';
+                    indicator.style.cssText = 'font-size: 0.7rem; opacity: 0.7; margin-left: 5px;';
+                    indicator.innerHTML = '<i class="fas fa-edit"></i> diedit';
+                    messageElement.querySelector('.message-info').appendChild(indicator);
+                }
+            }
+        }
+
+        // Enhanced display message function with admin controls
         function displayMessage(message) {
             // Prevent duplicate messages
             const existingMessage = document.getElementById(message.id);
@@ -1174,6 +1523,9 @@
             if (isAI) {
                 iconHtml = '<i class="fas fa-robot"></i> ';
                 usernameDisplay = 'AI Assistant';
+            } else if (message.username.toLowerCase() === 'hengki') {
+                iconHtml = '<i class="fas fa-crown"></i> ';
+                usernameDisplay += '<span class="admin-badge"><i class="fas fa-shield-alt"></i> ADMIN</span>';
             }
             
             // Format message text based on type
@@ -1184,12 +1536,44 @@
                 formattedText = formatRegularMessage(message.text);
             }
             
+            // Admin controls HTML
+            let adminControlsHtml = '';
+            if (isAdmin && !isAI) {
+                adminControlsHtml = `
+                    <div class="message-actions">
+                        <button class="message-action-btn edit-btn" onclick="editMessage('${message.id}', this.closest('.message'), '${message.text.replace(/'/g, "\\'")}')">
+                            <i class="fas fa-edit"></i>
+                        </button>
+                        <button class="message-action-btn delete-btn" onclick="deleteMessage('${message.id}', this.closest('.message'))">
+                            <i class="fas fa-trash"></i>
+                        </button>
+                    </div>
+                `;
+            }
+            
+            // Edited indicator
+            let editedIndicator = '';
+            if (message.edited) {
+                editedIndicator = '<span class="edited-indicator" style="font-size: 0.7rem; opacity: 0.7; margin-left: 5px;"><i class="fas fa-edit"></i> diedit</span>';
+            }
+            
             messageElement.innerHTML = `
                 <div class="message-info">
                     ${iconHtml}${usernameDisplay} 
                     <span class="message-time">${formattedTime}</span>
+                    ${editedIndicator}
                 </div>
                 <div class="message-text">${formattedText}</div>
+                <textarea class="edit-input" placeholder="Edit pesan..."></textarea>
+                <div class="edit-controls">
+                    <button class="edit-save-btn" onclick="saveEdit('${message.id}', this.closest('.message'))">
+                        <i class="fas fa-check"></i> Simpan
+                    </button>
+                    <button class="edit-cancel-btn" onclick="cancelEdit(this.closest('.message'))">
+                        <i class="fas fa-times"></i> Batal
+                    </button>
+                </div>
+                ${adminControlsHtml}
             `;
             
             chatMessages.appendChild(messageElement);
@@ -1232,57 +1616,6 @@
             return formatted;
         }
 
-        // Enhanced input handling
-        messageInput.addEventListener('focus', () => {
-            if (messageInput.placeholder === 'Ketik pesan... (atau /ai untuk chat dengan AI)') {
-                messageInput.placeholder = 'Ketik pesan atau /ai [pertanyaan]...';
-            }
-        });
-
-        messageInput.addEventListener('blur', () => {
-            if (messageInput.value === '') {
-                messageInput.placeholder = 'Ketik pesan... (atau /ai untuk chat dengan AI)';
-            }
-        });
-
-        // AI command detection and suggestions
-        messageInput.addEventListener('input', (e) => {
-            const value = e.target.value;
-            if (value === '/ai' || value === '/ai ') {
-                // Show AI suggestion
-                if (!document.getElementById('ai-suggestion')) {
-                    const suggestion = document.createElement('div');
-                    suggestion.id = 'ai-suggestion';
-                    suggestion.style.cssText = `
-                        position: absolute;
-                        bottom: 60px;
-                        left: 15px;
-                        background: #27ae60;
-                        color: white;
-                        padding: 8px 12px;
-                        border-radius: 8px;
-                        font-size: 0.8rem;
-                        z-index: 1000;
-                        animation: fadeIn 0.3s;
-                    `;
-                    suggestion.innerHTML = '<i class="fas fa-robot"></i> Ketik pertanyaan setelah /ai';
-                    
-                    document.querySelector('.chat-input').appendChild(suggestion);
-                    
-                    setTimeout(() => {
-                        if (suggestion && suggestion.parentNode) {
-                            suggestion.remove();
-                        }
-                    }, 3000);
-                }
-            } else {
-                const existing = document.getElementById('ai-suggestion');
-                if (existing) {
-                    existing.remove();
-                }
-            }
-        });
-
         // Close emoji picker when clicking outside
         document.addEventListener('click', (e) => {
             if (emojiPickerVisible && !e.target.closest('.emoji-button') && !e.target.closest('#emoji-picker')) {
@@ -1293,6 +1626,13 @@
             }
         });
 
+        // Close modal when clicking outside
+        confirmationModal.addEventListener('click', (e) => {
+            if (e.target === confirmationModal) {
+                hideModal();
+            }
+        });
+
         // Auto-scroll to bottom when new messages arrive
         const observer = new MutationObserver(() => {
             chatMessages.scrollTop = chatMessages.scrollHeight;
@@ -1300,12 +1640,22 @@
         
         observer.observe(chatMessages, { childList: true });
 
-        // Initial welcome messages with better formatting
+        // Add fadeOut animation
+        const style = document.createElement('style');
+        style.textContent = `
+            @keyframes fadeOut {
+                from { opacity: 1; transform: translateX(0); }
+                to { opacity: 0; transform: translateX(-100px); }
+            }
+        `;
+        document.head.appendChild(style);
+
+        // Initial welcome messages
         setTimeout(() => {
             displayMessage({
                 id: 'welcome',
                 username: 'Hengki ChatBox',
-                text: '🎉 **Selamat datang di Hengki ChatBox!**\n\n💬 Chat dengan pengguna lain secara real-time\n🤖 Ketik `/ai [pertanyaan]` untuk chat dengan AI\n\n**Contoh penggunaan AI:**\n• `/ai Jelaskan tentang JavaScript`\n• `/ai Buatkan kode HTML sederhana`\n• `/ai Bagaimana cara belajar programming?`',
+                text: '🎉 **Selamat datang di Hengki ChatBox!**\n\n💬 Chat dengan pengguna lain secara real-time\n🤖 Ketik `/ai [pertanyaan]` untuk chat dengan AI\n👑 Username "hengki" memiliki akses admin untuk mengedit dan menghapus pesan\n\n**Contoh penggunaan AI:**\n• `/ai Jelaskan tentang JavaScript`\n• `/ai Buatkan kode HTML sederhana`\n• `/ai Bagaimana cara belajar programming?`',
                 timestamp: Date.now()
             });
         }, 1000);
