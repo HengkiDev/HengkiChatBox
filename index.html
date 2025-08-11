@@ -335,6 +335,15 @@
             word-break: break-word;
         }
 
+        .message-text img {
+            max-width: 100%;
+            height: auto;
+            border-radius: 12px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            display: block;
+            margin: 10px 0;
+        }
+
         /* AI message formatting */
         .ai-message .message-text {
             white-space: pre-wrap;
@@ -442,6 +451,30 @@
             bottom: 0;
             gap: 10px;
             align-items: flex-end;
+        }
+
+        .attach-button {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 44px;
+            height: 44px;
+            background: var(--accent-color);
+            color: white;
+            border: none;
+            border-radius: 50%;
+            cursor: pointer;
+            transition: all 0.3s;
+            box-shadow: 0 3px 10px rgba(0, 0, 0, 0.1);
+        }
+
+        .attach-button i {
+            font-size: 1.1rem;
+        }
+
+        .attach-button:hover {
+            transform: scale(1.1);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
         }
 
         .message-input-container {
@@ -580,6 +613,14 @@
 
         body.dark-mode .emoji-button {
             color: #4A5683;
+        }
+
+        body.dark-mode .attach-button {
+            background: #2980b9;
+        }
+
+        body.dark-mode .message-text img {
+            box-shadow: 0 4px 8px rgba(255, 255, 255, 0.1);
         }
 
         /* Theme toggle */
@@ -730,7 +771,7 @@
                 min-height: 40px;
             }
 
-            #send-button {
+            .attach-button, #send-button {
                 width: 40px;
                 height: 40px;
             }
@@ -841,6 +882,9 @@
         </div>
         
         <div class="chat-input">
+            <button id="attach-button" class="attach-button">
+                <i class="fas fa-image"></i>
+            </button>
             <div class="message-input-container">
                 <textarea id="message-input" placeholder="Ketik pesan... (atau /ai untuk chat dengan AI)" rows="1"></textarea>
                 <button class="emoji-button" id="emoji-button">
@@ -852,6 +896,8 @@
             </button>
         </div>
     </div>
+
+    <input type="file" id="file-input" accept="image/*" style="display: none;">
 
     <!-- Confirmation Modal -->
     <div class="modal" id="confirmation-modal">
@@ -904,6 +950,8 @@
         const modalMessage = document.getElementById('modal-message');
         const modalConfirm = document.getElementById('modal-confirm');
         const modalCancel = document.getElementById('modal-cancel');
+        const attachButton = document.getElementById('attach-button');
+        const fileInput = document.getElementById('file-input');
 
         // User roles and admin functionality
         let userRole = 'user';
@@ -1369,6 +1417,45 @@
             }
         }
 
+        // Handle image sending
+        attachButton.addEventListener('click', () => {
+            fileInput.click();
+        });
+
+        fileInput.addEventListener('change', (e) => {
+            const file = e.target.files[0];
+            if (!file) return;
+
+            // Optional: Limit file size to 2MB
+            if (file.size > 2 * 1024 * 1024) {
+                alert('Ukuran gambar terlalu besar. Maksimal 2MB.');
+                fileInput.value = '';
+                return;
+            }
+
+            const reader = new FileReader();
+            reader.onload = (event) => {
+                const dataURL = event.target.result;
+                const caption = messageInput.value.trim();
+
+                const newMessageRef = messagesRef.push();
+                newMessageRef.set({
+                    id: newMessageRef.key,
+                    username: username,
+                    userRole: userRole,
+                    userId: userId,
+                    text: caption,
+                    image: dataURL,
+                    timestamp: firebase.database.ServerValue.TIMESTAMP
+                });
+
+                messageInput.value = '';
+                messageInput.style.height = 'auto';
+                fileInput.value = '';
+            };
+            reader.readAsDataURL(file);
+        });
+
         // Event listeners
         sendButton.addEventListener('click', sendMessage);
         messageInput.addEventListener('keypress', (e) => {
@@ -1467,7 +1554,7 @@
             }
         });
 
-        // Enhanced display message function with role badges and delete controls
+        // Enhanced display message function with role badges, delete controls, and image support
         function displayMessage(message) {
             if (!message || !message.id) return;
             
@@ -1522,12 +1609,18 @@
                 }
             }
             
-            // Format message text
-            let formattedText;
-            if (isAI) {
-                formattedText = formatAIResponse(message.text);
-            } else {
-                formattedText = formatRegularMessage(message.text);
+            // Format message content with image support
+            let formattedText = '';
+            if (message.image) {
+                formattedText += `<img src="${message.image}" alt="Image">`;
+            }
+            if (message.text) {
+                const textContent = isAI ? formatAIResponse(message.text) : formatRegularMessage(message.text);
+                if (message.image && message.text) {
+                    formattedText += '<br>' + textContent;
+                } else {
+                    formattedText += textContent;
+                }
             }
             
             // Delete button (users can delete their own messages, admins can delete any non-AI message)
@@ -1615,7 +1708,7 @@
                 id: 'welcome-' + Date.now(),
                 username: 'System',
                 userRole: 'system',
-                text: '🎉 **Selamat datang di Hengki Chat!**\n\n💬 Chat dengan pengguna lain secara real-time\n🤖 Ketik `/ai [pertanyaan]` untuk chat dengan AI\n🗑️ Klik ikon sampah untuk menghapus pesan Anda sendiri\n\n**Contoh AI:**\n• `/ai Jelaskan JavaScript`\n• `/ai Buatkan kode HTML`',
+                text: '🎉 **Selamat datang di Hengki Chat!**\n\n💬 Chat dengan pengguna lain secara real-time\n🤖 Ketik `/ai [pertanyaan]` untuk chat dengan AI\n🗑️ Klik ikon sampah untuk menghapus pesan Anda sendiri\n📷 Klik ikon gambar untuk kirim foto (dengan caption opsional)\n\n**Contoh AI:**\n• `/ai Jelaskan JavaScript`\n• `/ai Buatkan kode HTML`',
                 timestamp: Date.now(),
                 isAI: false
             });
