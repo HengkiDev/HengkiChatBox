@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Hengki - Chat Box Publik</title>
+    <title>Hengki - Chat Box Publik dengan AI</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
         :root {
@@ -15,8 +15,10 @@
             --bg-gradient: linear-gradient(135deg, #8e44ad, #3498db);
             --message-own: #d6eaff;
             --message-other: #f0e6fa;
+            --message-ai: #e8f5e8;
             --message-own-gradient: linear-gradient(135deg, #3498db, #2980b9);
             --message-other-gradient: linear-gradient(135deg, #9b59b6, #8e44ad);
+            --message-ai-gradient: linear-gradient(135deg, #2ecc71, #27ae60);
         }
 
         * {
@@ -65,6 +67,15 @@
         .chat-header p {
             font-size: 0.9rem;
             opacity: 0.9;
+        }
+
+        .ai-info {
+            font-size: 0.8rem;
+            margin-top: 5px;
+            padding: 5px 10px;
+            background-color: rgba(255, 255, 255, 0.1);
+            border-radius: 15px;
+            display: inline-block;
         }
 
         .online-indicator {
@@ -195,6 +206,14 @@
             border-bottom-left-radius: 4px;
         }
 
+        .ai-message {
+            align-self: flex-start;
+            background: var(--message-ai);
+            color: var(--text-color);
+            border-bottom-left-radius: 4px;
+            border-left: 4px solid #27ae60;
+        }
+
         .message-info {
             display: flex;
             align-items: center;
@@ -212,6 +231,10 @@
             color: #9b59b6;
         }
 
+        .ai-message .message-info {
+            color: #27ae60;
+        }
+
         .message-time {
             font-size: 0.75rem;
             font-weight: normal;
@@ -222,6 +245,46 @@
         .message-text {
             line-height: 1.5;
             word-break: break-word;
+        }
+
+        .ai-thinking {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            font-style: italic;
+            opacity: 0.8;
+        }
+
+        .thinking-dots {
+            display: flex;
+            gap: 3px;
+        }
+
+        .thinking-dots span {
+            width: 6px;
+            height: 6px;
+            background-color: #27ae60;
+            border-radius: 50%;
+            animation: thinking 1.4s infinite;
+        }
+
+        .thinking-dots span:nth-child(2) {
+            animation-delay: 0.2s;
+        }
+
+        .thinking-dots span:nth-child(3) {
+            animation-delay: 0.4s;
+        }
+
+        @keyframes thinking {
+            0%, 60%, 100% {
+                transform: scale(1);
+                opacity: 0.5;
+            }
+            30% {
+                transform: scale(1.2);
+                opacity: 1;
+            }
         }
 
         .chat-input {
@@ -391,6 +454,12 @@
             color: white;
         }
 
+        body.dark-mode .ai-message {
+            background-color: #1e3a1e;
+            color: white;
+            border-left-color: #2ecc71;
+        }
+
         body.dark-mode .chat-input {
             background-color: #16213e;
             border-top: 1px solid #273859;
@@ -447,6 +516,9 @@
                 <h2>Hengki ChatBox</h2>
             </div>
             <p>Chat langsung dengan pengguna di seluruh dunia</p>
+            <div class="ai-info">
+                <i class="fas fa-robot"></i> Ketik /ai [pesan] untuk chat dengan AI
+            </div>
             <div class="online-indicator">
                 <div class="dot"></div>
                 <span id="online-count">Menghubungkan...</span>
@@ -463,7 +535,7 @@
         </div>
         <div class="chat-input">
             <div class="message-input-container">
-                <input type="text" id="message-input" placeholder="Ketik pesan...">
+                <input type="text" id="message-input" placeholder="Ketik pesan... (atau /ai untuk chat dengan AI)">
                 <button class="emoji-button" id="emoji-button">
                     <i class="far fa-smile"></i>
                 </button>
@@ -570,18 +642,109 @@
             onlineCountElement.textContent = `${count} Pengguna Online`;
         });
 
+        // AI functionality
+        async function callAI(query) {
+            try {
+                const response = await fetch(`https://api.siputzx.my.id/api/ai/metaai?query=${encodeURIComponent(query)}`);
+                const data = await response.json();
+                return data.data || data.result || 'Maaf, AI tidak dapat merespons saat ini.';
+            } catch (error) {
+                console.error('AI Error:', error);
+                return 'Maaf, terjadi kesalahan saat menghubungi AI. Silakan coba lagi nanti.';
+            }
+        }
+
+        // Show AI thinking indicator
+        function showAIThinking() {
+            const thinkingElement = document.createElement('div');
+            thinkingElement.id = 'ai-thinking';
+            thinkingElement.className = 'message ai-message new-message';
+            
+            thinkingElement.innerHTML = `
+                <div class="message-info">
+                    <i class="fas fa-robot"></i> AI Assistant 
+                    <span class="message-time">sekarang</span>
+                </div>
+                <div class="message-text ai-thinking">
+                    <i class="fas fa-brain"></i> Sedang berpikir
+                    <div class="thinking-dots">
+                        <span></span>
+                        <span></span>
+                        <span></span>
+                    </div>
+                </div>
+            `;
+            
+            chatMessages.appendChild(thinkingElement);
+            chatMessages.scrollTop = chatMessages.scrollHeight;
+            
+            return thinkingElement;
+        }
+
         // Send a message
-        function sendMessage() {
+        async function sendMessage() {
             const message = messageInput.value.trim();
             if (message !== '') {
-                const newMessageRef = messagesRef.push();
-                newMessageRef.set({
-                    id: newMessageRef.key,
-                    username: username,
-                    text: message,
-                    timestamp: firebase.database.ServerValue.TIMESTAMP
-                });
-                messageInput.value = '';
+                // Check if it's an AI command
+                if (message.startsWith('/ai ')) {
+                    const aiQuery = message.substring(4).trim();
+                    if (aiQuery) {
+                        // Send the AI command to Firebase first
+                        const newMessageRef = messagesRef.push();
+                        newMessageRef.set({
+                            id: newMessageRef.key,
+                            username: username,
+                            text: message,
+                            timestamp: firebase.database.ServerValue.TIMESTAMP
+                        });
+                        
+                        messageInput.value = '';
+                        
+                        // Show thinking indicator
+                        const thinkingElement = showAIThinking();
+                        
+                        // Call AI API
+                        try {
+                            const aiResponse = await callAI(aiQuery);
+                            
+                            // Remove thinking indicator
+                            thinkingElement.remove();
+                            
+                            // Send AI response to Firebase
+                            const aiMessageRef = messagesRef.push();
+                            aiMessageRef.set({
+                                id: aiMessageRef.key,
+                                username: 'AI Assistant',
+                                text: aiResponse,
+                                timestamp: firebase.database.ServerValue.TIMESTAMP,
+                                isAI: true
+                            });
+                        } catch (error) {
+                            // Remove thinking indicator
+                            thinkingElement.remove();
+                            
+                            // Send error message
+                            const errorMessageRef = messagesRef.push();
+                            errorMessageRef.set({
+                                id: errorMessageRef.key,
+                                username: 'AI Assistant',
+                                text: 'Maaf, terjadi kesalahan saat menghubungi AI. Silakan coba lagi nanti.',
+                                timestamp: firebase.database.ServerValue.TIMESTAMP,
+                                isAI: true
+                            });
+                        }
+                    }
+                } else {
+                    // Regular message
+                    const newMessageRef = messagesRef.push();
+                    newMessageRef.set({
+                        id: newMessageRef.key,
+                        username: username,
+                        text: message,
+                        timestamp: firebase.database.ServerValue.TIMESTAMP
+                    });
+                    messageInput.value = '';
+                }
             }
         }
 
@@ -594,7 +757,7 @@
         });
 
         // Emoji picker (simplified for this example)
-        const emojis = ['😊', '😂', '❤️', '👍', '🎉', '🔥', '😎', '🤔'];
+        const emojis = ['😊', '😂', '❤️', '👍', '🎉', '🔥', '😎', '🤔', '🤖', '💡'];
         let emojiPickerVisible = false;
         let emojiPicker = null;
 
@@ -665,14 +828,34 @@
             messageElement.id = message.id;
             
             const isCurrentUser = message.username === username;
-            messageElement.className = `message ${isCurrentUser ? 'user-message' : 'other-message'} new-message`;
+            const isAI = message.isAI || message.username === 'AI Assistant';
+            
+            let messageClass = 'message';
+            if (isAI) {
+                messageClass += ' ai-message';
+            } else if (isCurrentUser) {
+                messageClass += ' user-message';
+            } else {
+                messageClass += ' other-message';
+            }
+            messageClass += ' new-message';
+            
+            messageElement.className = messageClass;
             
             const date = new Date(message.timestamp);
             const formattedTime = date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
             
+            let usernameDisplay = message.username;
+            let iconHtml = '';
+            
+            if (isAI) {
+                iconHtml = '<i class="fas fa-robot"></i> ';
+                usernameDisplay = 'AI Assistant';
+            }
+            
             messageElement.innerHTML = `
                 <div class="message-info">
-                    ${message.username} 
+                    ${iconHtml}${usernameDisplay} 
                     <span class="message-time">${formattedTime}</span>
                 </div>
                 <div class="message-text">${formatMessageText(message.text)}</div>
@@ -693,6 +876,12 @@
             const urlRegex = /(https?:\/\/[^\s]+)/g;
             text = text.replace(urlRegex, '<a href="$1" target="_blank" style="color: #3498db; text-decoration: underline;">$1</a>');
             
+            // Format code blocks (simple implementation)
+            text = text.replace(/`([^`]+)`/g, '<code style="background: rgba(0,0,0,0.1); padding: 2px 4px; border-radius: 3px; font-family: monospace;">$1</code>');
+            
+            // Format bold text
+            text = text.replace(/\*\*([^*]+)\*\*/g, '<strong>$1</strong>');
+            
             return text;
         }
 
@@ -701,10 +890,86 @@
             displayMessage({
                 id: 'welcome',
                 username: 'Hengki ChatBox',
-                text: 'Selamat datang di Hengki ChatBox! Mulai percakapan dengan mengirim pesan. 👋',
+                text: 'Selamat datang di Hengki ChatBox! 👋<br><br>🗨️ Chat dengan pengguna lain secara real-time<br>🤖 Ketik <strong>/ai [pertanyaan]</strong> untuk chat dengan AI<br><br>Contoh: <code>/ai Jelaskan tentang cuaca hari ini</code>',
                 timestamp: Date.now()
             });
         }, 1000);
+
+        // Add some example AI commands for users
+        setTimeout(() => {
+            displayMessage({
+                id: 'ai-help',
+                username: 'AI Assistant',
+                text: 'Halo! Saya AI Assistant 🤖<br><br>Anda bisa bertanya kepada saya dengan mengetik:<br>• <code>/ai Bagaimana cara belajar programming?</code><br>• <code>/ai Ceritakan tentang teknologi AI</code><br>• <code>/ai Apa itu JavaScript?</code><br><br>Saya siap membantu menjawab pertanyaan Anda! 💡',
+                timestamp: Date.now(),
+                isAI: true
+            });
+        }, 3000);
+
+        // Handle input placeholder change based on focus
+        messageInput.addEventListener('focus', () => {
+            if (messageInput.placeholder === 'Ketik pesan... (atau /ai untuk chat dengan AI)') {
+                messageInput.placeholder = 'Ketik pesan atau /ai [pertanyaan]...';
+            }
+        });
+
+        messageInput.addEventListener('blur', () => {
+            if (messageInput.value === '') {
+                messageInput.placeholder = 'Ketik pesan... (atau /ai untuk chat dengan AI)';
+            }
+        });
+
+        // Add AI command detection and suggestions
+        messageInput.addEventListener('input', (e) => {
+            const value = e.target.value;
+            if (value === '/ai' || value === '/ai ') {
+                // Show AI suggestion
+                if (!document.getElementById('ai-suggestion')) {
+                    const suggestion = document.createElement('div');
+                    suggestion.id = 'ai-suggestion';
+                    suggestion.style.position = 'absolute';
+                    suggestion.style.bottom = '60px';
+                    suggestion.style.left = '15px';
+                    suggestion.style.background = '#27ae60';
+                    suggestion.style.color = 'white';
+                    suggestion.style.padding = '8px 12px';
+                    suggestion.style.borderRadius = '8px';
+                    suggestion.style.fontSize = '0.8rem';
+                    suggestion.style.zIndex = '1000';
+                    suggestion.innerHTML = '<i class="fas fa-robot"></i> Ketik pertanyaan setelah /ai';
+                    
+                    document.querySelector('.chat-input').appendChild(suggestion);
+                    
+                    setTimeout(() => {
+                        if (suggestion && suggestion.parentNode) {
+                            suggestion.remove();
+                        }
+                    }, 3000);
+                }
+            } else {
+                const existing = document.getElementById('ai-suggestion');
+                if (existing) {
+                    existing.remove();
+                }
+            }
+        });
+
+        // Close emoji picker when clicking outside
+        document.addEventListener('click', (e) => {
+            if (emojiPickerVisible && !e.target.closest('.emoji-button') && !e.target.closest('#emoji-picker')) {
+                if (emojiPicker) {
+                    emojiPicker.remove();
+                    emojiPickerVisible = false;
+                }
+            }
+        });
+
+        // Auto-scroll to bottom when new messages arrive
+        const observer = new MutationObserver(() => {
+            chatMessages.scrollTop = chatMessages.scrollHeight;
+        });
+        
+        observer.observe(chatMessages, { childList: true });
     </script>
 </body>
 </html>
