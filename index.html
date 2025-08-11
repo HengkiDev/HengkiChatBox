@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Hengki - Chat Box Publik dengan AI</title>
+    <title>Hengki Chat</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
         :root {
@@ -16,10 +16,9 @@
             --message-own: #d6eaff;
             --message-other: #f0e6fa;
             --message-ai: #e8f5e8;
-            --message-own-gradient: linear-gradient(135deg, #3498db, #2980b9);
-            --message-other-gradient: linear-gradient(135deg, #9b59b6, #8e44ad);
-            --message-ai-gradient: linear-gradient(135deg, #2ecc71, #27ae60);
             --admin-color: #e74c3c;
+            --moderator-color: #f39c12;
+            --vip-color: #9b59b6;
         }
 
         * {
@@ -33,73 +32,46 @@
             background: #f9f9f9;
             background-image: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%239C92AC' fill-opacity='0.05'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
             display: flex;
-            justify-content: center;
-            align-items: center;
+            flex-direction: column;
             min-height: 100vh;
-            padding: 20px;
         }
 
-        .container {
-            width: 100%;
-            max-width: 900px;
-            background-color: white;
-            border-radius: 16px;
-            overflow: hidden;
-            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+        .chat-container {
+            flex: 1;
             display: flex;
             flex-direction: column;
-            height: 85vh;
+            max-height: 100vh;
         }
 
         .chat-header {
             background: var(--bg-gradient);
             color: white;
-            padding: 20px;
+            padding: 15px 20px;
             text-align: center;
-            position: relative;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
         }
 
         .chat-header h2 {
-            font-size: 1.8rem;
+            font-size: 1.5rem;
             font-weight: 600;
             margin-bottom: 5px;
-        }
-
-        .chat-header p {
-            font-size: 0.9rem;
-            opacity: 0.9;
-        }
-
-        .ai-info {
-            font-size: 0.8rem;
-            margin-top: 5px;
-            padding: 5px 10px;
-            background-color: rgba(255, 255, 255, 0.1);
-            border-radius: 15px;
-            display: inline-block;
-        }
-
-        .admin-badge {
-            background: linear-gradient(135deg, #e74c3c, #c0392b);
-            color: white;
-            padding: 3px 8px;
-            border-radius: 10px;
-            font-size: 0.7rem;
-            margin-left: 5px;
-            font-weight: 600;
-            display: inline-flex;
+            display: flex;
             align-items: center;
-            gap: 3px;
+            justify-content: center;
+            gap: 10px;
         }
 
         .online-indicator {
-            padding: 7px 12px;
+            padding: 5px 12px;
             background-color: rgba(255, 255, 255, 0.2);
             border-radius: 20px;
             font-size: 0.8rem;
             display: inline-flex;
             align-items: center;
-            margin-top: 10px;
+            margin-top: 8px;
         }
 
         .online-indicator .dot {
@@ -124,61 +96,55 @@
         }
 
         @keyframes pulse {
-            0% {
-                transform: scale(1);
-                opacity: 0.7;
-            }
-            70% {
-                transform: scale(1.5);
-                opacity: 0;
-            }
-            100% {
-                transform: scale(1);
-                opacity: 0;
-            }
+            0% { transform: scale(1); opacity: 0.7; }
+            70% { transform: scale(1.5); opacity: 0; }
+            100% { transform: scale(1); opacity: 0; }
         }
 
         .user-info {
-            padding: 20px;
-            border-bottom: 1px solid #f1f1f1;
-            background-color: #f9f9f9;
+            padding: 15px 20px;
+            border-bottom: 1px solid #ddd;
+            background-color: white;
             display: flex;
             align-items: center;
-            flex-wrap: wrap;
             gap: 10px;
+            flex-wrap: wrap;
         }
 
         #username-input {
             flex: 1;
-            padding: 12px 15px;
-            border: 1px solid #ddd;
-            border-radius: 8px;
-            font-size: 1rem;
             min-width: 200px;
+            padding: 10px 15px;
+            border: 1px solid #ddd;
+            border-radius: 25px;
+            font-size: 1rem;
             transition: border-color 0.3s;
         }
 
         #username-input:focus {
             border-color: var(--accent-color);
             outline: none;
+            box-shadow: 0 0 0 3px rgba(52, 152, 219, 0.1);
         }
 
         #save-name-button {
-            padding: 12px 20px;
+            padding: 10px 20px;
             background: var(--accent-color);
             color: white;
             border: none;
-            border-radius: 8px;
+            border-radius: 25px;
             cursor: pointer;
             font-size: 1rem;
             font-weight: 500;
             transition: all 0.3s;
+            display: flex;
+            align-items: center;
+            gap: 5px;
         }
 
         #save-name-button:hover {
             background: #2980b9;
             transform: translateY(-2px);
-            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
         }
 
         .admin-controls {
@@ -188,6 +154,7 @@
             display: none;
             gap: 10px;
             align-items: center;
+            flex-wrap: wrap;
         }
 
         .admin-controls.show {
@@ -199,14 +166,18 @@
             background: rgba(255, 255, 255, 0.2);
             border: none;
             color: white;
-            border-radius: 5px;
+            border-radius: 15px;
             cursor: pointer;
             font-size: 0.8rem;
             transition: all 0.3s;
+            display: flex;
+            align-items: center;
+            gap: 5px;
         }
 
         .admin-btn:hover {
             background: rgba(255, 255, 255, 0.3);
+            transform: translateY(-1px);
         }
 
         .chat-messages {
@@ -218,15 +189,17 @@
             gap: 15px;
             background-color: #f9f9f9;
             background-image: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%239C92AC' fill-opacity='0.05'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
+            min-height: 0;
         }
 
         .message {
             max-width: 80%;
             padding: 12px 15px;
-            border-radius: 16px;
+            border-radius: 18px;
             position: relative;
             animation: fadeIn 0.3s;
-            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.08);
+            word-wrap: break-word;
         }
 
         @keyframes fadeIn {
@@ -293,15 +266,6 @@
             transform: scale(1.1);
         }
 
-        .edit-btn {
-            background: #f39c12;
-            color: white;
-        }
-
-        .edit-btn:hover {
-            background: #e67e22;
-        }
-
         .delete-btn {
             background: #e74c3c;
             color: white;
@@ -317,6 +281,7 @@
             margin-bottom: 5px;
             font-weight: 600;
             font-size: 0.85rem;
+            gap: 5px;
         }
 
         .user-message .message-info {
@@ -332,11 +297,37 @@
             color: #27ae60;
         }
 
+        .role-badge {
+            padding: 2px 6px;
+            border-radius: 10px;
+            font-size: 0.65rem;
+            font-weight: 600;
+            display: inline-flex;
+            align-items: center;
+            gap: 3px;
+            margin-left: 5px;
+        }
+
+        .admin-badge {
+            background: linear-gradient(135deg, #e74c3c, #c0392b);
+            color: white;
+        }
+
+        .vip-badge {
+            background: linear-gradient(135deg, #9b59b6, #8e44ad);
+            color: white;
+        }
+
+        .user-badge {
+            background: linear-gradient(135deg, #3498db, #2980b9);
+            color: white;
+        }
+
         .message-time {
             font-size: 0.75rem;
             font-weight: normal;
             opacity: 0.7;
-            margin-left: 5px;
+            margin-left: auto;
         }
 
         .message-text {
@@ -344,73 +335,14 @@
             word-break: break-word;
         }
 
-        .message-text.editing {
-            display: none;
-        }
-
-        .edit-input {
-            width: 100%;
-            padding: 8px;
-            border: 1px solid #ddd;
-            border-radius: 5px;
-            font-size: 0.9rem;
-            resize: vertical;
-            min-height: 60px;
-            display: none;
-        }
-
-        .edit-input.active {
-            display: block;
-        }
-
-        .edit-controls {
-            display: none;
-            gap: 5px;
-            margin-top: 8px;
-        }
-
-        .edit-controls.active {
-            display: flex;
-        }
-
-        .edit-save-btn, .edit-cancel-btn {
-            padding: 4px 8px;
-            border: none;
-            border-radius: 3px;
-            cursor: pointer;
-            font-size: 0.8rem;
-            transition: all 0.3s;
-        }
-
-        .edit-save-btn {
-            background: #27ae60;
-            color: white;
-        }
-
-        .edit-save-btn:hover {
-            background: #2ecc71;
-        }
-
-        .edit-cancel-btn {
-            background: #95a5a6;
-            color: white;
-        }
-
-        .edit-cancel-btn:hover {
-            background: #7f8c8d;
-        }
-
-        /* Improved AI message formatting */
+        /* AI message formatting */
         .ai-message .message-text {
             white-space: pre-wrap;
         }
 
         .ai-message .message-text h1,
         .ai-message .message-text h2,
-        .ai-message .message-text h3,
-        .ai-message .message-text h4,
-        .ai-message .message-text h5,
-        .ai-message .message-text h6 {
+        .ai-message .message-text h3 {
             color: #2c3e50;
             margin: 10px 0 5px 0;
             font-weight: 600;
@@ -452,16 +384,6 @@
             line-height: 1.4;
         }
 
-        .ai-message .message-text .code-block::before {
-            content: attr(data-lang);
-            position: absolute;
-            top: 5px;
-            right: 10px;
-            font-size: 0.7em;
-            color: #95a5a6;
-            text-transform: uppercase;
-        }
-
         .ai-message .message-text .inline-code {
             background: rgba(44, 62, 80, 0.1);
             color: #e74c3c;
@@ -469,13 +391,6 @@
             border-radius: 4px;
             font-family: 'Courier New', monospace;
             font-size: 0.9em;
-        }
-
-        .ai-message .message-text .highlight {
-            background: #fff3cd;
-            padding: 2px 4px;
-            border-radius: 3px;
-            border-left: 3px solid #ffc107;
         }
 
         .ai-thinking {
@@ -520,10 +435,13 @@
 
         .chat-input {
             display: flex;
-            padding: 15px;
+            padding: 15px 20px;
             background-color: white;
-            border-top: 1px solid #f1f1f1;
-            position: relative;
+            border-top: 1px solid #ddd;
+            position: sticky;
+            bottom: 0;
+            gap: 10px;
+            align-items: flex-end;
         }
 
         .message-input-container {
@@ -533,12 +451,14 @@
 
         #message-input {
             width: 100%;
-            padding: 15px;
-            padding-right: 45px;
+            padding: 12px 45px 12px 15px;
             border: 1px solid #ddd;
             border-radius: 25px;
             font-size: 1rem;
             transition: all 0.3s;
+            resize: none;
+            min-height: 44px;
+            max-height: 120px;
         }
 
         #message-input:focus {
@@ -549,7 +469,7 @@
 
         .emoji-button {
             position: absolute;
-            right: 15px;
+            right: 12px;
             top: 50%;
             transform: translateY(-50%);
             background: none;
@@ -568,63 +488,24 @@
             display: flex;
             align-items: center;
             justify-content: center;
-            width: 50px;
-            height: 50px;
+            width: 44px;
+            height: 44px;
             background: var(--bg-gradient);
             color: white;
             border: none;
             border-radius: 50%;
             cursor: pointer;
-            margin-left: 10px;
             transition: all 0.3s;
             box-shadow: 0 3px 10px rgba(0, 0, 0, 0.1);
         }
 
         #send-button i {
-            font-size: 1.2rem;
+            font-size: 1.1rem;
         }
 
         #send-button:hover {
             transform: scale(1.1);
             box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
-        }
-
-        .app-title {
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 10px;
-        }
-
-        .app-title i {
-            font-size: 1.5rem;
-        }
-
-        /* Animation for new messages */
-        @keyframes newMessage {
-            0% { transform: scale(0.8); opacity: 0; }
-            100% { transform: scale(1); opacity: 1; }
-        }
-
-        .new-message {
-            animation: newMessage 0.3s;
-        }
-
-        /* Dark mode toggle */
-        .theme-toggle {
-            position: absolute;
-            top: 15px;
-            right: 15px;
-            background: none;
-            border: none;
-            color: white;
-            font-size: 1.2rem;
-            cursor: pointer;
-            transition: transform 0.3s;
-        }
-
-        .theme-toggle:hover {
-            transform: rotate(30deg);
         }
 
         /* Scrollbar styling */
@@ -648,11 +529,6 @@
         /* Dark mode */
         body.dark-mode {
             background-color: #1a1a2e;
-        }
-
-        body.dark-mode .container {
-            background-color: #16213e;
-            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
         }
 
         body.dark-mode .chat-header {
@@ -691,12 +567,6 @@
             border-left-color: #2ecc71;
         }
 
-        body.dark-mode .edit-input {
-            background-color: #273859;
-            border: 1px solid #364f7e;
-            color: white;
-        }
-
         body.dark-mode .chat-input {
             background-color: #16213e;
             border-top: 1px solid #273859;
@@ -712,16 +582,134 @@
             color: #4A5683;
         }
 
+        /* Theme toggle */
+        .theme-toggle {
+            position: absolute;
+            top: 15px;
+            right: 15px;
+            background: rgba(255, 255, 255, 0.2);
+            border: none;
+            color: white;
+            font-size: 1.1rem;
+            cursor: pointer;
+            transition: all 0.3s;
+            border-radius: 50%;
+            width: 35px;
+            height: 35px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .theme-toggle:hover {
+            background: rgba(255, 255, 255, 0.3);
+            transform: rotate(180deg);
+        }
+
+        /* Confirmation modal */
+        .modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            display: none;
+            align-items: center;
+            justify-content: center;
+            z-index: 2000;
+        }
+
+        .modal.show {
+            display: flex;
+        }
+
+        .modal-content {
+            background: white;
+            padding: 25px;
+            border-radius: 15px;
+            text-align: center;
+            max-width: 400px;
+            width: 90%;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+        }
+
+        body.dark-mode .modal-content {
+            background: #273859;
+            color: white;
+        }
+
+        .modal-buttons {
+            display: flex;
+            gap: 10px;
+            justify-content: center;
+            margin-top: 20px;
+        }
+
+        .modal-btn {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 25px;
+            cursor: pointer;
+            font-weight: 500;
+            transition: all 0.3s;
+        }
+
+        .modal-btn.confirm {
+            background: #e74c3c;
+            color: white;
+        }
+
+        .modal-btn.confirm:hover {
+            background: #c0392b;
+            transform: translateY(-2px);
+        }
+
+        .modal-btn.cancel {
+            background: #95a5a6;
+            color: white;
+        }
+
+        .modal-btn.cancel:hover {
+            background: #7f8c8d;
+            transform: translateY(-2px);
+        }
+
         /* Mobile responsiveness */
-        @media (max-width: 600px) {
-            .container {
-                height: 95vh;
+        @media (max-width: 768px) {
+            .chat-header {
+                padding: 12px 15px;
+            }
+
+            .chat-header h2 {
+                font-size: 1.3rem;
+            }
+
+            .user-info {
+                padding: 12px 15px;
+                flex-direction: column;
+                align-items: stretch;
+            }
+
+            #username-input, #save-name-button {
                 width: 100%;
-                border-radius: 10px;
+                min-width: unset;
+            }
+
+            .admin-controls {
+                padding: 8px 15px;
+                flex-direction: column;
+                align-items: stretch;
+            }
+
+            .chat-messages {
+                padding: 15px;
+                gap: 12px;
             }
 
             .message {
-                max-width: 85%;
+                max-width: 90%;
+                font-size: 0.95rem;
             }
 
             .ai-message {
@@ -732,16 +720,48 @@
                 right: -35px;
             }
 
-            .chat-header h2 {
-                font-size: 1.5rem;
+            .chat-input {
+                padding: 12px 15px;
+                gap: 8px;
             }
 
-            .user-info {
-                padding: 15px;
+            #message-input {
+                padding: 10px 40px 10px 12px;
+                min-height: 40px;
             }
 
-            #username-input, #save-name-button {
-                width: 100%;
+            #send-button {
+                width: 40px;
+                height: 40px;
+            }
+
+            .theme-toggle {
+                width: 30px;
+                height: 30px;
+                font-size: 1rem;
+                top: 12px;
+                right: 12px;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .chat-messages {
+                padding: 12px;
+                gap: 10px;
+            }
+
+            .message {
+                max-width: 95%;
+                padding: 10px 12px;
+                font-size: 0.9rem;
+            }
+
+            .message-info {
+                font-size: 0.8rem;
+            }
+
+            .message-time {
+                font-size: 0.7rem;
             }
         }
 
@@ -769,78 +789,32 @@
             color: #2ecc71;
         }
 
-        /* Confirmation modal */
-        .modal {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: rgba(0, 0, 0, 0.5);
-            display: none;
-            align-items: center;
-            justify-content: center;
-            z-index: 2000;
+        /* Animation classes */
+        @keyframes fadeOut {
+            from { opacity: 1; transform: translateX(0); }
+            to { opacity: 0; transform: translateX(-100px); }
         }
 
-        .modal.show {
-            display: flex;
+        .new-message {
+            animation: newMessage 0.3s;
         }
 
-        .modal-content {
-            background: white;
-            padding: 20px;
-            border-radius: 10px;
-            text-align: center;
-            max-width: 400px;
-            width: 90%;
-        }
-
-        body.dark-mode .modal-content {
-            background: #273859;
-            color: white;
-        }
-
-        .modal-buttons {
-            display: flex;
-            gap: 10px;
-            justify-content: center;
-            margin-top: 15px;
-        }
-
-        .modal-btn {
-            padding: 8px 16px;
-            border: none;
-            border-radius: 5px;
-            cursor: pointer;
-            font-weight: 500;
-        }
-
-        .modal-btn.confirm {
-            background: #e74c3c;
-            color: white;
-        }
-
-        .modal-btn.cancel {
-            background: #95a5a6;
-            color: white;
+        @keyframes newMessage {
+            0% { transform: scale(0.8); opacity: 0; }
+            100% { transform: scale(1); opacity: 1; }
         }
     </style>
 </head>
 <body>
-    <div class="container">
+    <div class="chat-container">
         <div class="chat-header">
             <button class="theme-toggle" id="theme-toggle">
                 <i class="fas fa-moon"></i>
             </button>
-            <div class="app-title">
+            <h2>
                 <i class="fas fa-comment-dots"></i>
-                <h2>Hengki ChatBox</h2>
-            </div>
-            <p>Chat langsung dengan pengguna di seluruh dunia</p>
-            <div class="ai-info">
-                <i class="fas fa-robot"></i> Ketik /ai [pesan] untuk chat dengan AI
-            </div>
+                Hengki Chat
+            </h2>
             <div class="online-indicator">
                 <div class="dot"></div>
                 <span id="online-count">Menghubungkan...</span>
@@ -868,7 +842,7 @@
         
         <div class="chat-input">
             <div class="message-input-container">
-                <input type="text" id="message-input" placeholder="Ketik pesan... (atau /ai untuk chat dengan AI)">
+                <textarea id="message-input" placeholder="Ketik pesan... (atau /ai untuk chat dengan AI)" rows="1"></textarea>
                 <button class="emoji-button" id="emoji-button">
                     <i class="far fa-smile"></i>
                 </button>
@@ -931,9 +905,18 @@
         const modalConfirm = document.getElementById('modal-confirm');
         const modalCancel = document.getElementById('modal-cancel');
 
-        // Admin functionality
-        let isAdmin = false;
-        let currentEditingMessage = null;
+        // User roles and admin functionality
+        let userRole = 'user';
+        let userId = localStorage.getItem('userId');
+        if (!userId) {
+            userId = database.ref().push().key;
+            localStorage.setItem('userId', userId);
+        }
+
+        // Admin security - only specific username with additional verification
+        const ADMIN_USERNAME = 'hengki';
+        const ADMIN_SECRET_KEY = 'Hengki141516';
+        let adminVerified = false;
 
         // Load theme preference
         const isDarkMode = localStorage.getItem('darkMode') === 'true';
@@ -950,26 +933,98 @@
             themeToggle.innerHTML = isDark ? '<i class="fas fa-sun"></i>' : '<i class="fas fa-moon"></i>';
         });
 
-        // Username handling with admin check
+        // Username handling with role assignment
         let username = localStorage.getItem('username') || 'User_' + Math.floor(Math.random() * 10000);
         usernameInput.value = username;
-        checkAdminStatus();
+        checkUserRole();
 
-        function checkAdminStatus() {
-            isAdmin = username.toLowerCase() === 'hengki';
-            if (isAdmin) {
+        function getUserRole(username) {
+            const lowerUsername = username.toLowerCase().trim();
+            
+            if (lowerUsername === ADMIN_USERNAME) {
+                return 'admin';
+            }
+            
+            // VIP users (you can add more usernames here)
+            const vipUsers = ['guest', 'demo', 'test'];
+            if (vipUsers.includes(lowerUsername)) {
+                return 'vip';
+            }
+            
+            return 'user';
+        }
+
+        function checkUserRole() {
+            const newRole = getUserRole(username);
+            userRole = newRole;
+            
+            // Only show admin controls if user is admin AND verified
+            if (userRole === 'admin' && adminVerified) {
                 adminControls.classList.add('show');
             } else {
                 adminControls.classList.remove('show');
             }
         }
 
-        saveNameButton.addEventListener('click', () => {
+        // Admin verification system
+        async function verifyAdmin() {
+            if (userRole !== 'admin') return false;
+            
+            try {
+                // Simple verification using prompt (in production, use more secure method)
+                const secretInput = prompt('Masukkan kode verifikasi admin:');
+                if (secretInput === ADMIN_SECRET_KEY) {
+                    adminVerified = true;
+                    localStorage.setItem('adminSession', Date.now().toString());
+                    return true;
+                }
+            } catch (error) {
+                console.error('Admin verification error:', error);
+            }
+            
+            adminVerified = false;
+            return false;
+        }
+
+        // Check admin session on load
+        function checkAdminSession() {
+            if (userRole === 'admin') {
+                const adminSession = localStorage.getItem('adminSession');
+                if (adminSession) {
+                    const sessionTime = parseInt(adminSession);
+                    const currentTime = Date.now();
+                    // Session expires after 1 hour
+                    if (currentTime - sessionTime < 3600000) {
+                        adminVerified = true;
+                        adminControls.classList.add('show');
+                    } else {
+                        localStorage.removeItem('adminSession');
+                        adminVerified = false;
+                    }
+                }
+            }
+        }
+
+        saveNameButton.addEventListener('click', async () => {
             const newUsername = usernameInput.value.trim();
             if (newUsername) {
                 username = newUsername;
                 localStorage.setItem('username', username);
-                checkAdminStatus();
+                
+                const oldRole = userRole;
+                checkUserRole();
+                
+                // If user is trying to become admin, verify them
+                if (userRole === 'admin' && !adminVerified) {
+                    const verified = await verifyAdmin();
+                    if (!verified) {
+                        alert('Verifikasi admin gagal. Akses ditolak.');
+                        userRole = 'user';
+                        adminControls.classList.remove('show');
+                    }
+                }
+                
+                checkUserRole();
                 
                 saveNameButton.innerHTML = '<i class="fas fa-check"></i> Tersimpan!';
                 saveNameButton.style.backgroundColor = '#2ecc71';
@@ -980,6 +1035,9 @@
                 }, 2000);
             }
         });
+
+        // Check admin session on page load
+        checkAdminSession();
 
         // Modal functions
         function showModal(title, message, confirmText, onConfirm) {
@@ -1011,7 +1069,7 @@
 
         // Admin functions
         function clearAllMessages() {
-            if (!isAdmin) return;
+            if (userRole !== 'admin' || !adminVerified) return;
             
             showModal(
                 'Hapus Semua Chat',
@@ -1028,8 +1086,14 @@
             );
         }
 
-        function deleteMessage(messageId, messageElement) {
-            if (!isAdmin) return;
+        // Delete message function (admin can delete any message, users can only delete their own)
+        function deleteMessage(messageId, messageElement, messageUsername) {
+            const canDelete = (userRole === 'admin' && adminVerified) || messageUsername === username;
+            
+            if (!canDelete) {
+                alert('Anda hanya dapat menghapus pesan Anda sendiri.');
+                return;
+            }
             
             showModal(
                 'Hapus Pesan',
@@ -1043,7 +1107,7 @@
                                 messageElement.remove();
                             }
                         }, 300);
-                        console.log('Message deleted by admin:', messageId);
+                        console.log('Message deleted:', messageId);
                     }).catch(error => {
                         console.error('Error deleting message:', error);
                     });
@@ -1051,62 +1115,15 @@
             );
         }
 
-        function editMessage(messageId, messageElement, originalText) {
-            if (!isAdmin || currentEditingMessage) return;
-            
-            currentEditingMessage = messageId;
-            const messageText = messageElement.querySelector('.message-text');
-            const editInput = messageElement.querySelector('.edit-input');
-            const editControls = messageElement.querySelector('.edit-controls');
-            
-            // Show edit interface
-            messageText.classList.add('editing');
-            editInput.classList.add('active');
-            editControls.classList.add('active');
-            editInput.value = originalText;
-            editInput.focus();
-        }
-
-        function saveEdit(messageId, messageElement) {
-            const editInput = messageElement.querySelector('.edit-input');
-            const newText = editInput.value.trim();
-            
-            if (!newText) return;
-            
-            messagesRef.child(messageId).update({
-                text: newText,
-                edited: true,
-                editedAt: firebase.database.ServerValue.TIMESTAMP
-            }).then(() => {
-                cancelEdit(messageElement);
-                console.log('Message edited by admin:', messageId);
-            }).catch(error => {
-                console.error('Error editing message:', error);
-            });
-        }
-
-        function cancelEdit(messageElement) {
-            const messageText = messageElement.querySelector('.message-text');
-            const editInput = messageElement.querySelector('.edit-input');
-            const editControls = messageElement.querySelector('.edit-controls');
-            
-            messageText.classList.remove('editing');
-            editInput.classList.remove('active');
-            editControls.classList.remove('active');
-            currentEditingMessage = null;
-        }
-
         // Online presence
-        let userId = localStorage.getItem('userId');
-        if (!userId) {
-            userId = database.ref().push().key;
-            localStorage.setItem('userId', userId);
-        }
-
         connectedRef.on('value', (snap) => {
             if (snap.val() === true) {
                 const userRef = onlineRef.child(userId);
-                userRef.set(true);
+                userRef.set({
+                    username: username,
+                    role: userRole,
+                    timestamp: firebase.database.ServerValue.TIMESTAMP
+                });
                 userRef.onDisconnect().remove();
             }
         });
@@ -1121,7 +1138,6 @@
         function formatAIResponse(text) {
             if (!text) return '';
 
-            // Escape HTML first to prevent XSS
             const escapeHtml = (unsafe) => {
                 return unsafe
                     .replace(/&/g, "&amp;")
@@ -1133,7 +1149,7 @@
 
             let formatted = text;
 
-            // Handle code blocks first (```language or ```)
+            // Handle code blocks
             formatted = formatted.replace(/```(\w+)?\n?([\s\S]*?)```/g, (match, lang, code) => {
                 const language = lang || 'text';
                 const escapedCode = escapeHtml(code.trim());
@@ -1161,22 +1177,12 @@
             // Handle strikethrough
             formatted = formatted.replace(/~~([^~]+)~~/g, '<del>$1</del>');
 
-            // Handle highlights
-            formatted = formatted.replace(/==([^=]+)==/g, '<span class="highlight">$1</span>');
-
             // Handle blockquotes
             formatted = formatted.replace(/^> (.+)$/gim, '<blockquote>$1</blockquote>');
 
             // Handle unordered lists
             formatted = formatted.replace(/^[\s]*[-*+]\s+(.+)$/gim, '<li>$1</li>');
             formatted = formatted.replace(/(<li>.*<\/li>)/s, '<ul>$1</ul>');
-
-            // Handle ordered lists
-            formatted = formatted.replace(/^[\s]*\d+\.\s+(.+)$/gim, '<li>$1</li>');
-            
-            // Fix nested lists
-            formatted = formatted.replace(/(<\/ul>)\s*(<ul>)/g, '$2');
-            formatted = formatted.replace(/(<\/ol>)\s*(<ol>)/g, '$2');
 
             // Handle line breaks
             formatted = formatted.replace(/\n\n/g, '<br><br>');
@@ -1209,7 +1215,7 @@
             });
         };
 
-        // AI functionality with improved error handling
+        // AI functionality
         async function callAI(query) {
             try {
                 const response = await fetch(`https://api.siputzx.my.id/api/ai/metaai?query=${encodeURIComponent(query)}`);
@@ -1262,6 +1268,12 @@
             return thinkingElement;
         }
 
+        // Auto-resize textarea
+        messageInput.addEventListener('input', function() {
+            this.style.height = 'auto';
+            this.style.height = Math.min(this.scrollHeight, 120) + 'px';
+        });
+
         // Enhanced send message function
         async function sendMessage() {
             const message = messageInput.value.trim();
@@ -1275,22 +1287,20 @@
                         newMessageRef.set({
                             id: newMessageRef.key,
                             username: username,
+                            userRole: userRole,
+                            userId: userId,
                             text: message,
                             timestamp: firebase.database.ServerValue.TIMESTAMP
                         });
                         
                         messageInput.value = '';
+                        messageInput.style.height = 'auto';
                         
                         // Show thinking indicator
                         const thinkingElement = showAIThinking();
                         
-                        // Call AI API with timeout
-                        const timeoutPromise = new Promise((_, reject) => 
-                            setTimeout(() => reject(new Error('Request timeout')), 30000)
-                        );
-
                         try {
-                            const aiResponse = await Promise.race([callAI(aiQuery), timeoutPromise]);
+                            const aiResponse = await callAI(aiQuery);
                             
                             // Remove thinking indicator
                             if (thinkingElement && thinkingElement.parentNode) {
@@ -1302,6 +1312,7 @@
                             aiMessageRef.set({
                                 id: aiMessageRef.key,
                                 username: 'AI Assistant',
+                                userRole: 'ai',
                                 text: aiResponse,
                                 timestamp: firebase.database.ServerValue.TIMESTAMP,
                                 isAI: true
@@ -1314,16 +1325,14 @@
                                 thinkingElement.remove();
                             }
                             
-                            let errorMessage = 'Maaf, terjadi kesalahan saat menghubungi AI.';
-                            if (error.message === 'Request timeout') {
-                                errorMessage = 'Maaf, permintaan timeout. AI mungkin sedang sibuk, silakan coba lagi.';
-                            }
+                            const errorMessage = 'Maaf, terjadi kesalahan saat menghubungi AI. Silakan coba lagi nanti.';
                             
                             // Send error message
                             const errorMessageRef = messagesRef.push();
                             errorMessageRef.set({
                                 id: errorMessageRef.key,
                                 username: 'AI Assistant',
+                                userRole: 'ai',
                                 text: errorMessage,
                                 timestamp: firebase.database.ServerValue.TIMESTAMP,
                                 isAI: true
@@ -1335,11 +1344,13 @@
                         helpMessageRef.set({
                             id: helpMessageRef.key,
                             username: 'AI Assistant',
+                            userRole: 'ai',
                             text: 'Silakan masukkan pertanyaan setelah /ai\n\nContoh:\n• `/ai Jelaskan tentang JavaScript`\n• `/ai Bagaimana cara belajar programming?`\n• `/ai Buatkan contoh kode HTML sederhana`',
                             timestamp: firebase.database.ServerValue.TIMESTAMP,
                             isAI: true
                         });
                         messageInput.value = '';
+                        messageInput.style.height = 'auto';
                     }
                 } else {
                     // Regular message
@@ -1347,10 +1358,13 @@
                     newMessageRef.set({
                         id: newMessageRef.key,
                         username: username,
+                        userRole: userRole,
+                        userId: userId,
                         text: message,
                         timestamp: firebase.database.ServerValue.TIMESTAMP
                     });
                     messageInput.value = '';
+                    messageInput.style.height = 'auto';
                 }
             }
         }
@@ -1358,7 +1372,8 @@
         // Event listeners
         sendButton.addEventListener('click', sendMessage);
         messageInput.addEventListener('keypress', (e) => {
-            if (e.key === 'Enter') {
+            if (e.key === 'Enter' && !e.shiftKey) {
+                e.preventDefault();
                 sendMessage();
             }
         });
@@ -1378,8 +1393,8 @@
             emojiPicker = document.createElement('div');
             emojiPicker.style.cssText = `
                 position: absolute;
-                bottom: 70px;
-                right: 20px;
+                bottom: 60px;
+                right: 0;
                 background: white;
                 border-radius: 10px;
                 padding: 10px;
@@ -1396,9 +1411,9 @@
             }
 
             emojis.forEach(emoji => {
-                const emojiButton = document.createElement('button');
-                emojiButton.innerText = emoji;
-                emojiButton.style.cssText = `
+                const emojiBtn = document.createElement('button');
+                emojiBtn.innerText = emoji;
+                emojiBtn.style.cssText = `
                     background: none;
                     border: none;
                     font-size: 1.5rem;
@@ -1408,43 +1423,34 @@
                     padding: 5px;
                 `;
 
-                emojiButton.addEventListener('mouseover', () => {
-                    emojiButton.style.transform = 'scale(1.2)';
-                    emojiButton.style.background = 'rgba(0,0,0,0.1)';
+                emojiBtn.addEventListener('mouseover', () => {
+                    emojiBtn.style.transform = 'scale(1.2)';
+                    emojiBtn.style.background = 'rgba(0,0,0,0.1)';
                 });
 
-                emojiButton.addEventListener('mouseout', () => {
-                    emojiButton.style.transform = 'scale(1)';
-                    emojiButton.style.background = 'none';
+                emojiBtn.addEventListener('mouseout', () => {
+                    emojiBtn.style.transform = 'scale(1)';
+                    emojiBtn.style.background = 'none';
                 });
 
-                emojiButton.addEventListener('click', () => {
+                emojiBtn.addEventListener('click', () => {
                     messageInput.value += emoji;
                     emojiPicker.remove();
                     emojiPickerVisible = false;
                     messageInput.focus();
                 });
 
-                emojiPicker.appendChild(emojiButton);
+                emojiPicker.appendChild(emojiBtn);
             });
 
-            document.querySelector('.chat-input').appendChild(emojiPicker);
+            document.querySelector('.message-input-container').appendChild(emojiPicker);
             emojiPickerVisible = true;
         });
 
-        // Listen for new messages with real-time updates
+        // Listen for new messages
         messagesRef.orderByChild('timestamp').limitToLast(50).on('child_added', (snapshot) => {
             const message = snapshot.val();
             displayMessage(message);
-        });
-
-        // Listen for message updates (edits)
-        messagesRef.on('child_changed', (snapshot) => {
-            const message = snapshot.val();
-            const messageElement = document.getElementById(message.id);
-            if (messageElement) {
-                updateMessageDisplay(messageElement, message);
-            }
         });
 
         // Listen for message deletions
@@ -1461,40 +1467,13 @@
             }
         });
 
-        // Update message display for edits
-        function updateMessageDisplay(messageElement, message) {
-            const messageText = messageElement.querySelector('.message-text');
-            const isAI = message.isAI || message.username === 'AI Assistant';
-            
-            let formattedText;
-            if (isAI) {
-                formattedText = formatAIResponse(message.text);
-            } else {
-                formattedText = formatRegularMessage(message.text);
-            }
-            
-            messageText.innerHTML = formattedText;
-            
-            // Add edited indicator
-            if (message.edited) {
-                const editedIndicator = messageElement.querySelector('.edited-indicator');
-                if (!editedIndicator) {
-                    const indicator = document.createElement('span');
-                    indicator.className = 'edited-indicator';
-                    indicator.style.cssText = 'font-size: 0.7rem; opacity: 0.7; margin-left: 5px;';
-                    indicator.innerHTML = '<i class="fas fa-edit"></i> diedit';
-                    messageElement.querySelector('.message-info').appendChild(indicator);
-                }
-            }
-        }
-
-        // Enhanced display message function with admin controls
+        // Enhanced display message function with role badges and delete controls
         function displayMessage(message) {
+            if (!message || !message.id) return;
+            
             // Prevent duplicate messages
             const existingMessage = document.getElementById(message.id);
-            if (existingMessage) {
-                return;
-            }
+            if (existingMessage) return;
 
             const messageElement = document.createElement('div');
             messageElement.id = message.id;
@@ -1519,16 +1498,31 @@
             
             let usernameDisplay = message.username;
             let iconHtml = '';
+            let roleBadge = '';
             
             if (isAI) {
                 iconHtml = '<i class="fas fa-robot"></i> ';
                 usernameDisplay = 'AI Assistant';
-            } else if (message.username.toLowerCase() === 'hengki') {
-                iconHtml = '<i class="fas fa-crown"></i> ';
-                usernameDisplay += '<span class="admin-badge"><i class="fas fa-shield-alt"></i> ADMIN</span>';
+            } else {
+                // Add role badges
+                const msgRole = message.userRole || 'user';
+                switch(msgRole) {
+                    case 'admin':
+                        iconHtml = '<i class="fas fa-crown"></i> ';
+                        roleBadge = '<span class="role-badge admin-badge"><i class="fas fa-shield-alt"></i> ADMIN</span>';
+                        break;
+                    case 'vip':
+                        iconHtml = '<i class="fas fa-star"></i> ';
+                        roleBadge = '<span class="role-badge vip-badge"><i class="fas fa-gem"></i> VIP</span>';
+                        break;
+                    default:
+                        iconHtml = '<i class="fas fa-user"></i> ';
+                        roleBadge = '<span class="role-badge user-badge"><i class="fas fa-user"></i> USER</span>';
+                        break;
+                }
             }
             
-            // Format message text based on type
+            // Format message text
             let formattedText;
             if (isAI) {
                 formattedText = formatAIResponse(message.text);
@@ -1536,44 +1530,27 @@
                 formattedText = formatRegularMessage(message.text);
             }
             
-            // Admin controls HTML
-            let adminControlsHtml = '';
-            if (isAdmin && !isAI) {
-                adminControlsHtml = `
+            // Delete button (users can delete their own messages, admins can delete any non-AI message)
+            let deleteButtonHtml = '';
+            const canDelete = isCurrentUser || (userRole === 'admin' && adminVerified && !isAI);
+            
+            if (canDelete) {
+                deleteButtonHtml = `
                     <div class="message-actions">
-                        <button class="message-action-btn edit-btn" onclick="editMessage('${message.id}', this.closest('.message'), '${message.text.replace(/'/g, "\\'")}')">
-                            <i class="fas fa-edit"></i>
-                        </button>
-                        <button class="message-action-btn delete-btn" onclick="deleteMessage('${message.id}', this.closest('.message'))">
+                        <button class="message-action-btn delete-btn" onclick="deleteMessage('${message.id}', this.closest('.message'), '${message.username}')">
                             <i class="fas fa-trash"></i>
                         </button>
                     </div>
                 `;
             }
             
-            // Edited indicator
-            let editedIndicator = '';
-            if (message.edited) {
-                editedIndicator = '<span class="edited-indicator" style="font-size: 0.7rem; opacity: 0.7; margin-left: 5px;"><i class="fas fa-edit"></i> diedit</span>';
-            }
-            
             messageElement.innerHTML = `
                 <div class="message-info">
-                    ${iconHtml}${usernameDisplay} 
+                    ${iconHtml}${usernameDisplay}${roleBadge}
                     <span class="message-time">${formattedTime}</span>
-                    ${editedIndicator}
                 </div>
                 <div class="message-text">${formattedText}</div>
-                <textarea class="edit-input" placeholder="Edit pesan..."></textarea>
-                <div class="edit-controls">
-                    <button class="edit-save-btn" onclick="saveEdit('${message.id}', this.closest('.message'))">
-                        <i class="fas fa-check"></i> Simpan
-                    </button>
-                    <button class="edit-cancel-btn" onclick="cancelEdit(this.closest('.message'))">
-                        <i class="fas fa-times"></i> Batal
-                    </button>
-                </div>
-                ${adminControlsHtml}
+                ${deleteButtonHtml}
             `;
             
             chatMessages.appendChild(messageElement);
@@ -1585,11 +1562,10 @@
             }, 300);
         }
 
-        // Format regular message text (for non-AI messages)
+        // Format regular message text
         function formatRegularMessage(text) {
             if (!text) return '';
             
-            // Escape HTML to prevent XSS
             const escapeHtml = (unsafe) => {
                 return unsafe
                     .replace(/&/g, "&amp;")
@@ -1605,7 +1581,7 @@
             const urlRegex = /(https?:\/\/[^\s]+)/g;
             formatted = formatted.replace(urlRegex, '<a href="$1" target="_blank" style="color: #3498db; text-decoration: underline;">$1</a>');
             
-            // Simple formatting for regular messages
+            // Simple formatting
             formatted = formatted.replace(/\*\*([^*]+)\*\*/g, '<strong>$1</strong>');
             formatted = formatted.replace(/\*([^*]+)\*/g, '<em>$1</em>');
             formatted = formatted.replace(/`([^`]+)`/g, '<span class="inline-code">$1</span>');
@@ -1618,7 +1594,7 @@
 
         // Close emoji picker when clicking outside
         document.addEventListener('click', (e) => {
-            if (emojiPickerVisible && !e.target.closest('.emoji-button') && !e.target.closest('#emoji-picker')) {
+            if (emojiPickerVisible && !e.target.closest('.emoji-button') && !e.target.closest('.message-input-container div')) {
                 if (emojiPicker) {
                     emojiPicker.remove();
                     emojiPickerVisible = false;
@@ -1633,42 +1609,17 @@
             }
         });
 
-        // Auto-scroll to bottom when new messages arrive
-        const observer = new MutationObserver(() => {
-            chatMessages.scrollTop = chatMessages.scrollHeight;
-        });
-        
-        observer.observe(chatMessages, { childList: true });
-
-        // Add fadeOut animation
-        const style = document.createElement('style');
-        style.textContent = `
-            @keyframes fadeOut {
-                from { opacity: 1; transform: translateX(0); }
-                to { opacity: 0; transform: translateX(-100px); }
-            }
-        `;
-        document.head.appendChild(style);
-
-        // Initial welcome messages
+        // Initial welcome message
         setTimeout(() => {
             displayMessage({
-                id: 'welcome',
-                username: 'Hengki ChatBox',
-                text: '🎉 **Selamat datang di Hengki ChatBox!**\n\n💬 Chat dengan pengguna lain secara real-time\n🤖 Ketik `/ai [pertanyaan]` untuk chat dengan AI\n👑 Username "hengki" memiliki akses admin untuk mengedit dan menghapus pesan\n\n**Contoh penggunaan AI:**\n• `/ai Jelaskan tentang JavaScript`\n• `/ai Buatkan kode HTML sederhana`\n• `/ai Bagaimana cara belajar programming?`',
-                timestamp: Date.now()
+                id: 'welcome-' + Date.now(),
+                username: 'System',
+                userRole: 'system',
+                text: '🎉 **Selamat datang di Hengki Chat!**\n\n💬 Chat dengan pengguna lain secara real-time\n🤖 Ketik `/ai [pertanyaan]` untuk chat dengan AI\n🗑️ Klik ikon sampah untuk menghapus pesan Anda sendiri\n\n**Contoh AI:**\n• `/ai Jelaskan JavaScript`\n• `/ai Buatkan kode HTML`',
+                timestamp: Date.now(),
+                isAI: false
             });
         }, 1000);
-
-        setTimeout(() => {
-            displayMessage({
-                id: 'ai-help',
-                username: 'AI Assistant',
-                text: '🤖 **Halo! Saya AI Assistant**\n\nSaya dapat membantu Anda dengan:\n\n• **Programming** - Menjelaskan konsep dan membuat kode\n• **Pembelajaran** - Memberikan tutorial dan penjelasan\n• **Problem Solving** - Membantu menyelesaikan masalah\n• **Informasi Umum** - Menjawab pertanyaan sehari-hari\n\n*Gunakan format: `/ai [pertanyaan Anda]`*\n\n✨ **Tips:** Berikan pertanyaan yang spesifik untuk mendapatkan jawaban yang lebih akurat!',
-                timestamp: Date.now(),
-                isAI: true
-            });
-        }, 2500);
     </script>
 </body>
 </html>
