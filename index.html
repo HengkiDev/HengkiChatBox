@@ -1280,6 +1280,7 @@
         <div class="modal-content call-modal-content">
             <h3 id="call-status">Menghubungkan...</h3>
             <p id="call-participant"></p>
+            <audio id="remote-audio" autoplay></audio>
             <div class="call-controls">
                 <button class="call-control-btn mute" id="mute-button">
                     <i class="fas fa-microphone"></i>
@@ -1763,9 +1764,7 @@
                 };
 
                 peerConnection.ontrack = (event) => {
-                    const remoteAudio = new Audio();
-                    remoteAudio.srcObject = event.streams[0];
-                    remoteAudio.play();
+                    document.getElementById('remote-audio').srcObject = event.streams[0];
                 };
 
                 const callId = database.ref().push().key;
@@ -1857,9 +1856,7 @@
                         };
 
                         peerConnection.ontrack = (event) => {
-                            const remoteAudio = new Audio();
-                            remoteAudio.srcObject = event.streams[0];
-                            remoteAudio.play();
+                            document.getElementById('remote-audio').srcObject = event.streams[0];
                         };
 
                         await peerConnection.setRemoteDescription(new RTCSessionDescription(callData.offer));
@@ -1917,6 +1914,7 @@
             isMuted = false;
             muteButton.classList.remove('muted');
             muteButton.innerHTML = '<i class="fas fa-microphone"></i>';
+            document.getElementById('remote-audio').srcObject = null;
         }
 
         muteButton.addEventListener('click', () => {
@@ -2185,7 +2183,7 @@
                     messageInput.style.height = 'auto';
                     // Show notification for regular message
                     showNotification(`${username} sent a message`, {
-                                              body: message.substring(0, 50) + (message.length > 50 ? '...' : ''),
+                        body: message.substring(0, 50) + (message.length > 50 ? '...' : ''),
                         icon: '/path/to/icon.png' // Replace with your icon path
                     });
                 }
@@ -2345,14 +2343,31 @@
                     waveform.appendChild(bar);
                 }
 
+                function displayDuration(duration) {
+                    if (isNaN(duration) || !isFinite(duration)) {
+                        durationElement.textContent = '00:00';
+                    } else {
+                        const minutes = Math.floor(duration / 60);
+                        const seconds = Math.floor(duration % 60);
+                        durationElement.textContent = `${minutes}:${seconds.toString().padStart(2, '0')}`;
+                    }
+                }
+
                 audio.addEventListener('loadedmetadata', () => {
-                    const duration = audio.duration;
-                    const minutes = Math.floor(duration / 60);
-                    const seconds = Math.floor(duration % 60);
-                    durationElement.textContent = `${minutes}:${seconds.toString().padStart(2, '0')}`;
+                    if (audio.duration === Infinity || isNaN(audio.duration)) {
+                        audio.currentTime = Number.MAX_SAFE_INTEGER;
+                        audio.addEventListener('timeupdate', function handler() {
+                            displayDuration(audio.duration);
+                            audio.currentTime = 0;
+                            audio.removeEventListener('timeupdate', handler);
+                        }, {once: true});
+                    } else {
+                        displayDuration(audio.duration);
+                    }
                 });
 
                 audio.addEventListener('timeupdate', () => {
+                    if (isNaN(audio.duration) || audio.duration === Infinity) return;
                     const progress = audio.currentTime / audio.duration;
                     const bars = waveform.querySelectorAll('.wave-bar');
                     const playedBars = Math.floor(progress * barCount);
