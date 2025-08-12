@@ -1319,7 +1319,7 @@ body.dark-mode #speaker-select {
     <script src="https://cdnjs.cloudflare.com/ajax/libs/firebase/9.22.1/firebase-database-compat.js"></script>
 
     <script>
-       // Firebase configuration
+      // Firebase configuration
 const firebaseConfig = {
     apiKey: "AIzaSyAUYUeL05u0USxJzjrKzPChHVQRjANCDiw",
     authDomain: "chating-befb6.firebaseapp.com",
@@ -1377,6 +1377,419 @@ let peerConnection = null;
 let currentCallId = null;
 let isMuted = false;
 let isCalling = false;
+
+// WebRTC configuration with robust ICE servers
+const servers = {
+    iceServers: [
+        { urls: 'stun:stun.l.google.com:19302' },
+        { urls: 'stun:stun1.l.google.com:19302' },
+        { urls: 'stun:stun2.l.google.com:19302' },
+        // Replace with your own TURN server credentials for production
+        {
+            urls: 'turn:your-turn-server.com:3478',
+            username: 'your-username',
+            credential: 'your-credential'
+        },
+        {
+            urls: 'turn:your-turn-server.com:3478?transport=tcp',
+            username: 'your-username',
+            credential: 'your-credential'
+        }
+    ]
+};
+
+// Speaker selection
+let audioDevices = [];
+
+async function updateAudioDevices() {
+    try {
+        const devices = await navigator.mediaDevices.enumerateDevices();
+        audioDevices = devices.filter(device => device.kind === 'audiooutput');
+        const speakerSelect = document.getElementById('speaker-select');
+        if (speakerSelect) {
+            speakerSelect.innerHTML = '<option value="">Pilih Speaker</option>';
+            audioDevices.forEach(device => {
+                const option = document.createElement('option');
+                option.value = device.deviceId;
+                option.textContent = device.label || `Speaker ${audioDevices.indexOf(device) + 1}`;
+                speakerSelect.appendChild(option);
+            });
+        }
+    } catch (error) {
+        console.error('Error enumerating audio devices:', error);
+        alert('Gagal memuat daftar perangkat audio. Pastikan izin audio diberikan.');
+    }
+}
+
+async function setAudioOutput(deviceId) {
+    try {
+        if (deviceId && remoteAudio.setSinkId) {
+            await remoteAudio.setSinkId(deviceId);
+            console.log(`Audio output set to device: ${deviceId}`);
+        }
+    } catch (error) {
+        console.error('Error setting audio output:', error);
+        alert('Gagal mengganti speaker. Pastikan perangkat audio tersedia.');
+    }
+}
+
+// Call modal functions
+function showCallModal() {
+    callUserList.innerHTML = '';
+    onlineRef.once('value', (snapshot) => {
+        const users = snapshot.val() || {};
+        const currentTime = Date.now();
+        Object.entries(users).forEach(([id, user]) => {
+            if (id === userId) return; // Skip current user
+            const timeDiff = currentTime - user.timestamp;
+            const isOnline = timeDiff < 30000;
+            const userItem = document.createElement('div');
+            userItem.className = 'call-user-item';
+            userItem.innerHTML = `
+                <i class="fas fa-user user-icon"></i>
+                <span class="user-name">${user.username}</span>
+                <span class="call-status ${isOnline ? 'online' : 'offline'}">${isOnline ? 'Online' : 'Offline'}</span>
+            `;
+            if (isOnline) {
+                userItem.addEventListener('click', () => {
+                    initiateCall(id, user.username);
+                    callModal.classList.remove('show');
+                });
+            } else {
+                userItem.style.opacity = '0.5';
+                userItem.style.cursor = 'not-allowed';
+            }
+            callUserList.appendChild(userItem);
+        });
+        callModal.classList.add('show');
+    });
+}
+
+callModalCancel.addEventListener('click', () => {
+    callModal.classList.remove('show');
+});
+
+callButton.addEventListener('click', () => {
+    if (isCalling) {
+        endCall();
+    } else {
+        showCallModal();
+    }
+});
+
+// WebRTC call functions
+async function initiateCall(targetUserId, targetUsername) {
+    try {
+        // Request microphone permissions
+        const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+        localStream = stream;
+        peerConnection = new RTCPeerConnection(servers);
+        isCalling = true;
+        callButton.classList.add('active');
+        callButton.innerHTML = '<i class="fas fa-phone-slash"></i>';
+
+        // Add local audio tracks
+        localStream.getTracks().forEach(track => {
+            peerConnection.addTrack(track, localStream);
+        });
+
+        // Handle ICE candidates
+        peerConnection.onicecandidate = (event) => {
+            if (event.candidate) {
+                callsRef.child(currentCallId).child('iceCandidates').child(userId).push({
+                    candidate: event.candidate.toJSON()
+                });
+            }
+        };
+
+        // Handle remote stream
+        peerConnection.ontrack = (event) => {
+            console.log('Received remote stream:', event.streams);
+            if (event.streams && event.streams[0]) {
+                remoteAudio.srcObject = event.streams[0];
+                remoteAudio.volume = 1.0;
+                remoteAudio.play().catch(error => {
+                    console.error('Error playing remote audio:', error);
+                    alert('Gagal memutar audio panggilan. Pastikan izin audio diberikan.');
+                });
+            }
+        };
+
+        // Monitor ICE connection state
+        peerConnection.oniceconnectionstatechange = () => {
+            const state = peerConnection.iceConnectionState;
+            console.log('ICE connection state:', state);
+            if (state === 'disconnected' || state === 'failed' || state === 'closed') {
+                endCall();
+                alert('Koneksi panggilan terputus. Silakan coba lagi.');
+            } else if (state === 'connected') {
+                callStatus.textContent = `Terhubung dengan ${targetUsername}`;
+            }
+        };
+
+        // Handle negotiation
+        peerConnection.onnegotiationneeded = async () => {
+            try {
+                const offer = await peerConnection.createOffer();
+                await peerConnection.setLocalDescription(offer);
+                callsRef.child(currentCallId).update({
+                    offer: {
+                        type: offer.type,
+                        sdp: offer.sdp
+                    }
+                });
+            } catch (error) {
+                console.error('Negotiation error:', error);
+                endCall();
+                alert('Gagal menegosiasi panggilan.');
+            }
+        };
+
+        // Create call ID and store offer
+        const callId = database.ref().push().key;
+        currentCallId = callId;
+
+        const offer = await peerConnection.createOffer();
+        await peerConnection.setLocalDescription(offer);
+
+        callsRef.child(callId).set({
+            callerId: userId,
+            callerUsername: username,
+            targetId: targetUserId,
+            targetUsername: targetUsername,
+            status: 'pending',
+            offer: {
+                type: offer.type,
+                sdp: offer.sdp
+            },
+            timestamp: firebase.database.ServerValue.TIMESTAMP
+        });
+
+        callStatus.textContent = `Memanggil ${targetUsername}...`;
+        callParticipant.textContent = targetUsername;
+        callInterfaceModal.classList.add('show');
+
+        // Update audio devices
+        await updateAudioDevices();
+
+        // Listen for call response
+        callsRef.child(callId).on('value', async (snapshot) => {
+            const callData = snapshot.val();
+            if (!callData) {
+                endCall();
+                return;
+            }
+            if (callData.status === 'accepted' && callData.answer) {
+                try {
+                    await peerConnection.setRemoteDescription(new RTCSessionDescription(callData.answer));
+                    callStatus.textContent = `Terhubung dengan ${targetUsername}`;
+                } catch (error) {
+                    console.error('Error setting remote description:', error);
+                    endCall();
+                    alert('Gagal menghubungkan panggilan.');
+                }
+            } else if (callData.status === 'rejected') {
+                endCall();
+                alert(`${targetUsername} menolak panggilan.`);
+            }
+        });
+
+        // Listen for target user's ICE candidates
+        callsRef.child(callId).child('iceCandidates').child(targetUserId).on('child_added', async (snapshot) => {
+            const candidateData = snapshot.val().candidate;
+            if (candidateData) {
+                try {
+                    await peerConnection.addIceCandidate(new RTCIceCandidate(candidateData));
+                } catch (error) {
+                    console.error('Error adding ICE candidate:', error);
+                }
+            }
+        });
+
+        // Call timeout
+        setTimeout(() => {
+            if (callStatus.textContent.includes('Memanggil')) {
+                endCall();
+                alert('Panggilan tidak dijawab.');
+            }
+        }, 30000);
+    } catch (error) {
+        console.error('Error initiating call:', error);
+        alert('Gagal memulai panggilan. Pastikan izin mikrofon diberikan.');
+        endCall();
+    }
+}
+
+async function handleIncomingCall(callId, callData) {
+    if (isCalling) {
+        callsRef.child(callId).update({ status: 'rejected' });
+        return;
+    }
+    showModal(
+        'Panggilan Masuk',
+        `${callData.callerUsername} memanggil Anda. Terima panggilan?`,
+        'Terima',
+        async () => {
+            try {
+                const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+                localStream = stream;
+                peerConnection = new RTCPeerConnection(servers);
+                isCalling = true;
+                callButton.classList.add('active');
+                callButton.innerHTML = '<i class="fas fa-phone-slash"></i>';
+
+                localStream.getTracks().forEach(track => {
+                    peerConnection.addTrack(track, localStream);
+                });
+
+                peerConnection.onicecandidate = (event) => {
+                    if (event.candidate) {
+                        callsRef.child(callId).child('iceCandidates').child(userId).push({
+                            candidate: event.candidate.toJSON()
+                        });
+                    }
+                };
+
+                peerConnection.ontrack = (event) => {
+                    console.log('Received remote stream:', event.streams);
+                    if (event.streams && event.streams[0]) {
+                        remoteAudio.srcObject = event.streams[0];
+                        remoteAudio.volume = 1.0;
+                        remoteAudio.play().catch(error => {
+                            console.error('Error playing remote audio:', error);
+                            alert('Gagal memutar audio panggilan. Pastikan izin audio diberikan.');
+                        });
+                    }
+                };
+
+                peerConnection.oniceconnectionstatechange = () => {
+                    const state = peerConnection.iceConnectionState;
+                    console.log('ICE connection state:', state);
+                    if (state === 'disconnected' || state === 'failed' || state === 'closed') {
+                        endCall();
+                        alert('Koneksi panggilan terputus.');
+                    } else if (state === 'connected') {
+                        callStatus.textContent = `Terhubung dengan ${callData.callerUsername}`;
+                    }
+                };
+
+                await peerConnection.setRemoteDescription(new RTCSessionDescription(callData.offer));
+                const answer = await peerConnection.createAnswer();
+                await peerConnection.setLocalDescription(answer);
+
+                callsRef.child(callId).update({
+                    status: 'accepted',
+                    answer: {
+                        type: answer.type,
+                        sdp: answer.sdp
+                    }
+                });
+
+                callStatus.textContent = `Terhubung dengan ${callData.callerUsername}`;
+                callParticipant.textContent = callData.callerUsername;
+                callInterfaceModal.classList.add('show');
+
+                await updateAudioDevices();
+
+                callsRef.child(callId).child('iceCandidates').child(callData.callerId).on('child_added', async (snapshot) => {
+                    const candidateData = snapshot.val().candidate;
+                    if (candidateData) {
+                        try {
+                            await peerConnection.addIceCandidate(new RTCIceCandidate(candidateData));
+                        } catch (error) {
+                            console.error('Error adding ICE candidate:', error);
+                        }
+                    }
+                });
+            } catch (error) {
+                console.error('Error accepting call:', error);
+                alert('Gagal menerima panggilan. Pastikan izin mikrofon diberikan.');
+                endCall();
+            }
+        },
+        () => {
+            callsRef.child(callId).update({ status: 'rejected' });
+        }
+    );
+}
+
+function endCall() {
+    if (peerConnection) {
+        peerConnection.close();
+        peerConnection = null;
+    }
+    if (localStream) {
+        localStream.getTracks().forEach(track => track.stop());
+        localStream = null;
+    }
+    if (currentCallId) {
+        callsRef.child(currentCallId).remove();
+        currentCallId = null;
+    }
+    isCalling = false;
+    callButton.classList.remove('active');
+    callButton.innerHTML = '<i class="fas fa-phone"></i>';
+    callInterfaceModal.classList.remove('show');
+    isMuted = false;
+    muteButton.classList.remove('muted');
+    muteButton.innerHTML = '<i class="fas fa-microphone"></i>';
+    remoteAudio.srcObject = null;
+    remoteAudio.pause();
+}
+
+muteButton.addEventListener('click', () => {
+    if (localStream) {
+        isMuted = !isMuted;
+        localStream.getAudioTracks().forEach(track => {
+            track.enabled = !isMuted;
+        });
+        muteButton.classList.toggle('muted', isMuted);
+        muteButton.innerHTML = isMuted ? '<i class="fas fa-microphone-slash"></i>' : '<i class="fas fa-microphone"></i>';
+    }
+});
+
+endCallButton.addEventListener('click', endCall);
+
+// Listen for incoming calls
+callsRef.on('child_added', (snapshot) => {
+    const callData = snapshot.val();
+    if (callData.targetId === userId && callData.status === 'pending') {
+        handleIncomingCall(snapshot.key, callData);
+    }
+});
+
+// Cleanup calls on disconnect
+callsRef.on('child_removed', (snapshot) => {
+    if (snapshot.key === currentCallId) {
+        endCall();
+    }
+});
+
+// Speaker selection event listener
+document.addEventListener('DOMContentLoaded', () => {
+    const speakerSelect = document.createElement('select');
+    speakerSelect.id = 'speaker-select';
+    speakerSelect.style.marginTop = '10px';
+    speakerSelect.style.padding = '5px';
+    speakerSelect.style.borderRadius = '5px';
+    speakerSelect.style.width = '100%';
+    callInterfaceModal.querySelector('.modal-content').insertBefore(speakerSelect, callInterfaceModal.querySelector('.call-controls'));
+    speakerSelect.addEventListener('change', (e) => {
+        setAudioOutput(e.target.value);
+    });
+});
+
+// Request audio device permission and update devices on load
+window.addEventListener('load', async () => {
+    try {
+        const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+        stream.getTracks().forEach(track => track.stop());
+        await updateAudioDevices();
+    } catch (error) {
+        console.error('Error accessing audio devices:', error);
+        alert('Gagal mengakses perangkat audio. Pastikan izin mikrofon diberikan.');
+    }
+});
 
 // User roles and admin functionality
 let userRole = 'user';
@@ -1713,427 +2126,6 @@ voiceButton.addEventListener('click', () => {
         startRecording();
     } else {
         stopRecording();
-    }
-});
-
-// WebRTC configuration with added TURN servers for better NAT traversal
-const servers = {
-    iceServers: [
-        { urls: 'stun:stun.l.google.com:19302' },
-        { urls: 'stun:stun1.l.google.com:19302' },
-        { urls: 'stun:stun2.l.google.com:19302' },
-        { urls: 'stun:stun3.l.google.com:19302' },
-        { urls: 'stun:stun4.l.google.com:19302' },
-        // Added free TURN servers (for testing; replace with your own for production)
-        {
-            urls: 'turn:openrelay.metered.ca:80',
-            username: 'openrelayproject',
-            credential: 'openrelayproject'
-        },
-        {
-            urls: 'turn:openrelay.metered.ca:443',
-            username: 'openrelayproject',
-            credential: 'openrelayproject'
-        },
-        {
-            urls: 'turn:openrelay.metered.ca:443?transport=tcp',
-            username: 'openrelayproject',
-            credential: 'openrelayproject'
-        }
-    ]
-};
-
-// Speaker selection
-let audioDevices = [];
-
-async function updateAudioDevices() {
-    try {
-        const devices = await navigator.mediaDevices.enumerateDevices();
-        audioDevices = devices.filter(device => device.kind === 'audiooutput');
-        const speakerSelect = document.getElementById('speaker-select');
-        if (speakerSelect) {
-            speakerSelect.innerHTML = '<option value="">Pilih Speaker</option>';
-            audioDevices.forEach(device => {
-                const option = document.createElement('option');
-                option.value = device.deviceId;
-                option.textContent = device.label || `Speaker ${audioDevices.indexOf(device) + 1}`;
-                speakerSelect.appendChild(option);
-            });
-        }
-    } catch (error) {
-        console.error('Error enumerating audio devices:', error);
-    }
-}
-
-async function setAudioOutput(deviceId) {
-    try {
-        if (deviceId && remoteAudio.setSinkId) {
-            await remoteAudio.setSinkId(deviceId);
-            console.log(`Audio output set to device: ${deviceId}`);
-        }
-    } catch (error) {
-        console.error('Error setting audio output:', error);
-        alert('Gagal mengganti speaker. Pastikan izin perangkat audio diberikan.');
-    }
-}
-
-// Call modal functions
-function showCallModal() {
-    callUserList.innerHTML = '';
-    onlineRef.once('value', (snapshot) => {
-        const users = snapshot.val() || {};
-        const currentTime = Date.now();
-        Object.entries(users).forEach(([id, user]) => {
-            if (id === userId) return; // Skip current user
-            const timeDiff = currentTime - user.timestamp;
-            const isOnline = timeDiff < 30000;
-            const userItem = document.createElement('div');
-            userItem.className = 'call-user-item';
-            userItem.innerHTML = `
-                <i class="fas fa-user user-icon"></i>
-                <span class="user-name">${user.username}</span>
-                <span class="call-status ${isOnline ? 'online' : 'offline'}">${isOnline ? 'Online' : 'Offline'}</span>
-            `;
-            if (isOnline) {
-                userItem.addEventListener('click', () => {
-                    initiateCall(id, user.username);
-                    callModal.classList.remove('show');
-                });
-            } else {
-                userItem.style.opacity = '0.5';
-                userItem.style.cursor = 'not-allowed';
-            }
-            callUserList.appendChild(userItem);
-        });
-        callModal.classList.add('show');
-    });
-}
-
-callModalCancel.addEventListener('click', () => {
-    callModal.classList.remove('show');
-});
-
-callButton.addEventListener('click', () => {
-    if (isCalling) {
-        endCall();
-    } else {
-        showCallModal();
-    }
-});
-
-// WebRTC call functions
-async function initiateCall(targetUserId, targetUsername) {
-    try {
-        // Check microphone permissions
-        const permissionStatus = await navigator.permissions.query({ name: 'microphone' });
-        if (permissionStatus.state !== 'granted') {
-            throw new Error('Microphone permission not granted');
-        }
-
-        localStream = await navigator.mediaDevices.getUserMedia({ audio: true });
-        peerConnection = new RTCPeerConnection(servers);
-        isCalling = true;
-        callButton.classList.add('active');
-        callButton.innerHTML = '<i class="fas fa-phone-slash"></i>';
-
-        // Add all local audio tracks
-        localStream.getTracks().forEach(track => {
-            peerConnection.addTrack(track, localStream);
-        });
-
-        peerConnection.onicecandidate = (event) => {
-            if (event.candidate) {
-                callsRef.child(currentCallId).child('iceCandidates').child(userId).push({
-                    candidate: event.candidate.toJSON()
-                });
-            }
-        };
-
-        peerConnection.ontrack = (event) => {
-            console.log('Received remote stream:', event.streams);
-            if (event.streams && event.streams[0]) {
-                remoteAudio.srcObject = event.streams[0];
-                remoteAudio.volume = 1.0; // Ensure volume is full
-                remoteAudio.play().then(() => {
-                    console.log('Remote audio playing successfully');
-                }).catch(error => {
-                    console.error('Error playing remote audio:', error);
-                    alert('Gagal memutar suara remote. Pastikan izin audio diberikan dan tidak ada blokir autoplay.');
-                });
-            }
-        };
-
-        peerConnection.oniceconnectionstatechange = () => {
-            console.log('ICE connection state:', peerConnection.iceConnectionState);
-            if (peerConnection.iceConnectionState === 'disconnected' || peerConnection.iceConnectionState === 'failed') {
-                endCall();
-                alert('Koneksi panggilan terputus.');
-            }
-        };
-
-        peerConnection.onnegotiationneeded = async () => {
-            try {
-                const offer = await peerConnection.createOffer();
-                await peerConnection.setLocalDescription(offer);
-                callsRef.child(currentCallId).update({
-                    offer: {
-                        type: offer.type,
-                        sdp: offer.sdp
-                    }
-                });
-            } catch (error) {
-                console.error('Negotiation needed error:', error);
-            }
-        };
-
-        const callId = database.ref().push().key;
-        currentCallId = callId;
-
-        const offer = await peerConnection.createOffer();
-        await peerConnection.setLocalDescription(offer);
-
-        callsRef.child(callId).set({
-            callerId: userId,
-            callerUsername: username,
-            targetId: targetUserId,
-            targetUsername: targetUsername,
-            status: 'pending',
-            offer: {
-                type: offer.type,
-                sdp: offer.sdp
-            },
-            timestamp: firebase.database.ServerValue.TIMESTAMP
-        });
-
-        callStatus.textContent = `Memanggil ${targetUsername}...`;
-        callParticipant.textContent = targetUsername;
-        callInterfaceModal.classList.add('show');
-
-        // Update audio devices list
-        await updateAudioDevices();
-
-        // Handle call acceptance or rejection
-        callsRef.child(callId).on('value', async (snapshot) => {
-            const callData = snapshot.val();
-            if (!callData) {
-                endCall();
-                return;
-            }
-            if (callData.status === 'accepted' && callData.answer) {
-                try {
-                    await peerConnection.setRemoteDescription(new RTCSessionDescription(callData.answer));
-                    callStatus.textContent = `Terhubung dengan ${targetUsername}`;
-                } catch (error) {
-                    console.error('Error setting remote description:', error);
-                    endCall();
-                    alert('Gagal menghubungkan panggilan.');
-                }
-            } else if (callData.status === 'rejected') {
-                endCall();
-                alert(`${targetUsername} menolak panggilan.`);
-            }
-        });
-
-        // Listen for target user's ICE candidates
-        callsRef.child(callId).child('iceCandidates').child(targetUserId).on('child_added', async (snapshot) => {
-            const candidateData = snapshot.val().candidate;
-            if (candidateData) {
-                try {
-                    await peerConnection.addIceCandidate(new RTCIceCandidate(candidateData));
-                } catch (error) {
-                    console.error('Error adding ICE candidate:', error);
-                }
-            }
-        });
-
-        // Timeout if no response
-        setTimeout(() => {
-            if (callStatus.textContent.includes('Memanggil')) {
-                endCall();
-                alert('Panggilan tidak dijawab.');
-            }
-        }, 30000);
-    } catch (error) {
-        console.error('Error initiating call:', error);
-        alert('Gagal memulai panggilan. Pastikan izin mikrofon diberikan.');
-        endCall();
-    }
-}
-
-async function handleIncomingCall(callId, callData) {
-    if (isCalling) {
-        callsRef.child(callId).update({ status: 'rejected' });
-        return;
-    }
-    showModal(
-        'Panggilan Masuk',
-        `${callData.callerUsername} memanggil Anda. Terima panggilan?`,
-        'Terima',
-        async () => {
-            try {
-                // Check microphone permissions
-                const permissionStatus = await navigator.permissions.query({ name: 'microphone' });
-                if (permissionStatus.state !== 'granted') {
-                    throw new Error('Microphone permission not granted');
-                }
-
-                localStream = await navigator.mediaDevices.getUserMedia({ audio: true });
-                peerConnection = new RTCPeerConnection(servers);
-                isCalling = true;
-                callButton.classList.add('active');
-                callButton.innerHTML = '<i class="fas fa-phone-slash"></i>';
-
-                localStream.getTracks().forEach(track => {
-                    peerConnection.addTrack(track, localStream);
-                });
-
-                peerConnection.onicecandidate = (event) => {
-                    if (event.candidate) {
-                        callsRef.child(callId).child('iceCandidates').child(userId).push({
-                            candidate: event.candidate.toJSON()
-                        });
-                    }
-                };
-
-                peerConnection.ontrack = (event) => {
-                    console.log('Received remote stream:', event.streams);
-                    if (event.streams && event.streams[0]) {
-                        remoteAudio.srcObject = event.streams[0];
-                        remoteAudio.volume = 1.0; // Ensure volume is full
-                        remoteAudio.play().then(() => {
-                            console.log('Remote audio playing successfully');
-                        }).catch(error => {
-                            console.error('Error playing remote audio:', error);
-                            alert('Gagal memutar suara remote. Pastikan izin audio diberikan dan tidak ada blokir autoplay.');
-                        });
-                    }
-                };
-
-                peerConnection.oniceconnectionstatechange = () => {
-                    console.log('ICE connection state:', peerConnection.iceConnectionState);
-                    if (peerConnection.iceConnectionState === 'disconnected' || peerConnection.iceConnectionState === 'failed') {
-                        endCall();
-                        alert('Koneksi panggilan terputus.');
-                    }
-                };
-
-                await peerConnection.setRemoteDescription(new RTCSessionDescription(callData.offer));
-                const answer = await peerConnection.createAnswer();
-                await peerConnection.setLocalDescription(answer);
-
-                callsRef.child(callId).update({
-                    status: 'accepted',
-                    answer: {
-                        type: answer.type,
-                        sdp: answer.sdp
-                    }
-                });
-
-                callStatus.textContent = `Terhubung dengan ${callData.callerUsername}`;
-                callParticipant.textContent = callData.callerUsername;
-                callInterfaceModal.classList.add('show');
-
-                // Update audio devices list
-                await updateAudioDevices();
-
-                // Listen for caller's ICE candidates
-                callsRef.child(callId).child('iceCandidates').child(callData.callerId).on('child_added', async (snapshot) => {
-                    const candidateData = snapshot.val().candidate;
-                    if (candidateData) {
-                        try {
-                            await peerConnection.addIceCandidate(new RTCIceCandidate(candidateData));
-                        } catch (error) {
-                            console.error('Error adding ICE candidate:', error);
-                        }
-                    }
-                });
-            } catch (error) {
-                console.error('Error accepting call:', error);
-                alert('Gagal menerima panggilan. Pastikan izin mikrofon diberikan.');
-                endCall();
-            }
-        },
-        () => {
-            callsRef.child(callId).update({ status: 'rejected' });
-        }
-    );
-}
-
-function endCall() {
-    if (peerConnection) {
-        peerConnection.close();
-        peerConnection = null;
-    }
-    if (localStream) {
-        localStream.getTracks().forEach(track => track.stop());
-        localStream = null;
-    }
-    if (currentCallId) {
-        callsRef.child(currentCallId).remove();
-        currentCallId = null;
-    }
-    isCalling = false;
-    callButton.classList.remove('active');
-    callButton.innerHTML = '<i class="fas fa-phone"></i>';
-    callInterfaceModal.classList.remove('show');
-    isMuted = false;
-    muteButton.classList.remove('muted');
-    muteButton.innerHTML = '<i class="fas fa-microphone"></i>';
-    remoteAudio.srcObject = null;
-    remoteAudio.pause();
-}
-
-muteButton.addEventListener('click', () => {
-    if (localStream) {
-        isMuted = !isMuted;
-        localStream.getAudioTracks().forEach(track => {
-            track.enabled = !isMuted;
-        });
-        muteButton.classList.toggle('muted', isMuted);
-        muteButton.innerHTML = isMuted ? '<i class="fas fa-microphone-slash"></i>' : '<i class="fas fa-microphone"></i>';
-    }
-});
-
-endCallButton.addEventListener('click', endCall);
-
-// Listen for incoming calls
-callsRef.on('child_added', (snapshot) => {
-    const callData = snapshot.val();
-    if (callData.targetId === userId && callData.status === 'pending') {
-        handleIncomingCall(snapshot.key, callData);
-    }
-});
-
-// Cleanup calls on disconnect
-callsRef.on('child_removed', (snapshot) => {
-    if (snapshot.key === currentCallId) {
-        endCall();
-    }
-});
-
-// Speaker selection event listener
-document.addEventListener('DOMContentLoaded', () => {
-    const speakerSelect = document.createElement('select');
-    speakerSelect.id = 'speaker-select';
-    speakerSelect.style.marginTop = '10px';
-    speakerSelect.style.padding = '5px';
-    speakerSelect.style.borderRadius = '5px';
-    speakerSelect.style.width = '100%';
-    callInterfaceModal.querySelector('.modal-content').insertBefore(speakerSelect, callInterfaceModal.querySelector('.call-controls'));
-    speakerSelect.addEventListener('change', (e) => {
-        setAudioOutput(e.target.value);
-    });
-});
-
-// Request audio device permission and update devices on load
-window.addEventListener('load', async () => {
-    try {
-        await navigator.mediaDevices.getUserMedia({ audio: true }).then(stream => {
-            stream.getTracks().forEach(track => track.stop());
-        });
-        await updateAudioDevices();
-    } catch (error) {
-        console.error('Error accessing audio devices:', error);
     }
 });
 
