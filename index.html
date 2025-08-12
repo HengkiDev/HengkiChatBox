@@ -1302,7 +1302,7 @@ body.dark-mode #speaker-select {
         <div class="modal-content call-modal-content">
             <h3 id="call-status">Menghubungkan...</h3>
             <p id="call-participant"></p>
-            <audio id="remote-audio" autoplay></audio>
+            <audio id="remote-audio" autoplay playsinline></audio>
             <div class="call-controls">
                 <button class="call-control-btn mute" id="mute-button">
                     <i class="fas fa-microphone"></i>
@@ -1716,14 +1716,30 @@ voiceButton.addEventListener('click', () => {
     }
 });
 
-// WebRTC configuration
+// WebRTC configuration with added TURN servers for better NAT traversal
 const servers = {
     iceServers: [
         { urls: 'stun:stun.l.google.com:19302' },
         { urls: 'stun:stun1.l.google.com:19302' },
         { urls: 'stun:stun2.l.google.com:19302' },
         { urls: 'stun:stun3.l.google.com:19302' },
-        { urls: 'stun:stun4.l.google.com:19302' }
+        { urls: 'stun:stun4.l.google.com:19302' },
+        // Added free TURN servers (for testing; replace with your own for production)
+        {
+            urls: 'turn:openrelay.metered.ca:80',
+            username: 'openrelayproject',
+            credential: 'openrelayproject'
+        },
+        {
+            urls: 'turn:openrelay.metered.ca:443',
+            username: 'openrelayproject',
+            credential: 'openrelayproject'
+        },
+        {
+            urls: 'turn:openrelay.metered.ca:443?transport=tcp',
+            username: 'openrelayproject',
+            credential: 'openrelayproject'
+        }
     ]
 };
 
@@ -1828,17 +1844,23 @@ async function initiateCall(targetUserId, targetUsername) {
         peerConnection.onicecandidate = (event) => {
             if (event.candidate) {
                 callsRef.child(currentCallId).child('iceCandidates').child(userId).push({
-                    candidate: event.candidate
+                    candidate: event.candidate.toJSON()
                 });
             }
         };
 
         peerConnection.ontrack = (event) => {
             console.log('Received remote stream:', event.streams);
-            remoteAudio.srcObject = event.streams[0];
-            remoteAudio.play().catch(error => {
-                console.error('Error playing remote audio:', error);
-            });
+            if (event.streams && event.streams[0]) {
+                remoteAudio.srcObject = event.streams[0];
+                remoteAudio.volume = 1.0; // Ensure volume is full
+                remoteAudio.play().then(() => {
+                    console.log('Remote audio playing successfully');
+                }).catch(error => {
+                    console.error('Error playing remote audio:', error);
+                    alert('Gagal memutar suara remote. Pastikan izin audio diberikan dan tidak ada blokir autoplay.');
+                });
+            }
         };
 
         peerConnection.oniceconnectionstatechange = () => {
@@ -1846,6 +1868,21 @@ async function initiateCall(targetUserId, targetUsername) {
             if (peerConnection.iceConnectionState === 'disconnected' || peerConnection.iceConnectionState === 'failed') {
                 endCall();
                 alert('Koneksi panggilan terputus.');
+            }
+        };
+
+        peerConnection.onnegotiationneeded = async () => {
+            try {
+                const offer = await peerConnection.createOffer();
+                await peerConnection.setLocalDescription(offer);
+                callsRef.child(currentCallId).update({
+                    offer: {
+                        type: offer.type,
+                        sdp: offer.sdp
+                    }
+                });
+            } catch (error) {
+                console.error('Negotiation needed error:', error);
             }
         };
 
@@ -1899,10 +1936,10 @@ async function initiateCall(targetUserId, targetUsername) {
 
         // Listen for target user's ICE candidates
         callsRef.child(callId).child('iceCandidates').child(targetUserId).on('child_added', async (snapshot) => {
-            const candidate = snapshot.val().candidate;
-            if (candidate) {
+            const candidateData = snapshot.val().candidate;
+            if (candidateData) {
                 try {
-                    await peerConnection.addIceCandidate(new RTCIceCandidate(candidate));
+                    await peerConnection.addIceCandidate(new RTCIceCandidate(candidateData));
                 } catch (error) {
                     console.error('Error adding ICE candidate:', error);
                 }
@@ -1953,17 +1990,23 @@ async function handleIncomingCall(callId, callData) {
                 peerConnection.onicecandidate = (event) => {
                     if (event.candidate) {
                         callsRef.child(callId).child('iceCandidates').child(userId).push({
-                            candidate: event.candidate
+                            candidate: event.candidate.toJSON()
                         });
                     }
                 };
 
                 peerConnection.ontrack = (event) => {
                     console.log('Received remote stream:', event.streams);
-                    remoteAudio.srcObject = event.streams[0];
-                    remoteAudio.play().catch(error => {
-                        console.error('Error playing remote audio:', error);
-                    });
+                    if (event.streams && event.streams[0]) {
+                        remoteAudio.srcObject = event.streams[0];
+                        remoteAudio.volume = 1.0; // Ensure volume is full
+                        remoteAudio.play().then(() => {
+                            console.log('Remote audio playing successfully');
+                        }).catch(error => {
+                            console.error('Error playing remote audio:', error);
+                            alert('Gagal memutar suara remote. Pastikan izin audio diberikan dan tidak ada blokir autoplay.');
+                        });
+                    }
                 };
 
                 peerConnection.oniceconnectionstatechange = () => {
@@ -1995,10 +2038,10 @@ async function handleIncomingCall(callId, callData) {
 
                 // Listen for caller's ICE candidates
                 callsRef.child(callId).child('iceCandidates').child(callData.callerId).on('child_added', async (snapshot) => {
-                    const candidate = snapshot.val().candidate;
-                    if (candidate) {
+                    const candidateData = snapshot.val().candidate;
+                    if (candidateData) {
                         try {
-                            await peerConnection.addIceCandidate(new RTCIceCandidate(candidate));
+                            await peerConnection.addIceCandidate(new RTCIceCandidate(candidateData));
                         } catch (error) {
                             console.error('Error adding ICE candidate:', error);
                         }
