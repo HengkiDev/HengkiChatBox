@@ -932,6 +932,55 @@
             transform: translateY(-2px);
         }
 
+#public-call-button {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 44px;
+    height: 44px;
+    background: var(--accent-color);
+    color: white;
+    border: none;
+    border-radius: 50%;
+    cursor: pointer;
+    transition: all 0.3s;
+    box-shadow: 0 3px 10px rgba(0, 0, 0, 0.1);
+}
+
+#public-call-button.active {
+    background: #e74c3c;
+    animation: pulse-recording 1.5s infinite;
+}
+
+#public-call-button:hover {
+    transform: scale(1.1);
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+}
+
+#public-speaker-select {
+    padding: 5px;
+    border-radius: 5px;
+    border: 1px solid #ddd;
+    background: white;
+    font-size: 0.9rem;
+    cursor: pointer;
+    transition: all 0.3s;
+    margin-top: 10px;
+    width: 100%;
+}
+
+#public-speaker-select:focus {
+    outline: none;
+    border-color: var(--accent-color);
+    box-shadow: 0 0 0 3px rgba(52, 152, 219, 0.1);
+}
+
+body.dark-mode #public-speaker-select {
+    background: #273859;
+    border-color: #364f7e;
+    color: white;
+}
+
         @media (max-width: 768px) {
             .chat-header {
                 padding: 12px 15px;
@@ -1129,6 +1178,24 @@
         </div>
     </div>
 
+<!-- Public Call Interface Modal -->
+<div class="modal" id="public-call-interface-modal">
+    <div class="modal-content call-modal-content">
+        <h3 id="public-call-status">Menghubungkan ke Panggilan Publik...</h3>
+        <p id="public-call-participants">Peserta: 0</p>
+        <select id="public-speaker-select"></select>
+        <audio id="public-remote-audio" autoplay playsinline></audio>
+        <div class="call-controls">
+            <button class="call-control-btn mute" id="public-mute-button">
+                <i class="fas fa-microphone"></i>
+            </button>
+            <button class="call-control-btn end" id="public-end-call-button">
+                <i class="fas fa-phone-slash"></i>
+            </button>
+        </div>
+    </div>
+</div>
+
     <input type="file" id="file-input" accept="image/*" style="display: none;">
 
     <!-- Confirmation Modal -->
@@ -1195,6 +1262,363 @@
         const imageModalClose = document.getElementById('image-modal-close');
         const voiceButton = document.getElementById('voice-button');
 
+
+// Add public call variables
+let publicCallConnections = {};
+let publicCallStream = null;
+let isInPublicCall = false;
+const publicCallRef = database.ref('publicCall');
+
+// DOM elements for public call
+const publicCallButton = document.getElementById('public-call-button');
+const publicCallInterfaceModal = document.getElementById('public-call-interface-modal');
+const publicCallStatus = document.getElementById('public-call-status');
+const publicCallParticipants = document.getElementById('public-call-participants');
+const publicMuteButton = document.getElementById('public-mute-button');
+const publicEndCallButton = document.getElementById('public-end-call-button');
+const publicRemoteAudio = document.getElementById('public-remote-audio');
+const publicSpeakerSelect = document.getElementById('public-speaker-select');
+
+// Initialize audio devices for public call
+async function updatePublicAudioDevices() {
+    try {
+        const devices = await navigator.mediaDevices.enumerateDevices();
+        audioDevices = devices.filter(device => device.kind === 'audiooutput');
+        publicSpeakerSelect.innerHTML = '<option value="">Pilih Speaker</option>';
+        audioDevices.forEach(device => {
+            const option = document.createElement('option');
+            option.value = device.deviceId;
+            option.textContent = device.label || `Speaker ${audioDevices.indexOf(device) + 1}`;
+            publicSpeakerSelect.appendChild(option);
+        });
+    } catch (error) {
+        console.error('Error enumerating audio devices for public call:', error);
+        alert('Gagal memuat daftar perangkat audio untuk panggilan publik.');
+    }
+}
+
+async function setPublicAudioOutput(deviceId) {
+    try {
+        if (deviceId && publicRemoteAudio.setSinkId) {
+            await publicRemoteAudio.setSinkId(deviceId);
+            console.log(`Public call audio output set to device: ${deviceId}`);
+        }
+    } catch (error) {
+        console.error('Error setting public call audio output:', error);
+        alert('Gagal mengganti speaker untuk panggilan publik.');
+    }
+}
+
+// Join public call
+async function joinPublicCall() {
+    try {
+        // Prevent joining if already in a call
+        if (isCalling || isInPublicCall) {
+            alert('Anda sudah berada dalam panggilan.');
+            return;
+        }
+
+        // Request microphone permissions
+        publicCallStream = await navigator.mediaDevices.getUserMedia({ audio: true });
+        isInPublicCall = true;
+        publicCallButton.classList.add('active');
+        publicCallButton.innerHTML = '<i class="fas fa-phone-slash"></i>';
+        publicCallStatus.textContent = 'Terhubung ke Panggilan Publik';
+        publicCallInterfaceModal.classList.add('show');
+
+        // Update audio devices
+        await updatePublicAudioDevices();
+
+        // Add user to public call
+        const participantRef = publicCallRef.child('participants').child(userId);
+        participantRef.set({
+            username: username,
+            timestamp: firebase.database.ServerValue.TIMESTAMP
+        });
+        participantRef.onDisconnect().remove();
+
+        // Listen for other participants
+        publicCallRef.child('participants').on('child_added', async (snapshot) => {
+            const participantId = snapshot.key;
+            if (participantId === userId) return;
+
+            const participantData = snapshot.val();
+            const connection = new RTCPeerConnection(servers);
+            publicCallConnections[participantId] = connection;
+
+            // Add local audio tracks
+            publicCallStream.getTracks().forEach(track => {
+                connection.addTrack(track, publicCallStream);
+            });
+
+            // Handle ICE candidates
+            connection.onicecandidate = (event) => {
+                if (event.candidate) {
+                    publicCallRef.child('iceCandidates').child(userId).child(participantId).push({
+                        candidate: event.candidate.toJSON()
+                    });
+                }
+            };
+
+            // Handle remote stream
+            connection.ontrack = (event) => {
+                console.log(`Received remote stream from ${participantId}:`, event.streams);
+                if (event.streams && event.streams[0]) {
+                    const audioElement = document.createElement('audio');
+                    audioElement.srcObject = event.streams[0];
+                    audioElement.autoplay = true;
+                    audioElement.playsinline = true;
+                    audioElement.volume = 1.0;
+                    audioElement.id = `public-audio-${participantId}`;
+                    document.body.appendChild(audioElement);
+                    audioElement.play().catch(error => {
+                        console.error(`Error playing audio for ${participantId}:`, error);
+                    });
+                }
+            };
+
+            // Handle ICE connection state
+            connection.oniceconnectionstatechange = () => {
+                const state = connection.iceConnectionState;
+                console.log(`ICE connection state for ${participantId}:`, state);
+                if (state === 'disconnected' || state === 'failed' || state === 'closed') {
+                    closePeerConnection(participantId);
+                }
+            };
+
+            // Create and send offer
+            try {
+                const offer = await connection.createOffer();
+                await connection.setLocalDescription(offer);
+                publicCallRef.child('offers').child(userId).child(participantId).set({
+                    type: offer.type,
+                    sdp: offer.sdp,
+                    timestamp: firebase.database.ServerValue.TIMESTAMP
+                });
+            } catch (error) {
+                console.error(`Error creating offer for ${participantId}:`, error);
+            }
+
+            // Listen for answer
+            publicCallRef.child('answers').child(participantId).child(userId).on('value', async (snapshot) => {
+                const answerData = snapshot.val();
+                if (answerData && connection.signalingState !== 'stable') {
+                    try {
+                        await connection.setRemoteDescription(new RTCSessionDescription({
+                            type: answerData.type,
+                            sdp: answerData.sdp
+                        }));
+                    } catch (error) {
+                        console.error(`Error setting remote description for ${participantId}:`, error);
+                    }
+                }
+            });
+
+            // Listen for incoming ICE candidates
+            publicCallRef.child('iceCandidates').child(participantId).child(userId).on('child_added', async (snapshot) => {
+                const candidateData = snapshot.val().candidate;
+                if (candidateData) {
+                    try {
+                        await connection.addIceCandidate(new RTCIceCandidate(candidateData));
+                    } catch (error) {
+                        console.error(`Error adding ICE candidate for ${participantId}:`, error);
+                    }
+                }
+            });
+        });
+
+        // Handle incoming offers
+        publicCallRef.child('offers').child(userId).on('child_added', async (snapshot) => {
+            const callerId = snapshot.key;
+            const offerData = snapshot.val();
+            if (!publicCallConnections[callerId]) {
+                const connection = new RTCPeerConnection(servers);
+                publicCallConnections[callerId] = connection;
+
+                publicCallStream.getTracks().forEach(track => {
+                    connection.addTrack(track, publicCallStream);
+                });
+
+                connection.onicecandidate = (event) => {
+                    if (event.candidate) {
+                        publicCallRef.child('iceCandidates').child(userId).child(callerId).push({
+                            candidate: event.candidate.toJSON()
+                        });
+                    }
+                };
+
+                connection.ontrack = (event) => {
+                    console.log(`Received remote stream from ${callerId}:`, event.streams);
+                    if (event.streams && event.streams[0]) {
+                        const audioElement = document.createElement('audio');
+                        audioElement.srcObject = event.streams[0];
+                        audioElement.autoplay = true;
+                        audioElement.playsinline = true;
+                        audioElement.volume = 1.0;
+                        audioElement.id = `public-audio-${callerId}`;
+                        document.body.appendChild(audioElement);
+                        audioElement.play().catch(error => {
+                            console.error(`Error playing audio for ${callerId}:`, error);
+                        });
+                    }
+                };
+
+                connection.oniceconnectionstatechange = () => {
+                    const state = connection.iceConnectionState;
+                    console.log(`ICE connection state for ${callerId}:`, state);
+                    if (state === 'disconnected' || state === 'failed' || state === 'closed') {
+                        closePeerConnection(callerId);
+                    }
+                };
+
+                try {
+                    await connection.setRemoteDescription(new RTCSessionDescription({
+                        type: offerData.type,
+                        sdp: offerData.sdp
+                    }));
+                    const answer = await connection.createAnswer();
+                    await connection.setLocalDescription(answer);
+                    publicCallRef.child('answers').child(userId).child(callerId).set({
+                        type: answer.type,
+                        sdp: answer.sdp,
+                        timestamp: firebase.database.ServerValue.TIMESTAMP
+                    });
+                } catch (error) {
+                    console.error(`Error handling offer from ${callerId}:`, error);
+                }
+
+                publicCallRef.child('iceCandidates').child(callerId).child(userId).on('child_added', async (snapshot) => {
+                    const candidateData = snapshot.val().candidate;
+                    if (candidateData) {
+                        try {
+                            await connection.addIceCandidate(new RTCIceCandidate(candidateData));
+                        } catch (error) {
+                            console.error(`Error adding ICE candidate for ${callerId}:`, error);
+                        }
+                    }
+                });
+            }
+        });
+
+        // Update participant count
+        publicCallRef.child('participants').on('value', (snapshot) => {
+            const participants = snapshot.val() || {};
+            const count = Object.keys(participants).length;
+            publicCallParticipants.textContent = `Peserta: ${count}`;
+        });
+
+        // Handle participant removal
+        publicCallRef.child('participants').on('child_removed', (snapshot) => {
+            const participantId = snapshot.key;
+            closePeerConnection(participantId);
+        });
+
+    } catch (error) {
+        console.error('Error joining public call:', error);
+        alert('Gagal bergabung ke panggilan publik. Pastikan izin mikrofon diberikan.');
+        leavePublicCall();
+    }
+}
+
+// Close peer connection
+function closePeerConnection(participantId) {
+    if (publicCallConnections[participantId]) {
+        publicCallConnections[participantId].close();
+        delete publicCallConnections[participantId];
+        const audioElement = document.getElementById(`public-audio-${participantId}`);
+        if (audioElement) {
+            audioElement.srcObject = null;
+            audioElement.remove();
+        }
+    }
+}
+
+// Leave public call
+function leavePublicCall() {
+    Object.keys(publicCallConnections).forEach(participantId => {
+        closePeerConnection(participantId);
+    });
+    publicCallConnections = {};
+    if (publicCallStream) {
+        publicCallStream.getTracks().forEach(track => track.stop());
+        publicCallStream = null;
+    }
+    publicCallRef.child('participants').child(userId).remove();
+    publicCallRef.child('offers').child(userId).remove();
+    publicCallRef.child('answers').child(userId).remove();
+    publicCallRef.child('iceCandidates').child(userId).remove();
+    isInPublicCall = false;
+    publicCallButton.classList.remove('active');
+    publicCallButton.innerHTML = '<i class="fas fa-users"></i>';
+    publicCallInterfaceModal.classList.remove('show');
+    publicMuteButton.classList.remove('muted');
+    publicMuteButton.innerHTML = '<i class="fas fa-microphone"></i>';
+}
+
+// Public call button event
+publicCallButton.addEventListener('click', () => {
+    if (isInPublicCall) {
+        leavePublicCall();
+    } else {
+        joinPublicCall();
+    }
+});
+
+// Mute button for public call
+publicMuteButton.addEventListener('click', () => {
+    if (publicCallStream) {
+        isMuted = !isMuted;
+        publicCallStream.getAudioTracks().forEach(track => {
+            track.enabled = !isMuted;
+        });
+        publicMuteButton.classList.toggle('muted', isMuted);
+        publicMuteButton.innerHTML = isMuted ? '<i class="fas fa-microphone-slash"></i>' : '<i class="fas fa-microphone"></i>';
+    }
+});
+
+// End public call button
+publicEndCallButton.addEventListener('click', leavePublicCall);
+
+// Speaker selection for public call
+publicSpeakerSelect.addEventListener('change', (e) => {
+    setPublicAudioOutput(e.target.value);
+});
+
+// Modify existing endCall to prevent conflicts
+function endCall() {
+    if (peerConnection) {
+        peerConnection.close();
+        peerConnection = null;
+    }
+    if (localStream) {
+        localStream.getTracks().forEach(track => track.stop());
+        localStream = null;
+    }
+    if (currentCallId) {
+        callsRef.child(currentCallId).remove();
+        currentCallId = null;
+    }
+    isCalling = false;
+    callButton.classList.remove('active');
+    callButton.innerHTML = '<i class="fas fa-phone"></i>';
+    callInterfaceModal.classList.remove('show');
+    isMuted = false;
+    muteButton.classList.remove('muted');
+    muteButton.innerHTML = '<i class="fas fa-microphone"></i>';
+    remoteAudio.srcObject = null;
+    remoteAudio.pause();
+}
+
+// Cleanup on window close
+window.addEventListener('beforeunload', () => {
+    onlineRef.child(userId).remove();
+    if (isCalling) {
+        endCall();
+    }
+    if (isInPublicCall) {
+        leavePublicCall();
+    }
+});
         // User roles and admin functionality
         let userRole = 'user';
         let userId = localStorage.getItem('userId');
