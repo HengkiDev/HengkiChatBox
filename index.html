@@ -1716,14 +1716,29 @@ voiceButton.addEventListener('click', () => {
     }
 });
 
-// WebRTC configuration
+// WebRTC configuration with added TURN servers for better connectivity
 const servers = {
     iceServers: [
         { urls: 'stun:stun.l.google.com:19302' },
         { urls: 'stun:stun1.l.google.com:19302' },
         { urls: 'stun:stun2.l.google.com:19302' },
         { urls: 'stun:stun3.l.google.com:19302' },
-        { urls: 'stun:stun4.l.google.com:19302' }
+        { urls: 'stun:stun4.l.google.com:19302' },
+        {
+            urls: 'turn:openrelay.metered.ca:80',
+            username: 'openrelayproject',
+            credential: 'openrelayprojectsecret'
+        },
+        {
+            urls: 'turn:openrelay.metered.ca:443',
+            username: 'openrelayproject',
+            credential: 'openrelayprojectsecret'
+        },
+        {
+            urls: 'turn:openrelay.metered.ca:443?transport=tcp',
+            username: 'openrelayproject',
+            credential: 'openrelayprojectsecret'
+        }
     ]
 };
 
@@ -1828,7 +1843,7 @@ async function initiateCall(targetUserId, targetUsername) {
         peerConnection.onicecandidate = (event) => {
             if (event.candidate) {
                 callsRef.child(currentCallId).child('iceCandidates').child(userId).push({
-                    candidate: event.candidate
+                    candidate: event.candidate.toJSON()
                 });
             }
         };
@@ -1836,6 +1851,8 @@ async function initiateCall(targetUserId, targetUsername) {
         peerConnection.ontrack = (event) => {
             console.log('Received remote stream:', event.streams);
             remoteAudio.srcObject = event.streams[0];
+            remoteAudio.muted = false;
+            remoteAudio.volume = 1.0;
             remoteAudio.play().catch(error => {
                 console.error('Error playing remote audio:', error);
             });
@@ -1846,7 +1863,17 @@ async function initiateCall(targetUserId, targetUsername) {
             if (peerConnection.iceConnectionState === 'disconnected' || peerConnection.iceConnectionState === 'failed') {
                 endCall();
                 alert('Koneksi panggilan terputus.');
+            } else if (peerConnection.iceConnectionState === 'connected') {
+                callStatus.textContent = `Terhubung dengan ${targetUsername}`;
             }
+        };
+
+        peerConnection.onsignalingstatechange = () => {
+            console.log('Signaling state:', peerConnection.signalingState);
+        };
+
+        peerConnection.onicegatheringstatechange = () => {
+            console.log('ICE gathering state:', peerConnection.iceGatheringState);
         };
 
         const callId = database.ref().push().key;
@@ -1882,10 +1909,10 @@ async function initiateCall(targetUserId, targetUsername) {
                 endCall();
                 return;
             }
-            if (callData.status === 'accepted' && callData.answer) {
+            if (callData.status === 'accepted' && callData.answer && peerConnection.signalingState !== 'have-remote-offer') {
                 try {
                     await peerConnection.setRemoteDescription(new RTCSessionDescription(callData.answer));
-                    callStatus.textContent = `Terhubung dengan ${targetUsername}`;
+                    console.log('Remote description set for caller');
                 } catch (error) {
                     console.error('Error setting remote description:', error);
                     endCall();
@@ -1899,10 +1926,12 @@ async function initiateCall(targetUserId, targetUsername) {
 
         // Listen for target user's ICE candidates
         callsRef.child(callId).child('iceCandidates').child(targetUserId).on('child_added', async (snapshot) => {
-            const candidate = snapshot.val().candidate;
-            if (candidate) {
+            const candidateData = snapshot.val().candidate;
+            if (candidateData) {
                 try {
-                    await peerConnection.addIceCandidate(new RTCIceCandidate(candidate));
+                    const candidate = new RTCIceCandidate(candidateData);
+                    await peerConnection.addIceCandidate(candidate);
+                    console.log('Added ICE candidate from callee');
                 } catch (error) {
                     console.error('Error adding ICE candidate:', error);
                 }
@@ -1953,7 +1982,7 @@ async function handleIncomingCall(callId, callData) {
                 peerConnection.onicecandidate = (event) => {
                     if (event.candidate) {
                         callsRef.child(callId).child('iceCandidates').child(userId).push({
-                            candidate: event.candidate
+                            candidate: event.candidate.toJSON()
                         });
                     }
                 };
@@ -1961,6 +1990,8 @@ async function handleIncomingCall(callId, callData) {
                 peerConnection.ontrack = (event) => {
                     console.log('Received remote stream:', event.streams);
                     remoteAudio.srcObject = event.streams[0];
+                    remoteAudio.muted = false;
+                    remoteAudio.volume = 1.0;
                     remoteAudio.play().catch(error => {
                         console.error('Error playing remote audio:', error);
                     });
@@ -1971,7 +2002,17 @@ async function handleIncomingCall(callId, callData) {
                     if (peerConnection.iceConnectionState === 'disconnected' || peerConnection.iceConnectionState === 'failed') {
                         endCall();
                         alert('Koneksi panggilan terputus.');
+                    } else if (peerConnection.iceConnectionState === 'connected') {
+                        callStatus.textContent = `Terhubung dengan ${callData.callerUsername}`;
                     }
+                };
+
+                peerConnection.onsignalingstatechange = () => {
+                    console.log('Signaling state:', peerConnection.signalingState);
+                };
+
+                peerConnection.onicegatheringstatechange = () => {
+                    console.log('ICE gathering state:', peerConnection.iceGatheringState);
                 };
 
                 await peerConnection.setRemoteDescription(new RTCSessionDescription(callData.offer));
@@ -1995,10 +2036,12 @@ async function handleIncomingCall(callId, callData) {
 
                 // Listen for caller's ICE candidates
                 callsRef.child(callId).child('iceCandidates').child(callData.callerId).on('child_added', async (snapshot) => {
-                    const candidate = snapshot.val().candidate;
-                    if (candidate) {
+                    const candidateData = snapshot.val().candidate;
+                    if (candidateData) {
                         try {
-                            await peerConnection.addIceCandidate(new RTCIceCandidate(candidate));
+                            const candidate = new RTCIceCandidate(candidateData);
+                            await peerConnection.addIceCandidate(candidate);
+                            console.log('Added ICE candidate from caller');
                         } catch (error) {
                             console.error('Error adding ICE candidate:', error);
                         }
