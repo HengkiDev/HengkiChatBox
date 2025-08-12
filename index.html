@@ -20,7 +20,6 @@
             --moderator-color: #f39c12;
             --vip-color: #9b59b6;
             --voice-progress: #2ecc71;
-            --call-active: #27ae60;
         }
 
         * {
@@ -101,24 +100,6 @@
             0% { transform: scale(1); opacity: 0.7; }
             70% { transform: scale(1.5); opacity: 0; }
             100% { transform: scale(1); opacity: 0; }
-        }
-
-        .call-status {
-            padding: 5px 12px;
-            background-color: rgba(255, 255, 255, 0.2);
-            border-radius: 20px;
-            font-size: 0.8rem;
-            display: inline-flex;
-            align-items: center;
-            margin-top: 8px;
-        }
-
-        .call-status .dot {
-            width: 8px;
-            height: 8px;
-            background-color: var(--call-active);
-            border-radius: 50%;
-            margin-right: 5px;
         }
 
         .user-info {
@@ -482,6 +463,51 @@
             font-weight: 500;
         }
 
+        .file-attachment, .music-attachment {
+            margin: 10px 0;
+            padding: 10px;
+            border-radius: 12px;
+            background: #fff;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            box-shadow: 0 3px 8px rgba(0, 0, 0, 0.15);
+            transition: all 0.3s ease;
+            max-width: 280px;
+        }
+
+        .user-message .file-attachment, .user-message .music-attachment {
+            background: var(--message-own);
+        }
+
+        .other-message .file-attachment, .other-message .music-attachment {
+            background: var(--message-other);
+        }
+
+        .ai-message .file-attachment, .ai-message .music-attachment {
+            background: var(--message-ai);
+        }
+
+        .file-attachment:hover, .music-attachment:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 12px rgba(0, 0, 0, 0.2);
+        }
+
+        .file-attachment a, .music-attachment a {
+            color: var(--accent-color);
+            text-decoration: none;
+            font-weight: 500;
+            flex: 1;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+
+        .file-attachment i, .music-attachment i {
+            font-size: 1.2rem;
+            color: var(--accent-color);
+        }
+
         body.dark-mode .voice-note .play-btn {
             background: #1f2b46;
             color: #3498db;
@@ -511,7 +537,19 @@
             background: #1e3a1e;
         }
 
-        .image-loading, .audio-loading {
+        body.dark-mode .file-attachment, body.dark-mode .music-attachment {
+            background: #273859;
+        }
+
+        body.dark-mode .file-attachment a, body.dark-mode .music-attachment a {
+            color: #3498db;
+        }
+
+        body.dark-mode .file-attachment i, body.dark-mode .music-attachment i {
+            color: #3498db;
+        }
+
+        .image-loading, .audio-loading, .file-loading {
             max-width: 280px;
             height: 150px;
             background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
@@ -566,6 +604,7 @@
             font-style: italic;
         }
 
+        .ai-message .message-text Grapheme Count: 1276
         .ai-message .message-text .code-block {
             background: #2c3e50;
             color: #ecf0f1;
@@ -639,7 +678,7 @@
             align-items: flex-end;
         }
 
-        .attach-button, .voice-button, .call-button {
+        .attach-button, .voice-button {
             display: flex;
             align-items: center;
             justify-content: center;
@@ -654,14 +693,6 @@
             box-shadow: 0 3px 10px rgba(0, 0, 0, 0.1);
         }
 
-        .call-button.active {
-            background: var(--call-active);
-        }
-
-        .call-button.ended {
-            background: #e74c3c;
-        }
-
         .voice-button.recording {
             background: #e74c3c;
             animation: pulse-recording 1.5s infinite;
@@ -673,11 +704,11 @@
             100% { transform: scale(1); }
         }
 
-        .attach-button i, .voice-button i, .call-button i {
+        .attach-button i, .voice-button i {
             font-size: 1.1rem;
         }
 
-        .attach-button:hover, .voice-button:hover, .call-button:hover {
+        .attach-button:hover, .voice-button:hover {
             transform: scale(1.1);
             box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
         }
@@ -854,7 +885,7 @@
             color: #4A5683;
         }
 
-        body.dark-mode .attach-button, body.dark-mode .voice-button, body.dark-mode .call-button {
+        body.dark-mode .attach-button, body.dark-mode .voice-button {
             background: #2980b9;
         }
 
@@ -862,7 +893,7 @@
             box-shadow: 0 4px 8px rgba(255, 255, 255, 0.1);
         }
 
-        body.dark-mode .image-loading, body.dark-mode .audio-loading {
+        body.dark-mode .image-loading, body.dark-mode .audio-loading, body.dark-mode .file-loading {
             background: linear-gradient(90deg, #2a3654 25%, #1f2b46 50%, #2a3654 75%);
             background-size: 200% 100%;
             color: #666;
@@ -1011,7 +1042,7 @@
                 right: auto;
             }
 
-            .message-text img, .message-text .voice-note {
+            .message-text img, .message-text .voice-note, .message-text .file-attachment, .message-text .music-attachment {
                 max-width: 240px;
             }
 
@@ -1025,7 +1056,7 @@
                 min-height: 40px;
             }
 
-            .attach-button, .voice-button, .call-button, #send-button {
+            .attach-button, .voice-button, #send-button {
                 width: 40px;
                 height: 40px;
             }
@@ -1059,7 +1090,7 @@
                 font-size: 0.7rem;
             }
 
-            .message-text img, .message-text .voice-note {
+            .message-text img, .message-text .voice-note, .message-text .file-attachment, .message-text .music-attachment {
                 max-width: 200px;
             }
         }
@@ -1116,10 +1147,6 @@
                 <div class="dot"></div>
                 <span id="online-count">Menghubungkan...</span>
             </div>
-            <div class="call-status" id="call-status">
-                <div class="dot"></div>
-                <span id="call-status-text">No Call Active</span>
-            </div>
         </div>
         
         <div class="admin-controls" id="admin-controls">
@@ -1143,13 +1170,10 @@
         
         <div class="chat-input">
             <button id="attach-button" class="attach-button">
-                <i class="fas fa-image"></i>
+                <i class="fas fa-paperclip"></i>
             </button>
             <button id="voice-button" class="voice-button">
                 <i class="fas fa-microphone"></i>
-            </button>
-            <button id="call-button" class="call-button">
-                <i class="fas fa-phone"></i>
             </button>
             <div class="message-input-container">
                 <textarea id="message-input" placeholder="Ketik pesan... (atau /ai untuk chat dengan AI)" rows="1"></textarea>
@@ -1163,7 +1187,7 @@
         </div>
     </div>
 
-    <input type="file" id="file-input" accept="image/*" style="display: none;">
+    <input type="file" id="file-input" accept="image/*,audio/mpeg,application/vnd.openxmlformats-officedocument.wordprocessingml.document" style="display: none;">
 
     <!-- Confirmation Modal -->
     <div class="modal" id="confirmation-modal">
@@ -1206,7 +1230,6 @@
         const messagesRef = database.ref('messages');
         const onlineRef = database.ref('online');
         const connectedRef = database.ref('.info/connected');
-        const callsRef = database.ref('calls/public');
 
         // DOM elements
         const chatMessages = document.getElementById('chat-messages');
@@ -1229,8 +1252,6 @@
         const modalImage = document.getElementById('modal-image');
         const imageModalClose = document.getElementById('image-modal-close');
         const voiceButton = document.getElementById('voice-button');
-        const callButton = document.getElementById('call-button');
-        const callStatusText = document.getElementById('call-status-text');
 
         // User roles and admin functionality
         let userRole = 'user';
@@ -1474,6 +1495,16 @@
             });
         }
 
+        // File conversion to base64
+        function fileToBase64(file) {
+            return new Promise((resolve, reject) => {
+                const reader = new FileReader();
+                reader.onload = () => resolve(reader.result);
+                reader.onerror = error => reject(error);
+                reader.readAsDataURL(file);
+            });
+        }
+
         // Voice note recording
         let mediaRecorder = null;
         let audioChunks = [];
@@ -1567,182 +1598,6 @@
                 startRecording();
             } else {
                 stopRecording();
-            }
-        });
-
-        // WebRTC Call Functionality
-        let localStream = null;
-        let peerConnections = {};
-        let isInCall = false;
-
-        const configuration = {
-            iceServers: [
-                { urls: 'stun:stun.l.google.com:19302' },
-                { urls: 'stun:stun1.l.google.com:19302' }
-            ]
-        };
-
-        async function startCall() {
-            try {
-                localStream = await navigator.mediaDevices.getUserMedia({ audio: true });
-                callButton.classList.add('active');
-                callButton.innerHTML = '<i class="fas fa-phone-slash"></i>';
-                callStatusText.textContent = 'Call Active';
-                isInCall = true;
-
-                const callId = 'public';
-                const offerRef = callsRef.child(callId).child('offer');
-                const answerRef = callsRef.child(callId).child('answer');
-                const iceRef = callsRef.child(callId).child('ice-candidates').child(userId);
-
-                const pc = new RTCPeerConnection(configuration);
-                peerConnections[userId] = pc;
-
-                localStream.getTracks().forEach(track => pc.addTrack(track, localStream));
-
-                pc.ontrack = (event) => {
-                    const audio = new Audio();
-                    audio.srcObject = event.streams[0];
-                    audio.play();
-                };
-
-                pc.onicecandidate = (event) => {
-                    if (event.candidate) {
-                        iceRef.push({
-                            candidate: event.candidate.toJSON(),
-                            timestamp: firebase.database.ServerValue.TIMESTAMP
-                        });
-                    }
-                };
-
-                const offer = await pc.createOffer();
-                await pc.setLocalDescription(offer);
-                await offerRef.set({
-                    sdp: offer.sdp,
-                    type: offer.type,
-                    userId: userId,
-                    username: username,
-                    timestamp: firebase.database.ServerValue.TIMESTAMP
-                });
-
-                // Listen for answer
-                answerRef.on('value', async (snapshot) => {
-                    const answer = snapshot.val();
-                    if (answer && pc.signalingState !== 'stable' && answer.userId !== userId) {
-                        await pc.setRemoteDescription(new RTCSessionDescription({
-                            sdp: answer.sdp,
-                            type: answer.type
-                        }));
-                    }
-                });
-
-                // Listen for ICE candidates from others
-                callsRef.child(callId).child('ice-candidates').on('child_added', async (snapshot) => {
-                    const candidateData = snapshot.val();
-                    if (candidateData && candidateData.candidate && candidateData.userId !== userId) {
-                        try {
-                            await pc.addIceCandidate(new RTCIceCandidate(candidateData.candidate));
-                        } catch (error) {
-                            console.error('Error adding ICE candidate:', error);
-                        }
-                    }
-                });
-
-                // Create answer for incoming offers
-                offerRef.on('value', async (snapshot) => {
-                    const offer = snapshot.val();
-                    if (offer && offer.userId !== userId && pc.signalingState === 'stable') {
-                        const answerPc = new RTCPeerConnection(configuration);
-                        peerConnections[offer.userId] = answerPc;
-
-                        localStream.getTracks().forEach(track => answerPc.addTrack(track, localStream));
-
-                        answerPc.ontrack = (event) => {
-                            const audio = new Audio();
-                            audio.srcObject = event.streams[0];
-                            audio.play();
-                        };
-
-                        answerPc.onicecandidate = (event) => {
-                            if (event.candidate) {
-                                iceRef.push({
-                                    candidate: event.candidate.toJSON(),
-                                    timestamp: firebase.database.ServerValue.TIMESTAMP
-                                });
-                            }
-                        };
-
-                        await answerPc.setRemoteDescription(new RTCSessionDescription({
-                            sdp: offer.sdp,
-                            type: offer.type
-                        }));
-                        const answer = await answerPc.createAnswer();
-                        await answerPc.setLocalDescription(answer);
-                        await answerRef.set({
-                            sdp: answer.sdp,
-                            type: answer.type,
-                            userId: userId,
-                            username: username,
-                            timestamp: firebase.database.ServerValue.TIMESTAMP
-                        });
-                    }
-                });
-
-                // Notify users of call activity
-                const newMessageRef = messagesRef.push();
-                newMessageRef.set({
-                    id: newMessageRef.key,
-                    username: username,
-                    userRole: userRole,
-                    userId: userId,
-                    text: `${username} started a public call`,
-                    timestamp: firebase.database.ServerValue.TIMESTAMP
-                });
-            } catch (error) {
-                console.error('Call start error:', error);
-                alert('Gagal memulai panggilan. Pastikan izin mikrofon diberikan.');
-                endCall();
-            }
-        }
-
-        function endCall() {
-            if (localStream) {
-                localStream.getTracks().forEach(track => track.stop());
-                localStream = null;
-            }
-            Object.values(peerConnections).forEach(pc => {
-                pc.close();
-            });
-            peerConnections = {};
-            callButton.classList.remove('active');
-            callButton.classList.add('ended');
-            callButton.innerHTML = '<i class="fas fa-phone"></i>';
-            callStatusText.textContent = 'Call Ended';
-            isInCall = false;
-
-            const newMessageRef = messagesRef.push();
-            newMessageRef.set({
-                id: newMessageRef.key,
-                username: username,
-                userRole: userRole,
-                userId: userId,
-                text: `${username} ended the public call`,
-                timestamp: firebase.database.ServerValue.TIMESTAMP
-            });
-
-            setTimeout(() => {
-                callButton.classList.remove('ended');
-                callStatusText.textContent = 'No Call Active';
-            }, 2000);
-
-            callsRef.remove();
-        }
-
-        callButton.addEventListener('click', () => {
-            if (!isInCall) {
-                startCall();
-            } else {
-                endCall();
             }
         });
 
@@ -2011,7 +1866,7 @@
             messageInput.dispatchEvent(new Event('input'));
         });
 
-        // Image attachment handling
+        // File attachment handling
         attachButton.addEventListener('click', () => {
             fileInput.click();
         });
@@ -2019,25 +1874,36 @@
         fileInput.addEventListener('change', async (e) => {
             const file = e.target.files[0];
             if (file) {
-                if (!file.type.startsWith('image/')) {
-                    alert('Hanya file gambar yang diperbolehkan.');
+                const allowedTypes = ['image/jpeg', 'image/png', 'image/gif', 'audio/mpeg', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document'];
+                if (!allowedTypes.includes(file.type)) {
+                    alert('Hanya file gambar (JPEG, PNG, GIF), MP3, dan DOCX yang diperbolehkan.');
                     fileInput.value = '';
                     return;
                 }
                 if (file.size > 5 * 1024 * 1024) { // 5MB limit
-                    alert('Ukuran gambar terlalu besar. Maksimal 5MB.');
+                    alert('Ukuran file terlalu besar. Maksimal 5MB.');
                     fileInput.value = '';
                     return;
                 }
 
                 const loadingElement = document.createElement('div');
-                loadingElement.className = 'image-loading';
-                loadingElement.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Mengunggah gambar...';
+                loadingElement.className = 'file-loading';
+                loadingElement.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Mengunggah file...';
                 chatMessages.appendChild(loadingElement);
                 chatMessages.scrollTop = chatMessages.scrollHeight;
 
                 try {
-                    const compressedImage = await compressImage(file);
+                    let fileData;
+                    let fileType;
+
+                    if (file.type.startsWith('image/')) {
+                        fileData = await compressImage(file);
+                        fileType = 'image';
+                    } else {
+                        fileData = await fileToBase64(file);
+                        fileType = file.type === 'audio/mpeg' ? 'music' : 'file';
+                    }
+
                     const caption = messageInput.value.trim();
 
                     if (loadingElement.parentNode) {
@@ -2045,36 +1911,47 @@
                     }
 
                     const newMessageRef = messagesRef.push();
-                    newMessageRef.set({
+                    const messageData = {
                         id: newMessageRef.key,
                         username: username,
                         userRole: userRole,
                         userId: userId,
                         text: caption,
-                        image: compressedImage,
                         timestamp: firebase.database.ServerValue.TIMESTAMP
-                    });
+                    };
+
+                    if (fileType === 'image') {
+                        messageData.image = fileData;
+                    } else if (fileType === 'music') {
+                        messageData.music = fileData;
+                        messageData.filename = file.name;
+                    } else {
+                        messageData.file = fileData;
+                        messageData.filename = file.name;
+                    }
+
+                    newMessageRef.set(messageData);
 
                     messageInput.value = '';
                     messageInput.style.height = 'auto';
                     fileInput.value = '';
 
-                    // Show notification for image message
-                    showNotification(`${username} sent an image`, {
-                        body: caption || 'New image received',
+                    // Show notification for file message
+                    showNotification(`${username} sent a ${fileType}`, {
+                        body: caption || `New ${fileType} received: ${file.name}`,
                         icon: '/path/to/icon.png'
                     });
                 } catch (error) {
-                    console.error('Image upload error:', error);
+                    console.error('File upload error:', error);
                     if (loadingElement.parentNode) {
                         loadingElement.remove();
                     }
-                    alert('Gagal mengunggah gambar. Silakan coba lagi.');
+                    alert('Gagal mengunggah file. Silakan coba lagi.');
                 }
             }
         });
 
-        // Render message with voice note support
+        // Render message with voice note, file, and music support
         function renderMessage(messageData, isNew = false) {
             const messageElement = document.createElement('div');
             const messageClass = messageData.isAI ? 'ai-message' : 
@@ -2111,6 +1988,24 @@
                 `;
             }
 
+            if (messageData.file) {
+                messageContent += `
+                    <div class="file-attachment">
+                        <i class="fas fa-file-word"></i>
+                        <a href="${messageData.file}" download="${messageData.filename}">${messageData.filename}</a>
+                    </div>
+                `;
+            }
+
+            if (messageData.music) {
+                messageContent += `
+                    <div class="music-attachment">
+                        <i class="fas fa-music"></i>
+                        <a href="${messageData.music}" download="${messageData.filename}">${messageData.filename}</a>
+                    </div>
+                `;
+            }
+
             messageElement.innerHTML = `
                 <div class="message-info">
                     ${messageData.isAI ? '<i class="fas fa-robot"></i>' : '<i class="fas fa-user"></i>'}
@@ -2138,116 +2033,118 @@
                 // Generate waveform bars
                 const barCount = 40;
                 for (let i = 0; i < barCount; i++) {
-const bar = document.createElement('div');
-bar.className = 'wave-bar';
-bar.style.height = ${Math.random() * 20 + 10}px;
-waveform.appendChild(bar);
-}
-audio.addEventListener('loadedmetadata', () => {
-const duration = audio.duration;
-const minutes = Math.floor(duration / 60);
-const seconds = Math.floor(duration % 60);
-durationElement.textContent = ${minutes}:${seconds.toString().padStart(2, '0')};
-});
-audio.addEventListener('timeupdate', () => {
-const progress = audio.currentTime / audio.duration;
-const bars = waveform.querySelectorAll('.wave-bar');
-const playedBars = Math.floor(progress * barCount);
-bars.forEach((bar, index) => {
-bar.classList.toggle('played', index < playedBars);
-});
-});
-playBtn.addEventListener('click', () => {
-if (audio.paused) {
-audio.play();
-playBtn.classList.add('playing');
-playBtn.innerHTML = '';
-} else {
-audio.pause();
-playBtn.classList.remove('playing');
-playBtn.innerHTML = '';
-}
-});
-audio.addEventListener('ended', () => {
-playBtn.classList.remove('playing');
-playBtn.innerHTML = '';
-waveform.querySelectorAll('.wave-bar').forEach(bar => bar.classList.remove('played'));
-});
-}
-chatMessages.appendChild(messageElement);
-if (isNew) {
-chatMessages.scrollTop = chatMessages.scrollHeight;
-}
-return messageElement;
-}
-// Load messages from Firebase
-messagesRef.on('child_added', (snapshot) => {
-const messageData = snapshot.val();
-renderMessage({
-id: snapshot.key,
-username: messageData.username,
-userRole: messageData.userRole || 'user',
-userId: messageData.userId,
-text: messageData.text,
-image: messageData.image,
-audio: messageData.audio,
-timestamp: messageData.timestamp,
-isAI: messageData.isAI
-}, true);
-});
-messagesRef.on('child_removed', (snapshot) => {
-const messageId = snapshot.key;
-const messageElement = document.querySelector(.message[data-message-id="${messageId}"]);
-if (messageElement) {
-messageElement.style.animation = 'fadeOut 0.3s forwards';
-setTimeout(() => {
-if (messageElement.parentNode) {
-messageElement.remove();
-}
-}, 300);
-}
-});
-// Clean up old messages and online statuses
-function cleanupOldData() {
-const now = Date.now();
-const oneDay = 24 * 60 * 60 * 1000;
-onlineRef.once('value', (snapshot) => {
-snapshot.forEach((childSnapshot) => {
-const data = childSnapshot.val();
-if (data.timestamp && (now - data.timestamp) > oneDay) {
-onlineRef.child(childSnapshot.key).remove();
-}
-});
-});
-messagesRef.once('value', (snapshot) => {
-snapshot.forEach((childSnapshot) => {
-const data = childSnapshot.val();
-if (data.timestamp && (now - data.timestamp) > oneDay) {
-messagesRef.child(childSnapshot.key).remove();
-}
-});
-});
-}
-setInterval(cleanupOldData, 3600000); // Run cleanup every hour
-cleanupOldData(); // Run cleanup on page load
-// Request notification permission on load
-requestNotificationPermission();
-// Service Worker for notifications
-if ('serviceWorker' in navigator) {
-navigator.serviceWorker.register('/sw.js').then(registration => {
-console.log('Service Worker registered with scope:', registration.scope);
-}).catch(error => {
-console.error('Service Worker registration failed:', error);
-});
-}
-// Auto-scroll to bottom on new messages
-const observer = new MutationObserver(() => {
-const lastMessage = chatMessages.lastElementChild;
-if (lastMessage && lastMessage.classList.contains('new-message')) {
-chatMessages.scrollTop = chatMessages.scrollHeight;
-}
-});
-observer.observe(chatMessages, { childList: true });
-</script>
+                    const bar = document.createElement('div');
+                    bar.className = 'wave-bar';
+                    bar.style.height = `${Math.random() * 20 + 10}px`;
+                    waveform.appendChild(bar);
+                }
+
+                function displayDuration(duration) {
+                    if (isNaN(duration) || !isFinite(duration)) {
+                        durationElement.textContent = '00:00';
+                    } else {
+                        const minutes = Math.floor(duration / 60);
+                        const seconds = Math.floor(duration % 60);
+                        durationElement.textContent = `${minutes}:${seconds.toString().padStart(2, '0')}`;
+                    }
+                }
+
+                audio.addEventListener('loadedmetadata', () => {
+                    if (audio.duration === Infinity || isNaN(audio.duration)) {
+                        audio.currentTime = Number.MAX_SAFE_INTEGER;
+                        audio.addEventListener('timeupdate', function handler() {
+                            displayDuration(audio.duration);
+                            audio.currentTime = 0;
+                            audio.removeEventListener('timeupdate', handler);
+                        }, {once: true});
+                    } else {
+                        displayDuration(audio.duration);
+                    }
+                });
+
+                audio.addEventListener('timeupdate', () => {
+                    if (isNaN(audio.duration) || audio.duration === Infinity) return;
+                    const progress = audio.currentTime / audio.duration;
+                    const bars = waveform.querySelectorAll('.wave-bar');
+                    const playedBars = Math.floor(progress * barCount);
+                    bars.forEach((bar, index) => {
+                        bar.classList.toggle('played', index < playedBars);
+                    });
+                });
+
+                playBtn.addEventListener('click', () => {
+                    if (audio.paused) {
+                        audio.play();
+                        playBtn.classList.add('playing');
+                        playBtn.innerHTML = '<i class="fas fa-pause"></i>';
+                    } else {
+                        audio.pause();
+                        playBtn.classList.remove('playing');
+                        playBtn.innerHTML = '<i class="fas fa-play"></i>';
+                    }
+                });
+
+                audio.addEventListener('ended', () => {
+                    playBtn.classList.remove('playing');
+                    playBtn.innerHTML = '<i class="fas fa-play"></i>';
+                    waveform.querySelectorAll('.wave-bar').forEach(bar => bar.classList.remove('played'));
+                });
+            }
+
+            return messageElement;
+        }
+
+        // Load messages
+        messagesRef.on('child_added', (snapshot) => {
+            const messageData = snapshot.val();
+            const messageElement = renderMessage({ ...messageData, id: snapshot.key }, true);
+            chatMessages.appendChild(messageElement);
+            chatMessages.scrollTop = chatMessages.scrollHeight;
+        });
+
+        messagesRef.on('child_removed', (snapshot) => {
+            const messageId = snapshot.key;
+            const messageElement = document.querySelector(`[data-message-id="${messageId}"]`);
+            if (messageElement) {
+                messageElement.style.animation = 'fadeOut 0.3s forwards';
+                setTimeout(() => {
+                    if (messageElement.parentNode) {
+                        messageElement.remove();
+                    }
+                }, 300);
+            }
+        });
+
+        // Cleanup old online users
+        setInterval(() => {
+            const currentTime = Date.now();
+            onlineRef.once('value', (snapshot) => {
+                const users = snapshot.val() || {};
+                Object.keys(users).forEach((id) => {
+                    if (currentTime - users[id].timestamp > 30000) {
+                        onlineRef.child(id).remove();
+                    }
+                });
+            });
+        }, 60000);
+
+        // Request notification permission on load
+        window.addEventListener('load', async () => {
+            await requestNotificationPermission();
+            if ('serviceWorker' in navigator) {
+                try {
+                    await navigator.serviceWorker.register('/sw.js');
+                    console.log('Service Worker registered');
+                } catch (error) {
+                    console.error('Service Worker registration failed:', error);
+                }
+            }
+        });
+
+        // Handle window close to clean up
+        window.addEventListener('beforeunload', () => {
+            onlineRef.child(userId).remove();
+        });
+    </script>
 </body>
 </html>
