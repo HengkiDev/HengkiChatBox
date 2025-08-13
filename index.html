@@ -604,7 +604,6 @@
             font-style: italic;
         }
 
-        .ai-message .message-text Grapheme Count: 1276
         .ai-message .message-text .code-block {
             background: #2c3e50;
             color: #ecf0f1;
@@ -1187,7 +1186,7 @@
         </div>
     </div>
 
-    <input type="file" id="file-input" accept="image/*,audio/mpeg,application/vnd.openxmlformats-officedocument.wordprocessingml.document" style="display: none;">
+    <input type="file" id="file-input" accept="image/*,audio/mpeg,application/pdf,application/vnd.openxmlformats-officedocument.wordprocessingml.document,text/html,application/msword,application/vnd.ms-excel,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" style="display: none;">
 
     <!-- Confirmation Modal -->
     <div class="modal" id="confirmation-modal">
@@ -1874,9 +1873,18 @@
         fileInput.addEventListener('change', async (e) => {
             const file = e.target.files[0];
             if (file) {
-                const allowedTypes = ['image/jpeg', 'image/png', 'image/gif', 'audio/mpeg', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document'];
+                const allowedTypes = [
+                    'image/jpeg', 'image/png', 'image/gif',
+                    'audio/mpeg',
+                    'application/pdf',
+                    'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+                    'application/msword',
+                    'text/html',
+                    'application/vnd.ms-excel',
+                    'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
+                ];
                 if (!allowedTypes.includes(file.type)) {
-                    alert('Hanya file gambar (JPEG, PNG, GIF), MP3, dan DOCX yang diperbolehkan.');
+                    alert('Hanya file gambar (JPEG, PNG, GIF), MP3, PDF, DOC, DOCX, HTML, XLS, dan XLSX yang diperbolehkan.');
                     fileInput.value = '';
                     return;
                 }
@@ -1899,9 +1907,12 @@
                     if (file.type.startsWith('image/')) {
                         fileData = await compressImage(file);
                         fileType = 'image';
+                    } else if (file.type === 'audio/mpeg') {
+                        fileData = await fileToBase64(file);
+                        fileType = 'music';
                     } else {
                         fileData = await fileToBase64(file);
-                        fileType = file.type === 'audio/mpeg' ? 'music' : 'file';
+                        fileType = 'file';
                     }
 
                     const caption = messageInput.value.trim();
@@ -1928,6 +1939,7 @@
                     } else {
                         messageData.file = fileData;
                         messageData.filename = file.name;
+                        messageData.fileType = file.type; // Store file type for icon rendering
                     }
 
                     newMessageRef.set(messageData);
@@ -1989,9 +2001,19 @@
             }
 
             if (messageData.file) {
+                let iconClass = 'fas fa-file';
+                if (messageData.fileType === 'application/pdf') {
+                    iconClass = 'fas fa-file-pdf';
+                } else if (messageData.fileType === 'application/vnd.openxmlformats-officedocument.wordprocessingml.document' || messageData.fileType === 'application/msword') {
+                    iconClass = 'fas fa-file-word';
+                } else if (messageData.fileType === 'text/html') {
+                    iconClass = 'fas fa-file-code';
+                } else if (messageData.fileType === 'application/vnd.ms-excel' || messageData.fileType === 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet') {
+                    iconClass = 'fas fa-file-excel';
+                }
                 messageContent += `
                     <div class="file-attachment">
-                        <i class="fas fa-file-word"></i>
+                        <i class="${iconClass}"></i>
                         <a href="${messageData.file}" download="${messageData.filename}">${messageData.filename}</a>
                     </div>
                 `;
@@ -2000,7 +2022,12 @@
             if (messageData.music) {
                 messageContent += `
                     <div class="music-attachment">
-                        <i class="fas fa-music"></i>
+                        <div class="play-btn">
+                            <i class="fas fa-play"></i>
+                        </div>
+                        <div class="waveform"></div>
+                        <span class="duration">00:00</span>
+                        <audio src="${messageData.music}"></audio>
                         <a href="${messageData.music}" download="${messageData.filename}">${messageData.filename}</a>
                     </div>
                 `;
@@ -2023,8 +2050,8 @@
                 </div>
             `;
 
-            // Voice note playback
-            if (messageData.audio) {
+            // Voice note and music playback
+            if (messageData.audio || messageData.music) {
                 const audio = messageElement.querySelector('audio');
                 const playBtn = messageElement.querySelector('.play-btn');
                 const waveform = messageElement.querySelector('.waveform');
@@ -2109,42 +2136,316 @@
                 messageElement.style.animation = 'fadeOut 0.3s forwards';
                 setTimeout(() => {
                     if (messageElement.parentNode) {
-                        messageElement.remove();
+                                        messageElement.remove();
                     }
                 }, 300);
             }
         });
 
-        // Cleanup old online users
-        setInterval(() => {
-            const currentTime = Date.now();
-            onlineRef.once('value', (snapshot) => {
-                const users = snapshot.val() || {};
-                Object.keys(users).forEach((id) => {
-                    if (currentTime - users[id].timestamp > 30000) {
-                        onlineRef.child(id).remove();
-                    }
-                });
-            });
-        }, 60000);
+        // Handle window focus for notifications
+        let isWindowFocused = true;
 
-        // Request notification permission on load
-        window.addEventListener('load', async () => {
-            await requestNotificationPermission();
-            if ('serviceWorker' in navigator) {
-                try {
-                    await navigator.serviceWorker.register('/sw.js');
-                    console.log('Service Worker registered');
-                } catch (error) {
-                    console.error('Service Worker registration failed:', error);
+        window.addEventListener('focus', () => {
+            isWindowFocused = true;
+        });
+
+        window.addEventListener('blur', () => {
+            isWindowFocused = false;
+        });
+
+        // Initialize notification permission
+        (async () => {
+            const hasPermission = await requestNotificationPermission();
+            if (!hasPermission) {
+                console.log('Notification permission denied');
+            }
+        })();
+
+        // Auto-scroll to bottom when new messages are added
+        const observer = new MutationObserver(() => {
+            if (chatMessages.scrollHeight - chatMessages.scrollTop - chatMessages.clientHeight < 200) {
+                chatMessages.scrollTop = chatMessages.scrollHeight;
+            }
+        });
+
+        observer.observe(chatMessages, { childList: true });
+
+        // Cleanup on page unload
+        window.addEventListener('unload', () => {
+            const userRef = onlineRef.child(userId);
+            userRef.remove();
+        });
+
+        // Handle file icon based on file type
+        function getFileIcon(fileType) {
+            switch (fileType) {
+                case 'application/pdf':
+                    return 'fas fa-file-pdf';
+                case 'application/vnd.openxmlformats-officedocument.wordprocessingml.document':
+                case 'application/msword':
+                    return 'fas fa-file-word';
+                case 'text/html':
+                    return 'fas fa-file-code';
+                case 'application/vnd.ms-excel':
+                case 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet':
+                    return 'fas fa-file-excel';
+                default:
+                    return 'fas fa-file';
+            }
+        }
+
+        // Prevent multiple rapid clicks on send button
+        let isSending = false;
+        sendButton.addEventListener('click', async () => {
+            if (isSending) return;
+            isSending = true;
+            await sendMessage();
+            setTimeout(() => {
+                isSending = false;
+            }, 500);
+        });
+
+        // Auto-resize textarea on paste
+        messageInput.addEventListener('paste', function() {
+            setTimeout(() => {
+                this.style.height = 'auto';
+                this.style.height = Math.min(this.scrollHeight, 120) + 'px';
+            }, 0);
+        });
+
+        // Handle keyboard shortcuts
+        document.addEventListener('keydown', (e) => {
+            if (e.ctrlKey && e.key === '/') {
+                e.preventDefault();
+                messageInput.value = '/ai ';
+                messageInput.focus();
+                messageInput.dispatchEvent(new Event('input'));
+            }
+        });
+
+        // Optimize performance by limiting rendered messages
+        const maxMessages = 100;
+        messagesRef.on('value', (snapshot) => {
+            const messages = [];
+            snapshot.forEach(child => {
+                messages.push({ key: child.key, ...child.val() });
+            });
+            if (messages.length > maxMessages) {
+                const messagesToRemove = messages.slice(0, messages.length - maxMessages);
+                messagesToRemove.forEach(msg => {
+                    messagesRef.child(msg.key).remove();
+                });
+            }
+        });
+
+        // Handle visibility of messages based on scroll
+        function optimizeMessageVisibility() {
+            const messages = chatMessages.querySelectorAll('.message');
+            const viewportHeight = chatMessages.clientHeight;
+            const scrollTop = chatMessages.scrollTop;
+
+            messages.forEach(message => {
+                const rect = message.getBoundingClientRect();
+                const messageTop = rect.top + scrollTop - chatMessages.offsetTop;
+                const messageBottom = messageTop + rect.height;
+
+                if (messageBottom < scrollTop - 100 || messageTop > scrollTop + viewportHeight + 100) {
+                    message.style.display = 'none';
+                } else {
+                    message.style.display = 'block';
+                }
+            });
+        }
+
+        chatMessages.addEventListener('scroll', optimizeMessageVisibility);
+        window.addEventListener('resize', optimizeMessageVisibility);
+
+        // Initialize visibility optimization
+        optimizeMessageVisibility();
+
+        // Handle file preview for certain types
+        async function previewFile(fileData, fileType) {
+            if (fileType.startsWith('image/')) {
+                return `<img src="${fileData}" alt="Image Preview" onclick="showImageModal(this.src)">`;
+            } else if (fileType === 'text/html') {
+                // Display a snippet of HTML content
+                const text = await (await fetch(fileData)).text();
+                return `<pre class="code-block">${text.slice(0, 200)}${text.length > 200 ? '...' : ''}</pre>`;
+            } else {
+                return '';
+            }
+        }
+
+        // Update message rendering for file previews
+        messagesRef.on('child_added', async (snapshot) => {
+            const messageData = snapshot.val();
+            const messageElement = await renderMessage({ ...messageData, id: snapshot.key }, true);
+            chatMessages.appendChild(messageElement);
+            chatMessages.scrollTop = chatMessages.scrollHeight;
+
+            // Add file preview if applicable
+            if (messageData.file && (messageData.fileType.startsWith('image/') || messageData.fileType === 'text/html')) {
+                const previewContent = await previewFile(messageData.file, messageData.fileType);
+                if (previewContent) {
+                    const messageText = messageElement.querySelector('.message-text');
+                    messageText.insertAdjacentHTML('beforeend', previewContent);
                 }
             }
         });
 
-        // Handle window close to clean up
-        window.addEventListener('beforeunload', () => {
-            onlineRef.child(userId).remove();
+        // Handle double-click to edit own messages
+        function enableMessageEditing() {
+            chatMessages.addEventListener('dblclick', (e) => {
+                const messageElement = e.target.closest('.message.user-message');
+                if (!messageElement) return;
+
+                const messageId = messageElement.dataset.messageId;
+                const messageTextElement = messageElement.querySelector('.message-text');
+                const originalText = messageTextElement.textContent.trim();
+
+                if (!messageTextElement || messageElement.querySelector('img, .voice-note, .file-attachment, .music-attachment')) return;
+
+                const textarea = document.createElement('textarea');
+                textarea.value = originalText;
+                textarea.style.width = '100%';
+                textarea.style.minHeight = '60px';
+                textarea.style.borderRadius = '8px';
+                textarea.style.padding = '8px';
+                textarea.style.border = '1px solid #ddd';
+
+                messageTextElement.innerHTML = '';
+                messageTextElement.appendChild(textarea);
+                textarea.focus();
+
+                function saveEdit() {
+                    const newText = textarea.value.trim();
+                    if (newText && newText !== originalText) {
+                        messagesRef.child(messageId).update({
+                            text: newText,
+                            edited: true,
+                            editedTimestamp: firebase.database.ServerValue.TIMESTAMP
+                        });
+                    }
+                    messageTextElement.innerHTML = newText.replace(/\n/g, '<br>') + (newText && newText !== originalText ? '<span style="font-size: 0.7em; color: #666;"> (diedit)</span>' : '');
+                }
+
+                textarea.addEventListener('blur', saveEdit);
+                textarea.addEventListener('keypress', (e) => {
+                    if (e.key === 'Enter' && !e.shiftKey) {
+                        e.preventDefault();
+                        saveEdit();
+                    }
+                });
+            });
+        }
+
+        enableMessageEditing();
+
+        // Handle edited messages
+        messagesRef.on('child_changed', (snapshot) => {
+            const messageData = snapshot.val();
+            const messageElement = document.querySelector(`[data-message-id="${snapshot.key}"]`);
+            if (messageElement) {
+                const newMessageElement = renderMessage({ ...messageData, id: snapshot.key });
+                if (messageData.edited) {
+                    const messageText = newMessageElement.querySelector('.message-text');
+                    messageText.innerHTML += '<span style="font-size: 0.7em; color: #666;"> (diedit)</span>';
+                }
+                messageElement.replaceWith(newMessageElement);
+                optimizeMessageVisibility();
+            }
         });
+
+        // Initialize service worker for notifications
+        if ('serviceWorker' in navigator) {
+            navigator.serviceWorker.register('/sw.js').then(registration => {
+                console.log('Service Worker registered with scope:', registration.scope);
+            }).catch(error => {
+                console.error('Service Worker registration failed:', error);
+            });
+        }
+
+        // Handle context menu for messages
+        chatMessages.addEventListener('contextmenu', (e) => {
+            e.preventDefault();
+            const messageElement = e.target.closest('.message');
+            if (!messageElement) return;
+
+            const messageId = messageElement.dataset.messageId;
+            const messageUsername = messageElement.querySelector('.message-info').textContent.split(' ')[0];
+
+            if ((userRole === 'admin' && adminVerified) || messageUsername === username) {
+                showModal(
+                    'Hapus Pesan',
+                    'Apakah Anda yakin ingin menghapus pesan ini?',
+                    'Ya, Hapus',
+                    () => deleteMessage(messageId, messageElement, messageUsername)
+                );
+            }
+        });
+
+        // Handle file drag and drop
+        chatMessages.addEventListener('dragover', (e) => {
+            e.preventDefault();
+            chatMessages.style.backgroundColor = 'rgba(52, 152, 219, 0.1)';
+        });
+
+        chatMessages.addEventListener('dragleave', () => {
+            chatMessages.style.backgroundColor = '';
+        });
+
+        chatMessages.addEventListener('drop', async (e) => {
+            e.preventDefault();
+            chatMessages.style.backgroundColor = '';
+            const file = e.dataTransfer.files[0];
+            if (file) {
+                fileInput.files = e.dataTransfer.files;
+                const event = new Event('change');
+                fileInput.dispatchEvent(event);
+            }
+        });
+
+        // Handle input focus styling
+        messageInput.addEventListener('focus', () => {
+            messageInput.parentElement.style.borderColor = 'var(--accent-color)';
+        });
+
+        messageInput.addEventListener('blur', () => {
+            messageInput.parentElement.style.borderColor = '#ddd';
+        });
+
+        // Cleanup old online statuses
+        onlineRef.on('value', (snapshot) => {
+            const now = Date.now();
+            snapshot.forEach(child => {
+                const userData = child.val();
+                if (userData.timestamp && now - userData.timestamp > 60000) {
+                    onlineRef.child(child.key).remove();
+                }
+            });
+        });
+
+        // Handle window resize for textarea
+        window.addEventListener('resize', () => {
+            messageInput.style.height = 'auto';
+            messageInput.style.height = Math.min(messageInput.scrollHeight, 120) + 'px';
+        });
+
+        // Initialize chat
+        (async () => {
+            // Ensure initial scroll to bottom
+            chatMessages.scrollTop = chatMessages.scrollHeight;
+
+            // Request notification permission
+            await requestNotificationPermission();
+
+            // Set initial online status
+            onlineRef.child(userId).set({
+                username: username,
+                role: userRole,
+                timestamp: firebase.database.ServerValue.TIMESTAMP
+            });
+        })();
     </script>
 </body>
 </html>
