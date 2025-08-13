@@ -488,25 +488,114 @@
             background: var(--message-ai);
         }
 
-        .file-attachment:hover, .music-attachment:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 5px 12px rgba(0, 0, 0, 0.2);
-        }
+.music-attachment {
+    margin: 8px 0;
+    padding: 8px;
+    border-radius: 10px;
+    background: #fff;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+    transition: all 0.3s ease;
+    max-width: 260px;
+    flex-wrap: wrap;
+}
 
-        .file-attachment a, .music-attachment a {
-            color: var(--accent-color);
-            text-decoration: none;
-            font-weight: 500;
-            flex: 1;
-            overflow: hidden;
-            text-overflow: ellipsis;
-            white-space: nowrap;
-        }
+.music-attachment .play-btn {
+    width: 32px;
+    height: 32px;
+    background: white;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    color: var(--accent-color);
+    font-size: 1rem;
+    transition: all 0.3s;
+}
 
-        .file-attachment i, .music-attachment i {
-            font-size: 1.2rem;
-            color: var(--accent-color);
-        }
+.music-attachment .play-btn:hover {
+    background: #f1f1f1;
+    transform: scale(1.1);
+}
+
+.music-attachment .play-btn.playing {
+    color: var(--voice-progress);
+}
+
+.music-attachment .waveform {
+    flex: 1;
+    height: 24px;
+    display: flex;
+    align-items: center;
+    gap: 2px;
+    overflow: hidden;
+}
+
+.music-attachment .wave-bar {
+    width: 2px;
+    background: rgba(0, 0, 0, 0.2);
+    border-radius: 2px;
+    transition: height 0.3s ease;
+}
+
+.music-attachment .wave-bar.played {
+    background: var(--voice-progress);
+}
+
+.music-attachment .duration {
+    color: var(--text-color);
+    font-size: 0.75rem;
+    font-weight: 500;
+}
+
+.music-attachment a {
+    color: var(--accent-color);
+    text-decoration: none;
+    font-weight: 500;
+    font-size: 0.8rem;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    max-width: 150px;
+}
+
+.music-attachment i {
+    font-size: 1rem;
+    color: var(--accent-color);
+}
+
+body.dark-mode .music-attachment {
+    background: #273859;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2);
+}
+
+body.dark-mode .music-attachment .play-btn {
+    background: #1f2b46;
+    color: #3498db;
+}
+
+body.dark-mode .music-attachment .play-btn:hover {
+    background: #273859;
+}
+
+body.dark-mode .music-attachment .wave-bar {
+    background: rgba(255, 255, 255, 0.3);
+}
+
+body.dark-mode .music-attachment .duration {
+    color: #ecf0f1;
+}
+
+body.dark-mode .music-attachment a {
+    color: #3498db;
+}
+
+body.dark-mode .music-attachment i {
+    color: #3498db;
+}
 
         body.dark-mode .voice-note .play-btn {
             background: #1f2b46;
