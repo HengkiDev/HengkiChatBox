@@ -1130,6 +1130,37 @@
             0% { transform: scale(0.8); opacity: 0; }
             100% { transform: scale(1); opacity: 1; }
         }
+
+        .file-attachment, .music-attachment {
+    margin: 10px 0;
+    padding: 10px;
+    border-radius: 12px;
+    background: #fff;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    box-shadow: 0 3px 8px rgba(0, 0, 0, 0.15);
+    transition: all 0.3s ease;
+    max-width: 280px;
+}
+
+.music-attachment {
+    padding-top: 5px;
+    padding-bottom: 5px;
+    padding-left: 10px;
+    padding-right: 10px;
+}
+
+body.dark-mode .file-attachment, body.dark-mode .music-attachment {
+    background: #273859;
+}
+
+body.dark-mode .music-attachment {
+    padding-top: 5px;
+    padding-bottom: 5px;
+    padding-left: 10px;
+    padding-right: 10px;
+}
     </style>
 </head>
 <body>
