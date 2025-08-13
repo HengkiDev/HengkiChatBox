@@ -302,6 +302,15 @@
             background: #c0392b;
         }
 
+        .reply-btn {
+            background: #3498db;
+            color: white;
+        }
+
+        .reply-btn:hover {
+            background: #2980b9;
+        }
+
         .message-info {
             display: flex;
             align-items: center;
@@ -1250,6 +1259,51 @@ body.dark-mode .music-attachment {
     padding-left: 10px;
     padding-right: 10px;
 }
+
+        #reply-preview {
+            padding: 10px;
+            background: #f0f0f0;
+            border-top: 1px solid #ddd;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            font-size: 0.9rem;
+            color: #333;
+        }
+
+        #reply-preview button {
+            background: #e74c3c;
+            color: white;
+            border: none;
+            padding: 5px 10px;
+            border-radius: 15px;
+            cursor: pointer;
+        }
+
+        #reply-preview button:hover {
+            background: #c0392b;
+        }
+
+        .reply-preview {
+            background: #e0e0e0;
+            padding: 5px 10px;
+            margin-bottom: 10px;
+            border-radius: 8px;
+            font-size: 0.85rem;
+            color: #555;
+        }
+
+        body.dark-mode #reply-preview {
+            background: #273859;
+            color: #ecf0f1;
+            border-top: 1px solid #364f7e;
+        }
+
+        body.dark-mode .reply-preview {
+            background: #1f2b46;
+            color: #bdc3c7;
+        }
+
     </style>
 </head>
 <body>
@@ -1877,24 +1931,84 @@ body.dark-mode .music-attachment {
             this.style.height = Math.min(this.scrollHeight, 120) + 'px';
         });
 
+        // Reply feature variables
+        let replyingTo = null;
+        let replyUsername = null;
+        let replySnippet = null;
+
+        // Function to start replying
+        window.replyToMessage = function(messageId) {
+            const repliedMessage = document.querySelector(`[data-message-id="${messageId}"]`);
+            if (!repliedMessage) return;
+
+            replyingTo = messageId;
+            replyUsername = repliedMessage.querySelector('.message-info').firstChild.nextSibling.textContent.trim();
+            let textContent = repliedMessage.querySelector('.message-text').textContent.trim();
+            if (repliedMessage.querySelector('img')) {
+                textContent = '[Gambar] ' + textContent;
+            } else if (repliedMessage.querySelector('.voice-note')) {
+                textContent = '[Catatan Suara] ' + textContent;
+            } else if (repliedMessage.querySelector('.file-attachment')) {
+                textContent = '[File] ' + textContent;
+            } else if (repliedMessage.querySelector('.music-attachment')) {
+                textContent = '[Musik] ' + textContent;
+            }
+            replySnippet = textContent.substring(0, 50) + (textContent.length > 50 ? '...' : '');
+
+            let replyPreview = document.getElementById('reply-preview');
+            if (!replyPreview) {
+                replyPreview = document.createElement('div');
+                replyPreview.id = 'reply-preview';
+                const chatInput = document.querySelector('.chat-input');
+                chatInput.parentNode.insertBefore(replyPreview, chatInput);
+            }
+            replyPreview.innerHTML = `
+                <div>Balas ke ${replyUsername}: ${replySnippet}</div>
+                <button onclick="cancelReply()">Batal</button>
+            `;
+
+            messageInput.focus();
+            chatMessages.scrollTop = chatMessages.scrollHeight;
+        };
+
+        // Function to cancel reply
+        window.cancelReply = function() {
+            replyingTo = null;
+            replyUsername = null;
+            replySnippet = null;
+            const replyPreview = document.getElementById('reply-preview');
+            if (replyPreview) replyPreview.remove();
+        };
+
         // Enhanced send message function
+        let isSending = false;
         async function sendMessage() {
+            if (isSending) return;
+            isSending = true;
+
             const message = messageInput.value.trim();
             if (message !== '') {
                 if (message.startsWith('/ai ')) {
                     const aiQuery = message.substring(4).trim();
                     if (aiQuery) {
                         const newMessageRef = messagesRef.push();
-                        newMessageRef.set({
+                        const userMessageData = {
                             id: newMessageRef.key,
                             username: username,
                             userRole: userRole,
                             userId: userId,
                             text: message,
                             timestamp: firebase.database.ServerValue.TIMESTAMP
-                        });
+                        };
+                        if (replyingTo) {
+                            userMessageData.replyTo = replyingTo;
+                            userMessageData.replyUsername = replyUsername;
+                            userMessageData.replySnippet = replySnippet;
+                        }
+                        newMessageRef.set(userMessageData);
                         messageInput.value = '';
                         messageInput.style.height = 'auto';
+                        cancelReply();
                         const thinkingElement = showAIThinking();
                         try {
                             const aiResponse = await callAI(aiQuery);
@@ -1946,16 +2060,23 @@ body.dark-mode .music-attachment {
                     }
                 } else {
                     const newMessageRef = messagesRef.push();
-                    newMessageRef.set({
+                    const messageData = {
                         id: newMessageRef.key,
                         username: username,
                         userRole: userRole,
                         userId: userId,
                         text: message,
                         timestamp: firebase.database.ServerValue.TIMESTAMP
-                    });
+                    };
+                    if (replyingTo) {
+                        messageData.replyTo = replyingTo;
+                        messageData.replyUsername = replyUsername;
+                        messageData.replySnippet = replySnippet;
+                    }
+                    newMessageRef.set(messageData);
                     messageInput.value = '';
                     messageInput.style.height = 'auto';
+                    cancelReply();
                     // Show notification for regular message
                     showNotification(`${username} sent a message`, {
                         body: message.substring(0, 50) + (message.length > 50 ? '...' : ''),
@@ -1963,6 +2084,7 @@ body.dark-mode .music-attachment {
                     });
                 }
             }
+            isSending = false;
         }
 
         // Send message on button click
@@ -2051,6 +2173,12 @@ body.dark-mode .music-attachment {
                         timestamp: firebase.database.ServerValue.TIMESTAMP
                     };
 
+                    if (replyingTo) {
+                        messageData.replyTo = replyingTo;
+                        messageData.replyUsername = replyUsername;
+                        messageData.replySnippet = replySnippet;
+                    }
+
                     if (fileType === 'image') {
                         messageData.image = fileData;
                     } else if (fileType === 'music') {
@@ -2067,6 +2195,7 @@ body.dark-mode .music-attachment {
                     messageInput.value = '';
                     messageInput.style.height = 'auto';
                     fileInput.value = '';
+                    cancelReply();
 
                     // Show notification for file message
                     showNotification(`${username} sent a ${fileType}`, {
@@ -2083,7 +2212,7 @@ body.dark-mode .music-attachment {
             }
         });
 
-        // Render message with voice note, file, and music support
+        // Render message with voice note, file, music, and reply support
         function renderMessage(messageData, isNew = false) {
             const messageElement = document.createElement('div');
             const messageClass = messageData.isAI ? 'ai-message' : 
@@ -2099,8 +2228,15 @@ body.dark-mode .music-attachment {
             const time = messageData.timestamp ? new Date(messageData.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : 'sekarang';
 
             let messageContent = '';
+            if (messageData.replyTo) {
+                messageContent += `
+                    <div class="reply-preview">
+                        <strong>${messageData.replyUsername}:</strong> ${messageData.replySnippet}
+                    </div>
+                `;
+            }
             if (messageData.text) {
-                messageContent = messageData.isAI ? formatAIResponse(messageData.text) : messageData.text.replace(/\n/g, '<br>');
+                messageContent += messageData.isAI ? formatAIResponse(messageData.text) : messageData.text.replace(/\n/g, '<br>');
             }
 
             if (messageData.image) {
@@ -2162,6 +2298,9 @@ body.dark-mode .music-attachment {
                 </div>
                 <div class="message-text">${messageContent}</div>
                 <div class="message-actions">
+                    <button class="message-action-btn reply-btn" onclick="replyToMessage('${messageData.id}')">
+                        <i class="fas fa-reply"></i>
+                    </button>
                     ${(messageData.userId === userId || (userRole === 'admin' && adminVerified)) ? `
                         <button class="message-action-btn delete-btn" onclick="deleteMessage('${messageData.id}', this.closest('.message'), '${messageData.username}')">
                             <i class="fas fa-trash"></i>
@@ -2256,7 +2395,7 @@ body.dark-mode .music-attachment {
                 messageElement.style.animation = 'fadeOut 0.3s forwards';
                 setTimeout(() => {
                     if (messageElement.parentNode) {
-                                        messageElement.remove();
+                        messageElement.remove();
                     }
                 }, 300);
             }
@@ -2313,217 +2452,6 @@ body.dark-mode .music-attachment {
                     return 'fas fa-file';
             }
         }
-
-        // Prevent multiple rapid clicks on send button
-        let isSending = false;
-        sendButton.addEventListener('click', async () => {
-            if (isSending) return;
-            isSending = true;
-            await sendMessage();
-            setTimeout(() => {
-                isSending = false;
-            }, 500);
-        });
-
-        // Auto-resize textarea on paste
-        messageInput.addEventListener('paste', function() {
-            setTimeout(() => {
-                this.style.height = 'auto';
-                this.style.height = Math.min(this.scrollHeight, 120) + 'px';
-            }, 0);
-        });
-
-        // Handle keyboard shortcuts
-        document.addEventListener('keydown', (e) => {
-            if (e.ctrlKey && e.key === '/') {
-                e.preventDefault();
-                messageInput.value = '/ai ';
-                messageInput.focus();
-                messageInput.dispatchEvent(new Event('input'));
-            }
-        });
-
-        // Optimize performance by limiting rendered messages
-        const maxMessages = 100;
-        messagesRef.on('value', (snapshot) => {
-            const messages = [];
-            snapshot.forEach(child => {
-                messages.push({ key: child.key, ...child.val() });
-            });
-            if (messages.length > maxMessages) {
-                const messagesToRemove = messages.slice(0, messages.length - maxMessages);
-                messagesToRemove.forEach(msg => {
-                    messagesRef.child(msg.key).remove();
-                });
-            }
-        });
-
-        // Handle visibility of messages based on scroll
-        function optimizeMessageVisibility() {
-            const messages = chatMessages.querySelectorAll('.message');
-            const viewportHeight = chatMessages.clientHeight;
-            const scrollTop = chatMessages.scrollTop;
-
-            messages.forEach(message => {
-                const rect = message.getBoundingClientRect();
-                const messageTop = rect.top + scrollTop - chatMessages.offsetTop;
-                const messageBottom = messageTop + rect.height;
-
-                if (messageBottom < scrollTop - 100 || messageTop > scrollTop + viewportHeight + 100) {
-                    message.style.display = 'none';
-                } else {
-                    message.style.display = 'block';
-                }
-            });
-        }
-
-        chatMessages.addEventListener('scroll', optimizeMessageVisibility);
-        window.addEventListener('resize', optimizeMessageVisibility);
-
-        // Initialize visibility optimization
-        optimizeMessageVisibility();
-
-        // Handle file preview for certain types
-        async function previewFile(fileData, fileType) {
-            if (fileType.startsWith('image/')) {
-                return `<img src="${fileData}" alt="Image Preview" onclick="showImageModal(this.src)">`;
-            } else if (fileType === 'text/html') {
-                // Display a snippet of HTML content
-                const text = await (await fetch(fileData)).text();
-                return `<pre class="code-block">${text.slice(0, 200)}${text.length > 200 ? '...' : ''}</pre>`;
-            } else {
-                return '';
-            }
-        }
-
-        // Update message rendering for file previews
-        messagesRef.on('child_added', async (snapshot) => {
-            const messageData = snapshot.val();
-            const messageElement = await renderMessage({ ...messageData, id: snapshot.key }, true);
-            chatMessages.appendChild(messageElement);
-            chatMessages.scrollTop = chatMessages.scrollHeight;
-
-            // Add file preview if applicable
-            if (messageData.file && (messageData.fileType.startsWith('image/') || messageData.fileType === 'text/html')) {
-                const previewContent = await previewFile(messageData.file, messageData.fileType);
-                if (previewContent) {
-                    const messageText = messageElement.querySelector('.message-text');
-                    messageText.insertAdjacentHTML('beforeend', previewContent);
-                }
-            }
-        });
-
-        // Handle double-click to edit own messages
-        function enableMessageEditing() {
-            chatMessages.addEventListener('dblclick', (e) => {
-                const messageElement = e.target.closest('.message.user-message');
-                if (!messageElement) return;
-
-                const messageId = messageElement.dataset.messageId;
-                const messageTextElement = messageElement.querySelector('.message-text');
-                const originalText = messageTextElement.textContent.trim();
-
-                if (!messageTextElement || messageElement.querySelector('img, .voice-note, .file-attachment, .music-attachment')) return;
-
-                const textarea = document.createElement('textarea');
-                textarea.value = originalText;
-                textarea.style.width = '100%';
-                textarea.style.minHeight = '60px';
-                textarea.style.borderRadius = '8px';
-                textarea.style.padding = '8px';
-                textarea.style.border = '1px solid #ddd';
-
-                messageTextElement.innerHTML = '';
-                messageTextElement.appendChild(textarea);
-                textarea.focus();
-
-                function saveEdit() {
-                    const newText = textarea.value.trim();
-                    if (newText && newText !== originalText) {
-                        messagesRef.child(messageId).update({
-                            text: newText,
-                            edited: true,
-                            editedTimestamp: firebase.database.ServerValue.TIMESTAMP
-                        });
-                    }
-                    messageTextElement.innerHTML = newText.replace(/\n/g, '<br>') + (newText && newText !== originalText ? '<span style="font-size: 0.7em; color: #666;"> (diedit)</span>' : '');
-                }
-
-                textarea.addEventListener('blur', saveEdit);
-                textarea.addEventListener('keypress', (e) => {
-                    if (e.key === 'Enter' && !e.shiftKey) {
-                        e.preventDefault();
-                        saveEdit();
-                    }
-                });
-            });
-        }
-
-        enableMessageEditing();
-
-        // Handle edited messages
-        messagesRef.on('child_changed', (snapshot) => {
-            const messageData = snapshot.val();
-            const messageElement = document.querySelector(`[data-message-id="${snapshot.key}"]`);
-            if (messageElement) {
-                const newMessageElement = renderMessage({ ...messageData, id: snapshot.key });
-                if (messageData.edited) {
-                    const messageText = newMessageElement.querySelector('.message-text');
-                    messageText.innerHTML += '<span style="font-size: 0.7em; color: #666;"> (diedit)</span>';
-                }
-                messageElement.replaceWith(newMessageElement);
-                optimizeMessageVisibility();
-            }
-        });
-
-        // Initialize service worker for notifications
-        if ('serviceWorker' in navigator) {
-            navigator.serviceWorker.register('/sw.js').then(registration => {
-                console.log('Service Worker registered with scope:', registration.scope);
-            }).catch(error => {
-                console.error('Service Worker registration failed:', error);
-            });
-        }
-
-        // Handle context menu for messages
-        chatMessages.addEventListener('contextmenu', (e) => {
-            e.preventDefault();
-            const messageElement = e.target.closest('.message');
-            if (!messageElement) return;
-
-            const messageId = messageElement.dataset.messageId;
-            const messageUsername = messageElement.querySelector('.message-info').textContent.split(' ')[0];
-
-            if ((userRole === 'admin' && adminVerified) || messageUsername === username) {
-                showModal(
-                    'Hapus Pesan',
-                    'Apakah Anda yakin ingin menghapus pesan ini?',
-                    'Ya, Hapus',
-                    () => deleteMessage(messageId, messageElement, messageUsername)
-                );
-            }
-        });
-
-        // Handle file drag and drop
-        chatMessages.addEventListener('dragover', (e) => {
-            e.preventDefault();
-            chatMessages.style.backgroundColor = 'rgba(52, 152, 219, 0.1)';
-        });
-
-        chatMessages.addEventListener('dragleave', () => {
-            chatMessages.style.backgroundColor = '';
-        });
-
-        chatMessages.addEventListener('drop', async (e) => {
-            e.preventDefault();
-            chatMessages.style.backgroundColor = '';
-            const file = e.dataTransfer.files[0];
-            if (file) {
-                fileInput.files = e.dataTransfer.files;
-                const event = new Event('change');
-                fileInput.dispatchEvent(event);
-            }
-        });
 
         // Handle input focus styling
         messageInput.addEventListener('focus', () => {
