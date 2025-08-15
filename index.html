@@ -342,20 +342,6 @@
             align-items: center;
             gap: 3px;
             margin-left: 5px;
-        }
-
-        .admin-badge {
-            background: linear-gradient(135deg, #e74c3c, #c0392b);
-            color: white;
-        }
-
-        .vip-badge {
-            background: linear-gradient(135deg, #9b59b6, #8e44ad);
-            color: white;
-        }
-
-        .user-badge {
-            background: linear-gradient(135deg, #3498db, #2980b9);
             color: white;
         }
 
@@ -1444,7 +1430,7 @@ body.dark-mode .music-attachment {
         const cancelReply = replyPreview.querySelector('.cancel-reply');
 
         // User roles and admin functionality
-        let userRole = 'user';
+        let userRole = {name: 'user', color: '#3498db'};
         let userId = localStorage.getItem('userId');
         if (!userId) {
             userId = database.ref().push().key;
@@ -1478,24 +1464,29 @@ body.dark-mode .music-attachment {
 
         async function loadUserRole() {
             const roleSnap = await userRolesRef.child(userId).once('value');
-            userRole = roleSnap.val() || getUserRole(username);
+            const roleData = roleSnap.val();
+            if (roleData) {
+                userRole = roleData;
+            } else {
+                userRole = getDefaultUserRole(username);
+            }
             checkUserRole();
         }
 
-        function getUserRole(username) {
+        function getDefaultUserRole(username) {
             const lowerUsername = username.toLowerCase().trim();
             if (lowerUsername === ADMIN_USERNAME) {
-                return 'admin';
+                return {name: 'admin', color: '#e74c3c'};
             }
             const vipUsers = ['guest', 'demo', 'test'];
             if (vipUsers.includes(lowerUsername)) {
-                return 'vip';
+                return {name: 'vip', color: '#9b59b6'};
             }
-            return 'user';
+            return {name: 'user', color: '#3498db'};
         }
 
         function checkUserRole() {
-            if (userRole === 'admin' && adminVerified) {
+            if (userRole.name === 'admin' && adminVerified) {
                 adminControls.classList.add('show');
             } else {
                 adminControls.classList.remove('show');
@@ -1504,7 +1495,7 @@ body.dark-mode .music-attachment {
 
         // Admin verification system
         async function verifyAdmin() {
-            if (userRole !== 'admin') return false;
+            if (userRole.name !== 'admin') return false;
             try {
                 const secretInput = prompt('Masukkan kode verifikasi admin:');
                 if (secretInput === ADMIN_SECRET_KEY) {
@@ -1521,12 +1512,12 @@ body.dark-mode .music-attachment {
 
         // Check admin session on load
         function checkAdminSession() {
-            if (userRole === 'admin') {
+            if (userRole.name === 'admin') {
                 const adminSession = localStorage.getItem('adminSession');
                 if (adminSession) {
                     const sessionTime = parseInt(adminSession);
                     const currentTime = Date.now();
-                    if (currentTime - sessionTime < 3600000) {
+                    if (currentTime - sessionTime < 3600000) { // 1 hour session
                         adminVerified = true;
                         adminControls.classList.add('show');
                     } else {
@@ -1544,11 +1535,11 @@ body.dark-mode .music-attachment {
                 localStorage.setItem('username', username);
                 const oldRole = userRole;
                 await loadUserRole();
-                if (userRole === 'admin' && !adminVerified) {
+                if (userRole.name === 'admin' && !adminVerified) {
                     const verified = await verifyAdmin();
                     if (!verified) {
                         alert('Verifikasi admin gagal. Akses ditolak.');
-                        userRole = 'user';
+                        userRole = {name: 'user', color: '#3498db'};
                         adminControls.classList.remove('show');
                     }
                 }
@@ -1617,7 +1608,7 @@ body.dark-mode .music-attachment {
 
         // Admin functions
         function clearAllMessages() {
-            if (userRole !== 'admin' || !adminVerified) return;
+            if (userRole.name !== 'admin' || !adminVerified) return;
             showModal(
                 'Hapus Semua Chat',
                 'Apakah Anda yakin ingin menghapus semua pesan? Tindakan ini tidak dapat dibatalkan.',
@@ -1635,7 +1626,7 @@ body.dark-mode .music-attachment {
 
         // Delete message function
         function deleteMessage(messageId, messageElement, messageUsername) {
-            const canDelete = (userRole === 'admin' && adminVerified) || messageUsername === username;
+            const canDelete = (userRole.name === 'admin' && adminVerified) || messageUsername === username;
             if (!canDelete) {
                 alert('Anda hanya dapat menghapus pesan Anda sendiri.');
                 return;
@@ -1973,13 +1964,14 @@ body.dark-mode .music-attachment {
             replyPreview.classList.remove('show');
         });
 
-        // Handle add role command
+        // Handle add role command with custom name and color
         async function handleAddRoleCommand(message) {
-            if (userRole !== 'admin' || !adminVerified) return false;
+            if (userRole.name !== 'admin' || !adminVerified) return false;
             const parts = message.split(' ');
-            if (parts[0] === '/addrole' && parts.length >= 3) {
+            if (parts[0] === '/addrole' && parts.length >= 4) {
                 const targetUsername = parts[1].replace('@', '').trim();
-                const newRole = parts[2].trim();
+                const roleName = parts[2].trim();
+                const roleColor = parts[3].trim(); // Expect hex color like #ff0000
                 // Find userId by username from onlineRef
                 const onlineSnap = await onlineRef.once('value');
                 let targetUserId = null;
@@ -1989,14 +1981,17 @@ body.dark-mode .music-attachment {
                     }
                 });
                 if (targetUserId) {
-                    userRolesRef.child(targetUserId).set(newRole);
+                    userRolesRef.child(targetUserId).set({
+                        name: roleName,
+                        color: roleColor
+                    });
                     // Send system message
                     const systemMessageRef = messagesRef.push();
                     systemMessageRef.set({
                         id: systemMessageRef.key,
                         username: 'System',
-                        userRole: 'system',
-                        text: `Admin telah menambahkan role ${newRole} ke ${targetUsername}`,
+                        userRole: {name: 'system', color: '#000000'},
+                        text: `Admin telah menambahkan role ${roleName} (warna: ${roleColor}) ke ${targetUsername}`,
                         timestamp: firebase.database.ServerValue.TIMESTAMP
                     });
                     return true;
@@ -2042,7 +2037,7 @@ body.dark-mode .music-attachment {
                             aiMessageRef.set({
                                 id: aiMessageRef.key,
                                 username: 'AI Assistant',
-                                userRole: 'ai',
+                                userRole: {name: 'ai', color: '#27ae60'},
                                 text: aiResponse,
                                 timestamp: firebase.database.ServerValue.TIMESTAMP,
                                 isAI: true
@@ -2062,7 +2057,7 @@ body.dark-mode .music-attachment {
                             errorMessageRef.set({
                                 id: errorMessageRef.key,
                                 username: 'AI Assistant',
-                                userRole: 'ai',
+                                userRole: {name: 'ai', color: '#27ae60'},
                                 text: errorMessage,
                                 timestamp: firebase.database.ServerValue.TIMESTAMP,
                                 isAI: true
@@ -2073,7 +2068,7 @@ body.dark-mode .music-attachment {
                         helpMessageRef.set({
                             id: helpMessageRef.key,
                             username: 'AI Assistant',
-                            userRole: 'ai',
+                            userRole: {name: 'ai', color: '#27ae60'},
                             text: 'Silakan masukkan pertanyaan setelah /ai\n\nContoh:\n• `/ai Jelaskan tentang JavaScript`\n• `/ai Bagaimana cara belajar programming?`\n• `/ai Buatkan contoh kode HTML sederhana`',
                             timestamp: firebase.database.ServerValue.TIMESTAMP,
                             isAI: true
@@ -2249,9 +2244,7 @@ body.dark-mode .music-attachment {
             messageElement.className = `message ${messageClass} ${isNew ? 'new-message' : ''}`;
             messageElement.dataset.messageId = messageData.id;
 
-            const roleBadgeClass = messageData.userRole === 'admin' ? 'admin-badge' :
-                                  messageData.userRole === 'vip' ? 'vip-badge' :
-                                  messageData.userRole === 'ai' ? 'ai-badge' : 'user-badge';
+            const roleBadgeStyle = `background-color: ${messageData.userRole.color}; color: white;`;
 
             const displayUsername = messageData.isAI ? 'AI Assistant' : messageData.username;
             const time = messageData.timestamp ? new Date(messageData.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : 'sekarang';
@@ -2319,7 +2312,7 @@ body.dark-mode .music-attachment {
                 <div class="message-info">
                     ${messageData.isAI ? '<i class="fas fa-robot"></i>' : '<i class="fas fa-user"></i>'}
                     ${displayUsername}
-                    <span class="role-badge ${roleBadgeClass}">${messageData.userRole.toUpperCase()}</span>
+                    <span class="role-badge" style="${roleBadgeStyle}">${messageData.userRole.name.toUpperCase()}</span>
                     <span class="message-time">${time}</span>
                 </div>
                 <div class="message-text">${messageContent}</div>
@@ -2327,7 +2320,7 @@ body.dark-mode .music-attachment {
                     <button class="message-action-btn reply-btn" onclick="replyToMessage('${messageData.id}')">
                         <i class="fas fa-reply"></i>
                     </button>
-                    ${(messageData.userId === userId || (userRole === 'admin' && adminVerified)) ? `
+                    ${(messageData.userId === userId || (userRole.name === 'admin' && adminVerified)) ? `
                         <button class="message-action-btn delete-btn" onclick="deleteMessage('${messageData.id}', this.closest('.message'), '${messageData.username}')">
                             <i class="fas fa-trash"></i>
                         </button>
@@ -2406,20 +2399,57 @@ body.dark-mode .music-attachment {
             return messageElement;
         }
 
-        // Load messages (merged listener to avoid duplicates)
-        messagesRef.on('child_added', async (snapshot) => {
-            const messageData = snapshot.val();
-            const messageElement = renderMessage({ ...messageData, id: snapshot.key }, true);
-            chatMessages.appendChild(messageElement);
-            chatMessages.scrollTop = chatMessages.scrollHeight;
+        // Infinite scroll for messages
+        let isLoadingMessages = false;
+        let oldestTimestamp = null;
+        const batchSize = 20;
 
-            // Add file preview if applicable
-            if (messageData.file && (messageData.fileType.startsWith('image/') || messageData.fileType === 'text/html')) {
-                const previewContent = await previewFile(messageData.file, messageData.fileType);
-                if (previewContent) {
-                    const messageText = messageElement.querySelector('.message-text');
-                    messageText.insertAdjacentHTML('beforeend', previewContent);
-                }
+        async function loadMoreMessages() {
+            if (isLoadingMessages) return;
+            isLoadingMessages = true;
+
+            let query = messagesRef.orderByChild('timestamp').limitToLast(batchSize);
+            if (oldestTimestamp) {
+                query = query.endBefore(oldestTimestamp);
+            }
+
+            const snapshot = await query.once('value');
+            const messages = [];
+            snapshot.forEach(child => {
+                messages.push({ key: child.key, ...child.val() });
+            });
+
+            if (messages.length > 0) {
+                const oldScrollHeight = chatMessages.scrollHeight;
+                messages.reverse().forEach(msg => {
+                    const messageElement = renderMessage({ ...msg, id: msg.key });
+                    chatMessages.insertBefore(messageElement, chatMessages.firstChild);
+                });
+                const newScrollHeight = chatMessages.scrollHeight;
+                chatMessages.scrollTop += (newScrollHeight - oldScrollHeight);
+                oldestTimestamp = messages[0].timestamp;
+            }
+
+            isLoadingMessages = false;
+        }
+
+        // Initial load
+        loadMoreMessages();
+
+        // Scroll event for loading more
+        chatMessages.addEventListener('scroll', () => {
+            if (chatMessages.scrollTop === 0) {
+                loadMoreMessages();
+            }
+        });
+
+        // Listen for new messages
+        messagesRef.orderByChild('timestamp').on('child_added', (snapshot) => {
+            const messageData = snapshot.val();
+            if (!oldestTimestamp || messageData.timestamp >= oldestTimestamp) {
+                const messageElement = renderMessage({ ...messageData, id: snapshot.key }, true);
+                chatMessages.appendChild(messageElement);
+                chatMessages.scrollTop = chatMessages.scrollHeight;
             }
         });
 
@@ -2514,21 +2544,6 @@ body.dark-mode .music-attachment {
                 messageInput.value = '/ai ';
                 messageInput.focus();
                 messageInput.dispatchEvent(new Event('input'));
-            }
-        });
-
-        // Optimize performance by limiting rendered messages
-        const maxMessages = 30;
-        messagesRef.on('value', (snapshot) => {
-            const messages = [];
-            snapshot.forEach(child => {
-                messages.push({ key: child.key, ...child.val() });
-            });
-            if (messages.length > maxMessages) {
-                const messagesToRemove = messages.slice(0, messages.length - maxMessages);
-                messagesToRemove.forEach(msg => {
-                    messagesRef.child(msg.key).remove();
-                });
             }
         });
 
@@ -2651,7 +2666,7 @@ body.dark-mode .music-attachment {
             const messageId = messageElement.dataset.messageId;
             const messageUsername = messageElement.querySelector('.message-info').textContent.split(' ')[0];
 
-            if ((userRole === 'admin' && adminVerified) || messageUsername === username) {
+            if ((userRole.name === 'admin' && adminVerified) || messageUsername === username) {
                 showModal(
                     'Hapus Pesan',
                     'Apakah Anda yakin ingin menghapus pesan ini?',
