@@ -21,14 +21,12 @@
             --vip-color: #9b59b6;
             --voice-progress: #2ecc71;
         }
-
         * {
             margin: 0;
             padding: 0;
             box-sizing: border-box;
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
         }
-
         body {
             background: #f9f9f9;
             background-image: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%239C92AC' fill-opacity='0.05'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
@@ -36,7 +34,6 @@
             flex-direction: column;
             min-height: 100vh;
         }
-
         .chat-container {
             flex: 1;
             display: flex;
@@ -44,7 +41,6 @@
             height: 100vh;
             max-height: 100vh;
         }
-
         .chat-header {
             background: var(--bg-gradient);
             color: white;
@@ -55,7 +51,6 @@
             z-index: 100;
             box-shadow: 0 2px 10px rgba(0,0,0,0.1);
         }
-
         .chat-header h2 {
             font-size: 1.5rem;
             font-weight: 600;
@@ -65,7 +60,6 @@
             justify-content: center;
             gap: 10px;
         }
-
         .online-indicator {
             padding: 5px 12px;
             background-color: rgba(255, 255, 255, 0.2);
@@ -75,7 +69,6 @@
             align-items: center;
             margin-top: 8px;
         }
-
         .online-indicator .dot {
             width: 8px;
             height: 8px;
@@ -84,7 +77,6 @@
             margin-right: 5px;
             position: relative;
         }
-
         .online-indicator .dot:after {
             content: '';
             position: absolute;
@@ -96,13 +88,11 @@
             left: -2px;
             animation: pulse 1.5s infinite;
         }
-
         @keyframes pulse {
             0% { transform: scale(1); opacity: 0.7; }
             70% { transform: scale(1.5); opacity: 0; }
             100% { transform: scale(1); opacity: 0; }
         }
-
         .user-info {
             padding: 15px 20px;
             border-bottom: 1px solid #ddd;
@@ -112,7 +102,6 @@
             gap: 10px;
             flex-wrap: wrap;
         }
-
         #username-input {
             flex: 1;
             min-width: 200px;
@@ -122,13 +111,11 @@
             font-size: 1rem;
             transition: border-color 0.3s;
         }
-
         #username-input:focus {
             border-color: var(--accent-color);
             outline: none;
             box-shadow: 0 0 0 3px rgba(52, 152, 219, 0.1);
         }
-
         #save-name-button {
             padding: 10px 20px;
             background: var(--accent-color);
@@ -143,12 +130,10 @@
             align-items: center;
             gap: 5px;
         }
-
         #save-name-button:hover {
             background: #2980b9;
             transform: translateY(-2px);
         }
-
         .admin-controls {
             padding: 10px 20px;
             background: linear-gradient(135deg, #e74c3c, #c0392b);
@@ -158,11 +143,9 @@
             align-items: center;
             flex-wrap: wrap;
         }
-
         .admin-controls.show {
             display: flex;
         }
-
         .admin-btn {
             padding: 5px 10px;
             background: rgba(255, 255, 255, 0.2);
@@ -176,12 +159,10 @@
             align-items: center;
             gap: 5px;
         }
-
         .admin-btn:hover {
             background: rgba(255, 255, 255, 0.3);
             transform: translateY(-1px);
         }
-
         .chat-messages {
             flex: 1;
             overflow-y: auto;
@@ -194,7 +175,6 @@
             min-height: 0;
             overscroll-behavior: contain;
         }
-
         .message {
             max-width: 80%;
             padding: 12px 15px;
@@ -204,26 +184,22 @@
             box-shadow: 0 2px 5px rgba(0, 0, 0, 0.08);
             word-wrap: break-word;
         }
-
         @keyframes fadeIn {
             from { opacity: 0; transform: translateY(10px); }
             to { opacity: 1; transform: translateY(0); }
         }
-
         .user-message {
             align-self: flex-end;
             background: var(--message-own);
             color: var(--text-color);
             border-bottom-right-radius: 4px;
         }
-
         .other-message {
             align-self: flex-start;
             background: var(--message-other);
             color: var(--text-color);
             border-bottom-left-radius: 4px;
         }
-
         .ai-message {
             align-self: flex-start;
             background: var(--message-ai);
@@ -232,12 +208,10 @@
             border-left: 4px solid #27ae60;
             max-width: 90%;
         }
-
         .message:hover .message-actions {
             opacity: 1;
             transform: translateX(0);
         }
-
         .message-actions {
             position: absolute;
             top: 5px;
@@ -248,34 +222,27 @@
             transform: translateX(10px);
             transition: all 0.3s;
         }
-
         .user-message .message-actions {
             left: -40px;
             transform: translateX(-10px);
         }
-
         .user-message:hover .message-actions {
             transform: translateX(0);
         }
-
         .other-message .message-actions {
             right: -40px;
             transform: translateX(10px);
         }
-
         .other-message:hover .message-actions {
             transform: translateX(0);
         }
-
         .ai-message .message-actions {
             right: -40px;
             transform: translateX(10px);
         }
-
         .ai-message:hover .message-actions {
             transform: translateX(0);
         }
-
         .message-action-btn {
             width: 28px;
             height: 28px;
@@ -290,29 +257,23 @@
             background: rgba(0, 0, 0, 0.1);
             color: #666;
         }
-
         .message-action-btn:hover {
             transform: scale(1.1);
         }
-
         .delete-btn {
             background: #e74c3c;
             color: white;
         }
-
         .delete-btn:hover {
             background: #c0392b;
         }
-
         .reply-btn {
             background: #3498db;
             color: white;
         }
-
         .reply-btn:hover {
             background: #2980b9;
         }
-
         .message-info {
             display: flex;
             align-items: center;
@@ -321,20 +282,16 @@
             font-size: 0.85rem;
             gap: 5px;
         }
-
         .user-message .message-info {
             color: #3498db;
             justify-content: flex-end;
         }
-
         .other-message .message-info {
             color: #9b59b6;
         }
-
         .ai-message .message-info {
             color: #27ae60;
         }
-
         .role-badge {
             padding: 2px 6px;
             border-radius: 10px;
@@ -346,19 +303,16 @@
             margin-left: 5px;
             color: white;
         }
-
         .message-time {
             font-size: 0.75rem;
             font-weight: normal;
             opacity: 0.7;
             margin-left: auto;
         }
-
         .message-text {
             line-height: 1.6;
             word-break: break-word;
         }
-
         .message-text .quote {
             background: #f0f0f0;
             padding: 8px;
@@ -368,12 +322,10 @@
             font-size: 0.9em;
             color: #555;
         }
-
         .message-text .quote strong {
             display: block;
             margin-bottom: 2px;
         }
-
         .message-text img {
             max-width: 280px;
             max-height: 200px;
@@ -387,11 +339,9 @@
             cursor: pointer;
             transition: transform 0.3s ease;
         }
-
         .message-text img:hover {
             transform: scale(1.05);
         }
-
         .message-text .voice-note {
             width: 280px;
             margin: 10px 0;
@@ -404,28 +354,22 @@
             box-shadow: 0 3px 8px rgba(0, 0, 0, 0.15);
             transition: all 0.3s ease;
         }
-
         .user-message .message-text .voice-note {
             background: var(--message-own);
         }
-
         .other-message .message-text .voice-note {
             background: var(--message-other);
         }
-
         .ai-message .message-text .voice-note {
             background: var(--message-ai);
         }
-
         .message-text .voice-note:hover {
             transform: translateY(-2px);
             box-shadow: 0 5px 12px rgba(0, 0, 0, 0.2);
         }
-
         .voice-note audio {
             display: none;
         }
-
         .voice-note .play-btn {
             width: 36px;
             height: 36px;
@@ -439,16 +383,13 @@
             font-size: 1.2rem;
             transition: all 0.3s;
         }
-
         .voice-note .play-btn:hover {
             background: #f1f1f1;
             transform: scale(1.1);
         }
-
         .voice-note .play-btn.playing {
             color: var(--voice-progress);
         }
-
         .voice-note .waveform {
             flex: 1;
             height: 30px;
@@ -457,24 +398,20 @@
             gap: 2px;
             overflow: hidden;
         }
-
         .voice-note .wave-bar {
             width: 3px;
             background: rgba(0, 0, 0, 0.2);
             border-radius: 2px;
             transition: height 0.3s ease;
         }
-
         .voice-note .wave-bar.played {
             background: var(--voice-progress);
         }
-
         .voice-note .duration {
             color: var(--text-color);
             font-size: 0.8rem;
             font-weight: 500;
         }
-
         .file-attachment, .music-attachment {
             margin: 10px 0;
             padding: 10px;
@@ -487,7 +424,6 @@
             transition: all 0.3s ease;
             max-width: 280px;
         }
-
         .music-attachment {
             margin: 8px 0;
             padding: 8px;
@@ -501,7 +437,6 @@
             max-width: 260px;
             flex-wrap: wrap;
         }
-
         .music-attachment .play-btn {
             width: 32px;
             height: 32px;
@@ -515,16 +450,13 @@
             font-size: 1rem;
             transition: all 0.3s;
         }
-
         .music-attachment .play-btn:hover {
             background: #f1f1f1;
             transform: scale(1.1);
         }
-
         .music-attachment .play-btn.playing {
             color: var(--voice-progress);
         }
-
         .music-attachment .waveform {
             flex: 1;
             height: 24px;
@@ -533,24 +465,20 @@
             gap: 2px;
             overflow: hidden;
         }
-
         .music-attachment .wave-bar {
             width: 2px;
             background: rgba(0, 0, 0, 0.2);
             border-radius: 2px;
             transition: height 0.3s ease;
         }
-
         .music-attachment .wave-bar.played {
             background: var(--voice-progress);
         }
-
         .music-attachment .duration {
             color: var(--text-color);
             font-size: 0.75rem;
             font-weight: 500;
         }
-
         .music-attachment a {
             color: var(--accent-color);
             text-decoration: none;
@@ -561,83 +489,64 @@
             white-space: nowrap;
             max-width: 150px;
         }
-
         .music-attachment i {
             font-size: 1rem;
             color: var(--accent-color);
         }
-
         body.dark-mode .music-attachment {
             background: #273859;
             box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2);
         }
-
         body.dark-mode .music-attachment .play-btn {
             background: #1f2b46;
             color: #3498db;
         }
-
         body.dark-mode .music-attachment .play-btn:hover {
             background: #273859;
         }
-
         body.dark-mode .music-attachment .wave-bar {
             background: rgba(255, 255, 255, 0.3);
         }
-
         body.dark-mode .music-attachment .duration {
             color: #ecf0f1;
         }
-
         body.dark-mode .music-attachment a {
             color: #3498db;
         }
-
         body.dark-mode .music-attachment i {
             color: #3498db;
         }
-
         body.dark-mode .voice-note .play-btn {
             background: #1f2b46;
             color: #3498db;
         }
-
         body.dark-mode .voice-note .play-btn:hover {
             background: #273859;
         }
-
         body.dark-mode .voice-note .wave-bar {
             background: rgba(255, 255, 255, 0.3);
         }
-
         body.dark-mode .voice-note .duration {
             color: #ecf0f1;
         }
-
         body.dark-mode .user-message .voice-note {
             background: #3a4a7b;
         }
-
         body.dark-mode .other-message .voice-note {
             background: #2a3654;
         }
-
         body.dark-mode .ai-message .voice-note {
             background: #1e3a1e;
         }
-
         body.dark-mode .file-attachment, body.dark-mode .music-attachment {
             background: #273859;
         }
-
         body.dark-mode .file-attachment a, body.dark-mode .music-attachment a {
             color: #3498db;
         }
-
         body.dark-mode .file-attachment i, body.dark-mode .music-attachment i {
             color: #3498db;
         }
-
         .image-loading, .audio-loading, .file-loading {
             max-width: 280px;
             height: 150px;
@@ -652,16 +561,13 @@
             font-size: 0.9em;
             margin: 10px 0;
         }
-
         @keyframes loading {
             0% { background-position: 200% 0; }
             100% { background-position: -200% 0; }
         }
-
         .ai-message .message-text {
             white-space: pre-wrap;
         }
-
         .ai-message .message-text h1,
         .ai-message .message-text h2,
         .ai-message .message-text h3 {
@@ -669,21 +575,17 @@
             margin: 10px 0 5px 0;
             font-weight: 600;
         }
-
         .ai-message .message-text h1 { font-size: 1.4em; }
         .ai-message .message-text h2 { font-size: 1.3em; }
         .ai-message .message-text h3 { font-size: 1.2em; }
-
         .ai-message .message-text ul,
         .ai-message .message-text ol {
             margin: 10px 0;
             padding-left: 20px;
         }
-
         .ai-message .message-text li {
             margin: 3px 0;
         }
-
         .ai-message .message-text blockquote {
             border-left: 3px solid #27ae60;
             background: rgba(46, 204, 113, 0.1);
@@ -692,7 +594,6 @@
             border-radius: 0 8px 8px 0;
             font-style: italic;
         }
-
         .ai-message .message-text .code-block {
             background: #2c3e50;
             color: #ecf0f1;
@@ -705,7 +606,6 @@
             font-size: 0.9em;
             line-height: 1.4;
         }
-
         .ai-message .message-text .inline-code {
             background: rgba(44, 62, 80, 0.1);
             color: #e74c3c;
@@ -714,7 +614,6 @@
             font-family: 'Courier New', monospace;
             font-size: 0.9em;
         }
-
         .ai-thinking {
             display: flex;
             align-items: center;
@@ -722,12 +621,10 @@
             font-style: italic;
             opacity: 0.8;
         }
-
         .thinking-dots {
             display: flex;
             gap: 3px;
         }
-
         .thinking-dots span {
             width: 6px;
             height: 6px;
@@ -735,15 +632,12 @@
             border-radius: 50%;
             animation: thinking 1.4s infinite;
         }
-
         .thinking-dots span:nth-child(2) {
             animation-delay: 0.2s;
         }
-
         .thinking-dots span:nth-child(3) {
             animation-delay: 0.4s;
         }
-
         @keyframes thinking {
             0%, 60%, 100% {
                 transform: scale(1);
@@ -754,7 +648,6 @@
                 opacity: 1;
             }
         }
-
         .chat-input {
             display: flex;
             padding: 15px 20px;
@@ -765,7 +658,6 @@
             gap: 10px;
             align-items: flex-end;
         }
-
         .attach-button, .voice-button {
             display: flex;
             align-items: center;
@@ -780,32 +672,26 @@
             transition: all 0.3s;
             box-shadow: 0 3px 10px rgba(0, 0, 0, 0.1);
         }
-
         .voice-button.recording {
             background: #e74c3c;
             animation: pulse-recording 1.5s infinite;
         }
-
         @keyframes pulse-recording {
             0% { transform: scale(1); }
             50% { transform: scale(1.1); }
             100% { transform: scale(1); }
         }
-
         .attach-button i, .voice-button i {
             font-size: 1.1rem;
         }
-
         .attach-button:hover, .voice-button:hover {
             transform: scale(1.1);
             box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
         }
-
         .message-input-container {
             flex: 1;
             position: relative;
         }
-
         #reply-preview {
             display: none;
             background: #f0f0f0;
@@ -816,11 +702,9 @@
             color: #555;
             position: relative;
         }
-
         #reply-preview.show {
             display: block;
         }
-
         #reply-preview .cancel-reply {
             position: absolute;
             right: 10px;
@@ -832,7 +716,6 @@
             cursor: pointer;
             font-size: 1rem;
         }
-
         #message-input {
             width: 100%;
             padding: 12px 45px 12px 15px;
@@ -840,17 +723,16 @@
             border-radius: 25px;
             font-size: 1rem;
             transition: all 0.3s;
-            resize: none;
+            resize: vertical;
             min-height: 44px;
-            max-height: 120px;
+            overflow-y: auto;
+            line-height: 1.5;
         }
-
         #message-input:focus {
             outline: none;
             border-color: var(--accent-color);
             box-shadow: 0 0 0 3px rgba(52, 152, 219, 0.1);
         }
-
         .emoji-button {
             position: absolute;
             right: 12px;
@@ -863,11 +745,9 @@
             cursor: pointer;
             transition: color 0.3s;
         }
-
         .emoji-button:hover {
             color: var(--accent-color);
         }
-
         #send-button {
             display: flex;
             align-items: center;
@@ -882,16 +762,13 @@
             transition: all 0.3s;
             box-shadow: 0 3px 10px rgba(0, 0, 0, 0.1);
         }
-
         #send-button i {
             font-size: 1.1rem;
         }
-
         #send-button:hover {
             transform: scale(1.1);
             box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
         }
-
         .image-modal {
             position: fixed;
             top: 0;
@@ -905,11 +782,9 @@
             z-index: 2000;
             cursor: pointer;
         }
-
         .image-modal.show {
             display: flex;
         }
-
         .image-modal img {
             max-width: 90%;
             max-height: 90%;
@@ -917,7 +792,6 @@
             border-radius: 8px;
             box-shadow: 0 0 20px rgba(255, 255, 255, 0.3);
         }
-
         .image-modal-close {
             position: absolute;
             top: 20px;
@@ -927,105 +801,84 @@
             cursor: pointer;
             z-index: 2001;
         }
-
         .chat-messages::-webkit-scrollbar {
             width: 6px;
         }
-
         .chat-messages::-webkit-scrollbar-track {
             background: #f1f1f1;
         }
-
         .chat-messages::-webkit-scrollbar-thumb {
             background: #bdc3c7;
             border-radius: 10px;
         }
-
         .chat-messages::-webkit-scrollbar-thumb:hover {
             background: #95a5a6;
         }
-
         body.dark-mode {
             background-color: #1a1a2e;
         }
-
         body.dark-mode .chat-header {
             background: linear-gradient(135deg, #6a3093, #29539b);
         }
-
         body.dark-mode .user-info {
             background-color: #1f2b46;
             border-bottom: 1px solid #273859;
         }
-
         body.dark-mode #username-input {
             background-color: #273859;
             border: 1px solid #364f7e;
             color: white;
         }
-
         body.dark-mode .chat-messages {
             background-color: #1f2b46;
             background-image: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%234A5683' fill-opacity='0.15'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
         }
-
         body.dark-mode .user-message {
             background-color: #3a4a7b;
             color: white;
         }
-
         body.dark-mode .other-message {
             background-color: #2a3654;
             color: white;
         }
-
         body.dark-mode .ai-message {
             background-color: #1e3a1e;
             color: white;
             border-left-color: #2ecc71;
         }
-
         body.dark-mode .chat-input {
             background-color: #16213e;
             border-top: 1px solid #273859;
         }
-
         body.dark-mode #message-input {
             background-color: #273859;
             border: 1px solid #364f7e;
             color: white;
         }
-
         body.dark-mode #reply-preview {
             background: #2a3654;
             color: #ddd;
             border-bottom: 1px solid #364f7e;
         }
-
         body.dark-mode .emoji-button {
             color: #4A5683;
         }
-
         body.dark-mode .attach-button, body.dark-mode .voice-button {
             background: #2980b9;
         }
-
         body.dark-mode .message-text img {
             box-shadow: 0 4px 8px rgba(255, 255, 255, 0.1);
         }
-
         body.dark-mode .image-loading, body.dark-mode .audio-loading, body.dark-mode .file-loading {
             background: linear-gradient(90deg, #2a3654 25%, #1f2b46 50%, #2a3654 75%);
             background-size: 200% 100%;
             color: #666;
         }
-
         body.dark-mode .message-text .quote {
             background: #2a3654;
             border-left-color: #4A5683;
             color: #ddd;
         }
-
         .theme-toggle {
             position: absolute;
             top: 15px;
@@ -1043,12 +896,10 @@
             align-items: center;
             justify-content: center;
         }
-
         .theme-toggle:hover {
             background: rgba(255, 255, 255, 0.3);
             transform: rotate(180deg);
         }
-
         .modal {
             position: fixed;
             top: 0;
@@ -1061,11 +912,9 @@
             justify-content: center;
             z-index: 2000;
         }
-
         .modal.show {
             display: flex;
         }
-
         .modal-content {
             background: white;
             padding: 25px;
@@ -1075,19 +924,16 @@
             width: 90%;
             box-shadow: 0 10px 30px rgba(0,0,0,0.3);
         }
-
         body.dark-mode .modal-content {
             background: #273859;
             color: white;
         }
-
         .modal-buttons {
             display: flex;
             gap: 10px;
             justify-content: center;
             margin-top: 20px;
         }
-
         .modal-btn {
             padding: 10px 20px;
             border: none;
@@ -1096,98 +942,79 @@
             font-weight: 500;
             transition: all 0.3s;
         }
-
         .modal-btn.confirm {
             background: #e74c3c;
             color: white;
         }
-
         .modal-btn.confirm:hover {
             background: #c0392b;
             transform: translateY(-2px);
         }
-
         .modal-btn.cancel {
             background: #95a5a6;
             color: white;
         }
-
         .modal-btn.cancel:hover {
             background: #7f8c8d;
             transform: translateY(-2px);
         }
-
         @media (max-width: 768px) {
             .chat-header {
                 padding: 12px 15px;
             }
-
             .chat-header h2 {
                 font-size: 1.3rem;
             }
-
             .user-info {
                 padding: 12px 15px;
                 flex-direction: column;
                 align-items: stretch;
             }
-
             #username-input, #save-name-button {
                 width: 100%;
                 min-width: unset;
             }
-
             .admin-controls {
                 padding: 8px 15px;
                 flex-direction: column;
                 align-items: stretch;
             }
-
             .chat-messages {
                 padding: 15px;
                 gap: 12px;
             }
-
             .message {
                 max-width: 90%;
                 font-size: 0.95rem;
             }
-
             .ai-message {
                 max-width: 95%;
             }
-
             .message-actions,
             .user-message .message-actions,
             .other-message .message-actions {
                 right: -35px;
                 left: auto;
             }
-
             .user-message .message-actions {
                 left: -35px;
                 right: auto;
             }
-
             .message-text img, .message-text .voice-note, .message-text .file-attachment, .message-text .music-attachment {
                 max-width: 240px;
             }
-
             .chat-input {
                 padding: 12px 15px;
                 gap: 8px;
             }
-
             #message-input {
                 padding: 10px 40px 10px 12px;
                 min-height: 40px;
             }
-
             .attach-button, .voice-button, #send-button {
                 width: 40px;
                 height: 40px;
             }
-
             .theme-toggle {
                 width: 30px;
                 height: 30px;
@@ -1196,32 +1023,26 @@
                 right: 12px;
             }
         }
-
         @media (max-width: 480px) {
             .chat-messages {
                 padding: 12px;
                 gap: 10px;
             }
-
             .message {
                 max-width: 95%;
                 padding: 10px 12px;
                 font-size: 0.9rem;
             }
-
             .message-info {
                 font-size: 0.8rem;
             }
-
             .message-time {
                 font-size: 0.7rem;
             }
-
             .message-text img, .message-text .voice-note, .message-text .file-attachment, .message-text .music-attachment {
                 max-width: 200px;
             }
         }
-
         .code-copy-btn {
             position: absolute;
             top: 8px;
@@ -1235,30 +1056,24 @@
             font-size: 0.7em;
             transition: all 0.3s;
         }
-
         .code-copy-btn:hover {
             background: rgba(255, 255, 255, 0.2);
             color: white;
         }
-
         .code-copy-btn.copied {
             color: #2ecc71;
         }
-
         @keyframes fadeOut {
             from { opacity: 1; transform: translateX(0); }
             to { opacity: 0; transform: translateX(-100px); }
         }
-
         .new-message {
             animation: newMessage 0.3s;
         }
-
         @keyframes newMessage {
             0% { transform: scale(0.8); opacity: 0; }
             100% { transform: scale(1); opacity: 1; }
         }
-
         .file-attachment, .music-attachment {
             margin: 10px 0;
             padding: 10px;
@@ -1271,18 +1086,15 @@
             transition: all 0.3s ease;
             max-width: 280px;
         }
-
         .music-attachment {
             padding-top: 5px;
             padding-bottom: 5px;
             padding-left: 10px;
             padding-right: 10px;
         }
-
         body.dark-mode .file-attachment, body.dark-mode .music-attachment {
             background: #273859;
         }
-
         body.dark-mode .music-attachment {
             padding-top: 5px;
             padding-bottom: 5px;
@@ -1306,7 +1118,7 @@
                 <span id="online-count">Menghubungkan...</span>
             </div>
         </div>
-        
+       
         <div class="admin-controls" id="admin-controls">
             <i class="fas fa-shield-alt"></i>
             <span>Mode Admin Aktif</span>
@@ -1314,18 +1126,17 @@
                 <i class="fas fa-trash-alt"></i> Hapus Semua Chat
             </button>
         </div>
-
         <div class="user-info">
             <input type="text" id="username-input" placeholder="Masukkan nama pengguna Anda">
             <button id="save-name-button">
                 <i class="fas fa-check"></i> Simpan Nama
             </button>
         </div>
-        
+       
         <div id="chat-messages" class="chat-messages">
             <!-- Messages will be displayed here -->
         </div>
-        
+       
         <div class="chat-input">
             <button id="attach-button" class="attach-button">
                 <i class="fas fa-paperclip"></i>
@@ -1348,9 +1159,7 @@
             </button>
         </div>
     </div>
-
     <input type="file" id="file-input" accept="image/*,audio/mpeg,application/pdf,application/vnd.openxmlformats-officedocument.wordprocessingml.document,text/html,application/msword,application/vnd.ms-excel,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" style="display: none;">
-
     <!-- Confirmation Modal -->
     <div class="modal" id="confirmation-modal">
         <div class="modal-content">
@@ -1362,17 +1171,14 @@
             </div>
         </div>
     </div>
-
     <!-- Image Modal -->
     <div class="image-modal" id="image-modal">
         <span class="image-modal-close" id="image-modal-close">&times;</span>
         <img id="modal-image" src="" alt="Full Image">
     </div>
-
     <!-- Firebase SDK -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/firebase/9.22.1/firebase-app-compat.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/firebase/9.22.1/firebase-database-compat.js"></script>
-
     <script>
         // Firebase configuration
         const firebaseConfig = {
@@ -1385,7 +1191,6 @@
             appId: "1:176309545576:web:6f0d9e50483b457d9ba9dd",
             measurementId: "G-LQ4FTSHJF1"
         };
-
         // Initialize Firebase
         firebase.initializeApp(firebaseConfig);
         const database = firebase.database();
@@ -1393,7 +1198,6 @@
         const onlineRef = database.ref('online');
         const connectedRef = database.ref('.info/connected');
         const userRolesRef = database.ref('userRoles'); // New ref for custom user roles
-
         // DOM elements
         const chatMessages = document.getElementById('chat-messages');
         const messageInput = document.getElementById('message-input');
@@ -1418,7 +1222,6 @@
         const replyPreview = document.getElementById('reply-preview');
         const replyText = document.getElementById('reply-text');
         const cancelReply = replyPreview.querySelector('.cancel-reply');
-
         // User roles and admin functionality
         let userRole = {name: 'user', color: '#3498db'};
         let userId = localStorage.getItem('userId');
@@ -1426,19 +1229,16 @@
             userId = database.ref().push().key;
             localStorage.setItem('userId', userId);
         }
-
         // Admin security
         const ADMIN_USERNAME = 'hengki';
         const ADMIN_SECRET_KEY = 'Hengki141516';
         let adminVerified = false;
-
         // Load theme preference
         const isDarkMode = localStorage.getItem('darkMode') === 'true';
         if (isDarkMode) {
             document.body.classList.add('dark-mode');
             themeToggle.innerHTML = '<i class="fas fa-sun"></i>';
         }
-
         // Theme toggle
         themeToggle.addEventListener('click', () => {
             document.body.classList.toggle('dark-mode');
@@ -1446,12 +1246,10 @@
             localStorage.setItem('darkMode', isDark);
             themeToggle.innerHTML = isDark ? '<i class="fas fa-sun"></i>' : '<i class="fas fa-moon"></i>';
         });
-
         // Username handling with role assignment
         let username = localStorage.getItem('username') || 'User_' + Math.floor(Math.random() * 10000);
         usernameInput.value = username;
         loadUserRole(); // Load custom role if exists
-
         async function loadUserRole() {
             userRolesRef.child(userId).on('value', snap => {
                 const roleData = snap.val();
@@ -1463,7 +1261,6 @@
                 checkUserRole();
             });
         }
-
         function getDefaultUserRole(username) {
             const lowerUsername = username.toLowerCase().trim();
             if (lowerUsername === ADMIN_USERNAME) {
@@ -1475,7 +1272,6 @@
             }
             return {name: 'user', color: '#3498db'};
         }
-
         function checkUserRole() {
             if (userRole.name === 'admin' && adminVerified) {
                 adminControls.classList.add('show');
@@ -1483,7 +1279,6 @@
                 adminControls.classList.remove('show');
             }
         }
-
         // Admin verification system
         async function verifyAdmin() {
             if (userRole.name !== 'admin') return false;
@@ -1500,7 +1295,6 @@
             adminVerified = false;
             return false;
         }
-
         // Check admin session on load
         function checkAdminSession() {
             if (userRole.name === 'admin') {
@@ -1518,7 +1312,6 @@
                 }
             }
         }
-
         saveNameButton.addEventListener('click', async () => {
             const newUsername = usernameInput.value.trim();
             if (newUsername) {
@@ -1550,27 +1343,22 @@
                 });
             }
         });
-
         checkAdminSession();
-
         // Image modal functions
         function showImageModal(imageSrc) {
             modalImage.src = imageSrc;
             imageModal.classList.add('show');
         }
-
         function hideImageModal() {
             imageModal.classList.remove('show');
             modalImage.src = '';
         }
-
         imageModalClose.addEventListener('click', hideImageModal);
         imageModal.addEventListener('click', (e) => {
             if (e.target === imageModal) {
                 hideImageModal();
             }
         });
-
         // Modal functions
         function showModal(title, message, confirmText, onConfirm, onCancel) {
             modalTitle.textContent = title;
@@ -1592,11 +1380,9 @@
             modalConfirm.addEventListener('click', handleConfirm);
             modalCancel.addEventListener('click', handleCancel);
         }
-
         function hideModal() {
             confirmationModal.classList.remove('show');
         }
-
         // Admin functions
         function clearAllMessages() {
             if (userRole.name !== 'admin' || !adminVerified) return;
@@ -1614,7 +1400,6 @@
                 }
             );
         }
-
         // Delete message function
         function deleteMessage(messageId, messageElement, messageUsername) {
             const canDelete = (userRole.name === 'admin' && adminVerified) || messageUsername === username;
@@ -1641,7 +1426,6 @@
                 }
             );
         }
-
         // Image compression function
         function compressImage(file, maxWidth = 600, maxHeight = 400, quality = 0.7) {
             return new Promise((resolve) => {
@@ -1670,7 +1454,6 @@
                 img.src = URL.createObjectURL(file);
             });
         }
-
         // File conversion to base64
         function fileToBase64(file) {
             return new Promise((resolve, reject) => {
@@ -1680,24 +1463,20 @@
                 reader.readAsDataURL(file);
             });
         }
-
         // Voice note recording
         let mediaRecorder = null;
         let audioChunks = [];
         let isRecording = false;
-
         async function startRecording() {
             try {
                 const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
                 mediaRecorder = new MediaRecorder(stream);
                 audioChunks = [];
-
                 mediaRecorder.ondataavailable = (e) => {
                     if (e.data.size > 0) {
                         audioChunks.push(e.data);
                     }
                 };
-
                 mediaRecorder.onstop = async () => {
                     const audioBlob = new Blob(audioChunks, { type: 'audio/webm' });
                     if (audioBlob.size > 5 * 1024 * 1024) { // 5MB limit
@@ -1705,13 +1484,11 @@
                         stopRecording();
                         return;
                     }
-
                     const loadingElement = document.createElement('div');
                     loadingElement.className = 'audio-loading';
                     loadingElement.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Mengompres audio...';
                     chatMessages.appendChild(loadingElement);
                     chatMessages.scrollTop = chatMessages.scrollHeight;
-
                     const arrayBuffer = await audioBlob.arrayBuffer();
                     const base64Audio = btoa(
                         new Uint8Array(arrayBuffer).reduce(
@@ -1721,11 +1498,9 @@
                     );
                     const audioDataURL = `data:audio/webm;base64,${base64Audio}`;
                     const caption = messageInput.value.trim();
-
                     if (loadingElement.parentNode) {
                         loadingElement.remove();
                     }
-
                     const newMessageRef = messagesRef.push();
                     newMessageRef.set({
                         id: newMessageRef.key,
@@ -1736,18 +1511,15 @@
                         audio: audioDataURL,
                         timestamp: firebase.database.ServerValue.TIMESTAMP
                     });
-
                     messageInput.value = '';
                     messageInput.style.height = 'auto';
                     stopRecording();
-
                     // Show notification for voice note
                     showNotification(`${username} sent a voice note`, {
                         body: caption || 'New voice message received',
                         icon: '/path/to/icon.png'
                     });
                 };
-
                 mediaRecorder.start();
                 voiceButton.classList.add('recording');
                 voiceButton.innerHTML = '<i class="fas fa-stop"></i>';
@@ -1758,7 +1530,6 @@
                 stopRecording();
             }
         }
-
         function stopRecording() {
             if (mediaRecorder && isRecording) {
                 mediaRecorder.stop();
@@ -1768,7 +1539,6 @@
                 isRecording = false;
             }
         }
-
         voiceButton.addEventListener('click', () => {
             if (!isRecording) {
                 startRecording();
@@ -1776,7 +1546,6 @@
                 stopRecording();
             }
         });
-
         // Notification handling
         async function requestNotificationPermission() {
             if ('Notification' in window) {
@@ -1785,7 +1554,6 @@
             }
             return false;
         }
-
         async function showNotification(title, options) {
             if ('Notification' in window && Notification.permission === 'granted') {
                 try {
@@ -1803,7 +1571,6 @@
                 }
             }
         }
-
         // Online presence
         connectedRef.on('value', (snap) => {
             if (snap.val() === true) {
@@ -1816,13 +1583,11 @@
                 userRef.onDisconnect().remove();
             }
         });
-
         // Count online users
         onlineRef.on('value', (snap) => {
             const count = snap.numChildren();
             onlineCountElement.textContent = `${count} Pengguna Online`;
         });
-
         // Enhanced AI message formatting function
         function formatAIResponse(text) {
             if (!text) return '';
@@ -1862,7 +1627,6 @@
             formatted = formatted.replace(urlRegex, '<a href="$1" target="_blank" style="color: #3498db; text-decoration: underline;">$1</a>');
             return formatted;
         }
-
         // Copy code function
         window.copyCode = function(button) {
             const codeBlock = button.parentElement;
@@ -1880,7 +1644,6 @@
                 console.error('Failed to copy code:', err);
             });
         };
-
         // AI functionality
         async function callAI(query) {
             try {
@@ -1903,7 +1666,6 @@
                 }
             }
         }
-
         // Show AI thinking indicator
         function showAIThinking() {
             const thinkingElement = document.createElement('div');
@@ -1911,7 +1673,7 @@
             thinkingElement.className = 'message ai-message new-message';
             thinkingElement.innerHTML = `
                 <div class="message-info">
-                    <i class="fas fa-robot"></i> AI Assistant 
+                    <i class="fas fa-robot"></i> AI Assistant
                     <span class="message-time">sekarang</span>
                 </div>
                 <div class="message-text ai-thinking">
@@ -1927,16 +1689,25 @@
             chatMessages.scrollTop = chatMessages.scrollHeight;
             return thinkingElement;
         }
-
-        // Auto-resize textarea
-        messageInput.addEventListener('input', function() {
-            this.style.height = 'auto';
-            this.style.height = Math.min(this.scrollHeight, 120) + 'px';
+        // Optimized auto-resize textarea
+        function autoResizeTextarea() {
+            messageInput.style.height = 'auto';
+            const scrollHeight = messageInput.scrollHeight;
+            messageInput.style.height = `${Math.max(scrollHeight, 44)}px`;
+        }
+        messageInput.addEventListener('input', () => {
+            autoResizeTextarea();
         });
-
+        // Handle paste event for textarea
+        messageInput.addEventListener('paste', () => {
+            setTimeout(autoResizeTextarea, 0);
+        });
+        // Ensure smooth scrolling in textarea
+        messageInput.addEventListener('scroll', () => {
+            messageInput.style.overflowY = 'auto';
+        });
         // Reply functionality
         let repliedTo = null;
-
         function replyToMessage(messageId) {
             messagesRef.child(messageId).once('value').then(snap => {
                 const repliedData = snap.val();
@@ -1949,12 +1720,10 @@
                 }
             });
         }
-
         cancelReply.addEventListener('click', () => {
             repliedTo = null;
             replyPreview.classList.remove('show');
         });
-
         // Handle add role command with custom name and color
         async function handleAddRoleCommand(message) {
             if (userRole.name !== 'admin' || !adminVerified) return false;
@@ -1992,7 +1761,6 @@
             }
             return false;
         }
-
         // Enhanced send message function
         async function sendMessage() {
             const message = messageInput.value.trim();
@@ -2000,10 +1768,9 @@
                 // Check for addrole command
                 if (await handleAddRoleCommand(message)) {
                     messageInput.value = '';
-                    messageInput.style.height = 'auto';
+                    autoResizeTextarea();
                     return;
                 }
-
                 if (message.startsWith('/ai ')) {
                     const aiQuery = message.substring(4).trim();
                     if (aiQuery) {
@@ -2017,7 +1784,7 @@
                             timestamp: firebase.database.ServerValue.TIMESTAMP
                         });
                         messageInput.value = '';
-                        messageInput.style.height = 'auto';
+                        autoResizeTextarea();
                         const thinkingElement = showAIThinking();
                         try {
                             const aiResponse = await callAI(aiQuery);
@@ -2065,7 +1832,7 @@
                             isAI: true
                         });
                         messageInput.value = '';
-                        messageInput.style.height = 'auto';
+                        autoResizeTextarea();
                     }
                 } else {
                     if (repliedTo) {
@@ -2099,7 +1866,7 @@
                         });
                     }
                     messageInput.value = '';
-                    messageInput.style.height = 'auto';
+                    autoResizeTextarea();
                     // Show notification for regular message
                     showNotification(`${username} sent a message`, {
                         body: message.substring(0, 50) + (message.length > 50 ? '...' : ''),
@@ -2108,10 +1875,8 @@
                 }
             }
         }
-
         // Send message on button click
         sendButton.addEventListener('click', sendMessage);
-
         // Send message on Enter key press (without Shift)
         messageInput.addEventListener('keypress', (e) => {
             if (e.key === 'Enter' && !e.shiftKey) {
@@ -2119,21 +1884,18 @@
                 sendMessage();
             }
         });
-
         // Emoji button functionality (simplified)
         emojiButton.addEventListener('click', () => {
             const emojis = ['😊', '😂', '👍', '❤️', '😍', '😎', '🙌', '🔥'];
             const emoji = emojis[Math.floor(Math.random() * emojis.length)];
             messageInput.value += emoji;
             messageInput.focus();
-            messageInput.dispatchEvent(new Event('input'));
+            autoResizeTextarea();
         });
-
         // File attachment handling
         attachButton.addEventListener('click', () => {
             fileInput.click();
         });
-
         fileInput.addEventListener('change', async (e) => {
             const file = e.target.files[0];
             if (file) {
@@ -2153,582 +1915,262 @@
                     return;
                 }
                 if (file.size > 5 * 1024 * 1024) { // 5MB limit
-                    alert('Ukuran file terlalu besar. Maksimal 5MB.');
-                    fileInput.value = '';
-                    return;
-                }
-
-                const loadingElement = document.createElement('div');
-                loadingElement.className = 'file-loading';
-                loadingElement.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Mengunggah file...';
-                chatMessages.appendChild(loadingElement);
-                chatMessages.scrollTop = chatMessages.scrollHeight;
-
-                try {
-                    let fileData;
-                    let fileType;
-
-                    if (file.type.startsWith('image/')) {
-                        fileData = await compressImage(file);
-                        fileType = 'image';
-                    } else if (file.type === 'audio/mpeg') {
-                        fileData = await fileToBase64(file);
-                        fileType = 'music';
-                    } else {
-                        fileData = await fileToBase64(file);
-                        fileType = 'file';
-                    }
-
-                    const caption = messageInput.value.trim();
-
-                    if (loadingElement.parentNode) {
-                        loadingElement.remove();
-                    }
-
-                    const newMessageRef = messagesRef.push();
-                    const messageData = {
-                        id: newMessageRef.key,
-                        username: username,
-                        userRole: userRole,
-                        userId: userId,
-                        text: caption,
-                        timestamp: firebase.database.ServerValue.TIMESTAMP
-                    };
-
-                    if (fileType === 'image') {
-                        messageData.image = fileData;
-                    } else if (fileType === 'music') {
-                        messageData.music = fileData;
-                        messageData.filename = file.name;
-                    } else {
-                        messageData.file = fileData;
-                        messageData.filename = file.name;
-                        messageData.fileType = file.type; // Store file type for icon rendering
-                    }
-
-                    newMessageRef.set(messageData);
-
-                    messageInput.value = '';
-                    messageInput.style.height = 'auto';
-                    fileInput.value = '';
-
-                    // Show notification for file message
-                    showNotification(`${username} sent a ${fileType}`, {
-                        body: caption || `New ${fileType} received: ${file.name}`,
-                        icon: '/path/to/icon.png'
-                    });
-                } catch (error) {
-                    console.error('File upload error:', error);
-                    if (loadingElement.parentNode) {
-                        loadingElement.remove();
-                    }
-                    alert('Gagal mengunggah file. Silakan coba lagi.');
-                }
-            }
-        });
-
-        // Render message with voice note, file, music, and reply support
-        function renderMessage(messageData, isNew = false) {
-            const messageElement = document.createElement('div');
-            const messageClass = messageData.isAI ? 'ai-message' : 
-                                messageData.userId === userId ? 'user-message' : 'other-message';
-            messageElement.className = `message ${messageClass} ${isNew ? 'new-message' : ''}`;
-            messageElement.dataset.messageId = messageData.id;
-
-            const roleBadgeStyle = `background-color: ${messageData.userRole.color}; color: white;`;
-
-            const displayUsername = messageData.isAI ? 'AI Assistant' : messageData.username;
-            const time = messageData.timestamp ? new Date(messageData.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : 'sekarang';
-
-            let messageContent = '';
-            if (messageData.text) {
-                messageContent = messageData.isAI ? formatAIResponse(messageData.text) : messageData.text.replace(/\n/g, '<br>');
-            }
-
-            if (messageData.repliedText && messageData.repliedUsername) {
-                messageContent = `<div class="quote"><strong>${messageData.repliedUsername}:</strong> ${messageData.repliedText}</div>` + messageContent;
-            }
-
-            if (messageData.image) {
-                messageContent += `<br><img src="${messageData.image}" alt="Image" onclick="showImageModal(this.src)">`;
-            }
-
-            if (messageData.audio) {
-                messageContent += `
-                    <div class="voice-note">
-                        <div class="play-btn">
-                            <i class="fas fa-play"></i>
-                        </div>
-                        <div class="waveform"></div>
-                        <span class="duration">00:00</span>
-                        <audio src="${messageData.audio}"></audio>
-                    </div>
+                    alert('Ukuran file terlalu besar. Maksimal 5 MB.');
+fileInput.value = '';
+return;
+}
+const loadingElement = document.createElement('div');
+loadingElement.className = file.type.startsWith('image/') ? 'image-loading' : file.type.startsWith('audio/') ? 'audio-loading' : 'file-loading';
+loadingElement.innerHTML = <i class="fas fa-spinner fa-spin"></i> Mengunggah ${file.type.startsWith('image/') ? 'gambar' : file.type.startsWith('audio/') ? 'audio' : 'file'}...;
+chatMessages.appendChild(loadingElement);
+chatMessages.scrollTop = chatMessages.scrollHeight;
+try {
+let fileData;
+let fileType;
+if (file.type.startsWith('image/')) {
+fileData = await compressImage(file);
+fileType = 'image';
+} else if (file.type.startsWith('audio/')) {
+fileData = await fileToBase64(file);
+fileType = 'audio';
+} else {
+fileData = await fileToBase64(file);
+fileType = 'file';
+}
+const caption = messageInput.value.trim();
+const newMessageRef = messagesRef.push();
+await newMessageRef.set({
+id: newMessageRef.key,
+username: username,
+userRole: userRole,
+userId: userId,
+text: caption,
+file: fileData,
+fileType: fileType,
+fileName: file.name,
+timestamp: firebase.database.ServerValue.TIMESTAMP
+});
+if (loadingElement.parentNode) {
+loadingElement.remove();
+}
+messageInput.value = '';
+autoResizeTextarea();
+fileInput.value = '';
+// Show notification for file attachment
+showNotification(${username} sent a file, {
+body: File: ${file.name}${caption ? ' - ' + caption.substring(0, 50) : ''},
+icon: '/path/to/icon.png'
+});
+} catch (error) {
+console.error('File upload error:', error);
+if (loadingElement.parentNode) {
+loadingElement.remove();
+}
+alert('Gagal mengunggah file. Silakan coba lagi.');
+fileInput.value = '';
+}
+}
+});
+// Handle messages
+messagesRef.on('child_added', (snap) => {
+const message = snap.val();
+displayMessage(snap.key, message);
+if (message.userId !== userId && !document.hasFocus()) {
+showNotification(${message.username} sent a message, {
+body: message.text ? message.text.substring(0, 50) + (message.text.length > 50 ? '...' : '') : 'New media message',
+icon: '/path/to/icon.png'
+});
+}
+});
+messagesRef.on('child_removed', (snap) => {
+const messageElement = document.getElementById(message-${snap.key});
+if (messageElement) {
+messageElement.style.animation = 'fadeOut 0.3s forwards';
+setTimeout(() => {
+if (messageElement.parentNode) {
+messageElement.remove();
+}
+}, 300);
+}
+});
+// Display message function
+function displayMessage(messageId, message) {
+if (!message || !message.username) return;
+const isOwnMessage = message.userId === userId;
+const messageElement = document.createElement('div');
+messageElement.id = message-${messageId};
+messageElement.className = message ${isOwnMessage ? 'user-message' : message.isAI ? 'ai-message' : 'other-message'} new-message;
+const roleName = message.userRole ? message.userRole.name : 'user';
+const roleColor = message.userRole ? message.userRole.color : '#3498db';
+let messageContent = '';
+if (message.repliedTo) {
+messageContent += `
+                    
+                        
+                            ${message.repliedUsername}
+                            ${message.repliedText}
+                        
+                    
                 `;
             }
-
-            if (messageData.file) {
-                let iconClass = 'fas fa-file';
-                if (messageData.fileType === 'application/pdf') {
-                    iconClass = 'fas fa-file-pdf';
-                } else if (messageData.fileType === 'application/vnd.openxmlformats-officedocument.wordprocessingml.document' || messageData.fileType === 'application/msword') {
-                    iconClass = 'fas fa-file-word';
-                } else if (messageData.fileType === 'text/html') {
-                    iconClass = 'fas fa-file-code';
-                } else if (messageData.fileType === 'application/vnd.ms-excel' || messageData.fileType === 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet') {
-                    iconClass = 'fas fa-file-excel';
+            if (message.text) {
+                const formattedText = message.isAI ? formatAIResponse(message.text) : message.text.replace(/\n/g, '
+');
+                messageContent += `${formattedText}`;
+            }
+            if (message.file) {
+                if (message.fileType === 'image') {
+                    messageContent += `<img src="${message.file}" alt="Attachment" onclick="showImageModal(this.src)">`;
+                } else if (message.fileType === 'audio') {
+                    messageContent += `
+                        
+                            
+                                <button class="play-btn" onclick="playVoiceNote(this, &#x27;${message.file}&#x27;)">
+                                    <i class="fas fa-play"></i>
+                                </button>
+                                
+                                00:00
+                            
+                        
+                    `;
+                } else {
+                    messageContent += `
+                        
+                            
+                                ${message.fileName && message.fileName.match(/\.(mp3|wav|ogg)$/i) ? `
+                                    <button class="play-btn" onclick="playVoiceNote(this, &#x27;${message.file}&#x27;)">
+                                        <i class="fas fa-play"></i>
+                                    </button>
+                                    
+                                    00:00
+                                ` : ''}
+                                
+                                ${message.fileName || 'Download File'}
+                            
+                        
+                    `;
                 }
+            }
+            if (message.audio) {
                 messageContent += `
-                    <div class="file-attachment">
-                        <i class="${iconClass}"></i>
-                        <a href="${messageData.file}" download="${messageData.filename}">${messageData.filename}</a>
-                    </div>
+                    
+                        
+                            <button class="play-btn" onclick="playVoiceNote(this, &#x27;${message.audio}&#x27;)">
+                                <i class="fas fa-play"></i>
+                            </button>
+                            
+                            00:00
+                        
+                    
                 `;
             }
-
-            if (messageData.music) {
-                messageContent += `
-                    <div class="music-attachment">
-                        <div class="play-btn">
-                            <i class="fas fa-play"></i>
-                        </div>
-                        <div class="waveform"></div>
-                        <span class="duration">00:00</span>
-                        <audio src="${messageData.music}"></audio>
-                        <a href="${messageData.music}" download="${messageData.filename}">${messageData.filename}</a>
-                    </div>
-                `;
-            }
-
+            const timestamp = message.timestamp ? new Date(message.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : 'sekarang';
             messageElement.innerHTML = `
-                <div class="message-info">
-                    ${messageData.isAI ? '<i class="fas fa-robot"></i>' : '<i class="fas fa-user"></i>'}
-                    ${displayUsername}
-                    <span class="role-badge" style="${roleBadgeStyle}">${messageData.userRole.name.toUpperCase()}</span>
-                    <span class="message-time">${time}</span>
-                </div>
-                <div class="message-text">${messageContent}</div>
-                <div class="message-actions">
-                    <button class="message-action-btn reply-btn" onclick="replyToMessage('${messageData.id}')">
+                
+                    
+                    ${message.username}
+                    ${roleName !== 'user' && roleName !== 'ai' ? `${roleName.toUpperCase()}` : ''}
+                    ${timestamp}
+                
+                ${messageContent}
+                
+                    <button class="message-action-btn reply-btn" onclick="replyToMessage(&#x27;${messageId}&#x27;)">
                         <i class="fas fa-reply"></i>
                     </button>
-                    ${(messageData.userId === userId || (userRole.name === 'admin' && adminVerified)) ? `
-                        <button class="message-action-btn delete-btn" onclick="deleteMessage('${messageData.id}', this.closest('.message'), '${messageData.username}')">
-                            <i class="fas fa-trash"></i>
-                        </button>
-                    ` : ''}
-                </div>
+                    <button class="message-action-btn delete-btn" onclick="deleteMessage(&#x27;${messageId}&#x27;, this.parentElement.parentElement, &#x27;${message.username}&#x27;)">
+                        <i class="fas fa-trash"></i>
+                    </button>
+                
             `;
-
-            // Voice note and music playback
-            if (messageData.audio || messageData.music) {
-                const audio = messageElement.querySelector('audio');
-                const playBtn = messageElement.querySelector('.play-btn');
+            chatMessages.appendChild(messageElement);
+            // Generate waveform for audio
+            if (message.audio || (message.file && message.fileType === 'audio') || (message.fileName && message.fileName.match(/\.(mp3|wav|ogg)$/i))) {
                 const waveform = messageElement.querySelector('.waveform');
-                const durationElement = messageElement.querySelector('.duration');
-
-                // Generate waveform bars
-                const barCount = 40;
-                for (let i = 0; i < barCount; i++) {
-                    const bar = document.createElement('div');
-                    bar.className = 'wave-bar';
-                    bar.style.height = `${Math.random() * 20 + 10}px`;
-                    waveform.appendChild(bar);
-                }
-
-                function displayDuration(duration) {
-                    if (isNaN(duration) || !isFinite(duration)) {
-                        durationElement.textContent = '00:00';
-                    } else {
-                        const minutes = Math.floor(duration / 60);
-                        const seconds = Math.floor(duration % 60);
-                        durationElement.textContent = `${minutes}:${seconds.toString().padStart(2, '0')}`;
+                if (waveform) {
+                    for (let i = 0; i < 20; i++) {
+                        const bar = document.createElement('div');
+                        bar.className = 'wave-bar';
+                        bar.style.height = `${Math.random() * 20 + 10}px`;
+                        waveform.appendChild(bar);
                     }
                 }
-
-                audio.addEventListener('loadedmetadata', () => {
-                    if (audio.duration === Infinity || isNaN(audio.duration)) {
-                        audio.currentTime = Number.MAX_SAFE_INTEGER;
-                        audio.addEventListener('timeupdate', function handler() {
-                            displayDuration(audio.duration);
-                            audio.currentTime = 0;
-                            audio.removeEventListener('timeupdate', handler);
-                        }, {once: true});
-                    } else {
-                        displayDuration(audio.duration);
+            }
+            chatMessages.scrollTop = chatMessages.scrollHeight;
+            setTimeout(() => {
+                messageElement.classList.remove('new-message');
+            }, 300);
+        }
+        // Play voice note or audio file
+        let currentAudio = null;
+        window.playVoiceNote = function(button, audioSrc) {
+            if (currentAudio && !currentAudio.paused) {
+                currentAudio.pause();
+                const prevButton = document.querySelector('.play-btn.playing');
+                if (prevButton) {
+                    prevButton.classList.remove('playing');
+                    prevButton.innerHTML = '';
+                    const prevWaveform = prevButton.parentElement.querySelector('.waveform');
+                    if (prevWaveform) {
+                        prevWaveform.querySelectorAll('.wave-bar').forEach(bar => bar.classList.remove('played'));
                     }
-                });
-
-                audio.addEventListener('timeupdate', () => {
-                    if (isNaN(audio.duration) || audio.duration === Infinity) return;
-                    const progress = audio.currentTime / audio.duration;
+                }
+            }
+            if (currentAudio && currentAudio.src === audioSrc) {
+                currentAudio = null;
+                return;
+            }
+            currentAudio = new Audio(audioSrc);
+            const waveform = button.parentElement.querySelector('.waveform');
+            const durationElement = button.parentElement.querySelector('.duration');
+            currentAudio.addEventListener('loadedmetadata', () => {
+                const duration = currentAudio.duration;
+                const minutes = Math.floor(duration / 60);
+                const seconds = Math.floor(duration % 60);
+                durationElement.textContent = `${minutes}:${seconds < 10 ? '0' : ''}${seconds}`;
+            });
+            currentAudio.addEventListener('timeupdate', () => {
+                if (waveform) {
+                    const progress = currentAudio.currentTime / currentAudio.duration;
                     const bars = waveform.querySelectorAll('.wave-bar');
-                    const playedBars = Math.floor(progress * barCount);
+                    const playedBars = Math.floor(progress * bars.length);
                     bars.forEach((bar, index) => {
                         bar.classList.toggle('played', index < playedBars);
                     });
-                });
-
-                playBtn.addEventListener('click', () => {
-                    if (audio.paused) {
-                        audio.play();
-                        playBtn.classList.add('playing');
-                        playBtn.innerHTML = '<i class="fas fa-pause"></i>';
-                    } else {
-                        audio.pause();
-                        playBtn.classList.remove('playing');
-                        playBtn.innerHTML = '<i class="fas fa-play"></i>';
-                    }
-                });
-
-                audio.addEventListener('ended', () => {
-                    playBtn.classList.remove('playing');
-                    playBtn.innerHTML = '<i class="fas fa-play"></i>';
+                    const currentTime = currentAudio.currentTime;
+                    const minutes = Math.floor(currentTime / 60);
+                    const seconds = Math.floor(currentTime % 60);
+                    durationElement.textContent = `${minutes}:${seconds < 10 ? '0' : ''}${seconds}`;
+                }
+            });
+            currentAudio.addEventListener('ended', () => {
+                button.classList.remove('playing');
+                button.innerHTML = '';
+                if (waveform) {
                     waveform.querySelectorAll('.wave-bar').forEach(bar => bar.classList.remove('played'));
-                });
-            }
-
-            return messageElement;
-        }
-
-        // Infinite scroll for messages
-        let isLoadingMessages = false;
-        let oldestTimestamp = null;
-        const batchSize = 20;
-
-        async function loadMoreMessages() {
-            if (isLoadingMessages) return;
-            isLoadingMessages = true;
-
-            let query = messagesRef.orderByChild('timestamp').limitToLast(batchSize);
-            if (oldestTimestamp) {
-                query = query.endBefore(oldestTimestamp);
-            }
-
-            const snapshot = await query.once('value');
-            const messages = [];
-            snapshot.forEach(child => {
-                messages.push({ key: child.key, ...child.val() });
-            });
-
-            if (messages.length > 0) {
-                const oldScrollHeight = chatMessages.scrollHeight;
-                messages.reverse().forEach(msg => {
-                    const messageElement = renderMessage({ ...msg, id: msg.key });
-                    chatMessages.insertBefore(messageElement, chatMessages.firstChild);
-                });
-                const newScrollHeight = chatMessages.scrollHeight;
-                chatMessages.scrollTop += (newScrollHeight - oldScrollHeight);
-                oldestTimestamp = messages[0].timestamp;
-            }
-
-            isLoadingMessages = false;
-        }
-
-        // Initial load
-        loadMoreMessages();
-
-        // Scroll event for loading more
-        chatMessages.addEventListener('scroll', () => {
-            if (chatMessages.scrollTop === 0) {
-                loadMoreMessages();
-            }
-        });
-
-        // Listen for new messages
-        messagesRef.orderByChild('timestamp').on('child_added', (snapshot) => {
-            const messageData = snapshot.val();
-            if (!oldestTimestamp || messageData.timestamp >= oldestTimestamp) {
-                const messageElement = renderMessage({ ...messageData, id: snapshot.key }, true);
-                chatMessages.appendChild(messageElement);
-                chatMessages.scrollTop = chatMessages.scrollHeight;
-            }
-        });
-
-        messagesRef.on('child_removed', (snapshot) => {
-            const messageId = snapshot.key;
-            const messageElement = document.querySelector(`[data-message-id="${messageId}"]`);
-            if (messageElement) {
-                messageElement.style.animation = 'fadeOut 0.3s forwards';
-                setTimeout(() => {
-                    if (messageElement.parentNode) {
-                        messageElement.remove();
-                    }
-                }, 300);
-            }
-        });
-
-        // Handle window focus for notifications
-        let isWindowFocused = true;
-
-        window.addEventListener('focus', () => {
-            isWindowFocused = true;
-        });
-
-        window.addEventListener('blur', () => {
-            isWindowFocused = false;
-        });
-
-        // Initialize notification permission
-        (async () => {
-            const hasPermission = await requestNotificationPermission();
-            if (!hasPermission) {
-                console.log('Notification permission denied');
-            }
-        })();
-
-        // Auto-scroll to bottom when new messages are added
-        const observer = new MutationObserver(() => {
-            if (chatMessages.scrollHeight - chatMessages.scrollTop - chatMessages.clientHeight < 200) {
-                chatMessages.scrollTop = chatMessages.scrollHeight;
-            }
-        });
-
-        observer.observe(chatMessages, { childList: true });
-
-        // Cleanup on page unload
-        window.addEventListener('unload', () => {
-            const userRef = onlineRef.child(userId);
-            userRef.remove();
-        });
-
-        // Handle file icon based on file type
-        function getFileIcon(fileType) {
-            switch (fileType) {
-                case 'application/pdf':
-                    return 'fas fa-file-pdf';
-                case 'application/vnd.openxmlformats-officedocument.wordprocessingml.document':
-                case 'application/msword':
-                    return 'fas fa-file-word';
-                case 'text/html':
-                    return 'fas fa-file-code';
-                case 'application/vnd.ms-excel':
-                case 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet':
-                    return 'fas fa-file-excel';
-                default:
-                    return 'fas fa-file';
-            }
-        }
-
-        // Prevent multiple rapid clicks on send button
-        let isSending = false;
-        sendButton.addEventListener('click', async () => {
-            if (isSending) return;
-            isSending = true;
-            await sendMessage();
-            setTimeout(() => {
-                isSending = false;
-            }, 500);
-        });
-
-        // Auto-resize textarea on paste
-        messageInput.addEventListener('paste', function() {
-            setTimeout(() => {
-                this.style.height = 'auto';
-                this.style.height = Math.min(this.scrollHeight, 120) + 'px';
-            }, 0);
-        });
-
-        // Handle keyboard shortcuts
-        document.addEventListener('keydown', (e) => {
-            if (e.ctrlKey && e.key === '/') {
-                e.preventDefault();
-                messageInput.value = '/ai ';
-                messageInput.focus();
-                messageInput.dispatchEvent(new Event('input'));
-            }
-        });
-
-        // Handle visibility of messages based on scroll
-        function optimizeMessageVisibility() {
-            const messages = chatMessages.querySelectorAll('.message');
-            const viewportHeight = chatMessages.clientHeight;
-            const scrollTop = chatMessages.scrollTop;
-
-            messages.forEach(message => {
-                const rect = message.getBoundingClientRect();
-                const messageTop = rect.top + scrollTop - chatMessages.offsetTop;
-                const messageBottom = messageTop + rect.height;
-
-                if (messageBottom < scrollTop - 100 || messageTop > scrollTop + viewportHeight + 100) {
-                    message.style.display = 'none';
-                } else {
-                    message.style.display = 'block';
                 }
+                const duration = currentAudio.duration;
+                const minutes = Math.floor(duration / 60);
+                const seconds = Math.floor(duration % 60);
+                durationElement.textContent = `${minutes}:${seconds < 10 ? '0' : ''}${seconds}`;
+                currentAudio = null;
             });
-        }
-
-        chatMessages.addEventListener('scroll', optimizeMessageVisibility);
-        window.addEventListener('resize', optimizeMessageVisibility);
-
-        // Initialize visibility optimization
-        optimizeMessageVisibility();
-
-        // Handle file preview for certain types
-        async function previewFile(fileData, fileType) {
-            if (fileType.startsWith('image/')) {
-                return `<img src="${fileData}" alt="Image Preview" onclick="showImageModal(this.src)">`;
-            } else if (fileType === 'text/html') {
-                // Display a snippet of HTML content
-                const text = await (await fetch(fileData)).text();
-                return `<pre class="code-block">${text.slice(0, 200)}${text.length > 200 ? '...' : ''}</pre>`;
-            } else {
-                return '';
-            }
-        }
-
-        // Handle double-click to edit own messages
-        function enableMessageEditing() {
-            chatMessages.addEventListener('dblclick', (e) => {
-                const messageElement = e.target.closest('.message.user-message');
-                if (!messageElement) return;
-
-                const messageId = messageElement.dataset.messageId;
-                const messageTextElement = messageElement.querySelector('.message-text');
-                const originalText = messageTextElement.textContent.trim();
-
-                if (!messageTextElement || messageElement.querySelector('img, .voice-note, .file-attachment, .music-attachment')) return;
-
-                const textarea = document.createElement('textarea');
-                textarea.value = originalText;
-                textarea.style.width = '100%';
-                textarea.style.minHeight = '60px';
-                textarea.style.borderRadius = '8px';
-                textarea.style.padding = '8px';
-                textarea.style.border = '1px solid #ddd';
-
-                messageTextElement.innerHTML = '';
-                messageTextElement.appendChild(textarea);
-                textarea.focus();
-
-                function saveEdit() {
-                    const newText = textarea.value.trim();
-                    if (newText && newText !== originalText) {
-                        messagesRef.child(messageId).update({
-                            text: newText,
-                            edited: true,
-                            editedTimestamp: firebase.database.ServerValue.TIMESTAMP
-                        });
-                    }
-                    messageTextElement.innerHTML = newText.replace(/\n/g, '<br>') + (newText && newText !== originalText ? '<span style="font-size: 0.7em; color: #666;"> (diedit)</span>' : '');
-                }
-
-                textarea.addEventListener('blur', saveEdit);
-                textarea.addEventListener('keypress', (e) => {
-                    if (e.key === 'Enter' && !e.shiftKey) {
-                        e.preventDefault();
-                        saveEdit();
-                    }
-                });
-            });
-        }
-
-        enableMessageEditing();
-
-        // Handle edited messages
-        messagesRef.on('child_changed', (snapshot) => {
-            const messageData = snapshot.val();
-            const messageElement = document.querySelector(`[data-message-id="${snapshot.key}"]`);
-            if (messageElement) {
-                const newMessageElement = renderMessage({ ...messageData, id: snapshot.key });
-                if (messageData.edited) {
-                    const messageText = newMessageElement.querySelector('.message-text');
-                    messageText.innerHTML += '<span style="font-size: 0.7em; color: #666;"> (diedit)</span>';
-                }
-                messageElement.replaceWith(newMessageElement);
-                optimizeMessageVisibility();
-            }
+            currentAudio.play();
+            button.classList.add('playing');
+            button.innerHTML = '';
+        };
+        // Request notification permission on load
+        document.addEventListener('DOMContentLoaded', () => {
+            requestNotificationPermission();
+            autoResizeTextarea();
         });
-
-        // Initialize service worker for notifications
-        if ('serviceWorker' in navigator) {
-            navigator.serviceWorker.register('/sw.js').then(registration => {
-                console.log('Service Worker registered with scope:', registration.scope);
-            }).catch(error => {
-                console.error('Service Worker registration failed:', error);
-            });
-        }
-
-        // Handle context menu for messages
-        chatMessages.addEventListener('contextmenu', (e) => {
-            e.preventDefault();
-            const messageElement = e.target.closest('.message');
-            if (!messageElement) return;
-
-            const messageId = messageElement.dataset.messageId;
-            const messageUsername = messageElement.querySelector('.message-info').textContent.split(' ')[0];
-
-            if ((userRole.name === 'admin' && adminVerified) || messageUsername === username) {
-                showModal(
-                    'Hapus Pesan',
-                    'Apakah Anda yakin ingin menghapus pesan ini?',
-                    'Ya, Hapus',
-                    () => deleteMessage(messageId, messageElement, messageUsername)
-                );
-            }
+        // Cleanup old messages
+        messagesRef.orderByChild('timestamp').endAt(Date.now() - 7 * 24 * 60 * 60 * 1000).on('child_added', (snap) => {
+            snap.ref.remove();
         });
-
-        // Handle file drag and drop
-        chatMessages.addEventListener('dragover', (e) => {
-            e.preventDefault();
-            chatMessages.style.backgroundColor = 'rgba(52, 152, 219, 0.1)';
+        // Cleanup inactive users
+        onlineRef.orderByChild('timestamp').endAt(Date.now() - 5 * 60 * 1000).on('child_added', (snap) => {
+            snap.ref.remove();
         });
-
-        chatMessages.addEventListener('dragleave', () => {
-            chatMessages.style.backgroundColor = '';
-        });
-
-        chatMessages.addEventListener('drop', async (e) => {
-            e.preventDefault();
-            chatMessages.style.backgroundColor = '';
-            const file = e.dataTransfer.files[0];
-            if (file) {
-                fileInput.files = e.dataTransfer.files;
-                const event = new Event('change');
-                fileInput.dispatchEvent(event);
-            }
-        });
-
-        // Handle input focus styling
-        messageInput.addEventListener('focus', () => {
-            messageInput.parentElement.style.borderColor = 'var(--accent-color)';
-        });
-
-        messageInput.addEventListener('blur', () => {
-            messageInput.parentElement.style.borderColor = '#ddd';
-        });
-
-        // Cleanup old online statuses
-        onlineRef.on('value', (snapshot) => {
-            const now = Date.now();
-            snapshot.forEach(child => {
-                const userData = child.val();
-                if (userData.timestamp && now - userData.timestamp > 60000) {
-                    onlineRef.child(child.key).remove();
-                }
-            });
-        });
-
-        // Handle window resize for textarea
-        window.addEventListener('resize', () => {
-            messageInput.style.height = 'auto';
-            messageInput.style.height = Math.min(messageInput.scrollHeight, 120) + 'px';
-        });
-
-        // Initialize chat
-        (async () => {
-            // Ensure initial scroll to bottom
-            chatMessages.scrollTop = chatMessages.scrollHeight;
-
-            // Request notification permission
-            await requestNotificationPermission();
-
-            // Set initial online status
-            onlineRef.child(userId).set({
-                username: username,
-                role: userRole,
-                timestamp: firebase.database.ServerValue.TIMESTAMP
-            });
-        })();
     </script>
 </body>
 </html>
