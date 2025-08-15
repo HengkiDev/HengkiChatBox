@@ -1463,14 +1463,15 @@ body.dark-mode .music-attachment {
         loadUserRole(); // Load custom role if exists
 
         async function loadUserRole() {
-            const roleSnap = await userRolesRef.child(userId).once('value');
-            const roleData = roleSnap.val();
-            if (roleData) {
-                userRole = roleData;
-            } else {
-                userRole = getDefaultUserRole(username);
-            }
-            checkUserRole();
+            userRolesRef.child(userId).on('value', snap => {
+                const roleData = snap.val();
+                if (roleData) {
+                    userRole = roleData;
+                } else {
+                    userRole = getDefaultUserRole(username);
+                }
+                checkUserRole();
+            });
         }
 
         function getDefaultUserRole(username) {
@@ -1969,29 +1970,29 @@ body.dark-mode .music-attachment {
             if (userRole.name !== 'admin' || !adminVerified) return false;
             const parts = message.split(' ');
             if (parts[0] === '/addrole' && parts.length >= 4) {
-                const targetUsername = parts[1].replace('@', '').trim();
+                const targetUsername = parts[1].replace('@', '').trim().toLowerCase();
                 const roleName = parts[2].trim();
                 const roleColor = parts[3].trim(); // Expect hex color like #ff0000
-                // Find userId by username from onlineRef
+                // Find userId by username from onlineRef (case-insensitive)
                 const onlineSnap = await onlineRef.once('value');
                 let targetUserId = null;
                 onlineSnap.forEach(child => {
-                    if (child.val().username === targetUsername) {
+                    if (child.val().username.toLowerCase() === targetUsername) {
                         targetUserId = child.key;
                     }
                 });
                 if (targetUserId) {
-                    userRolesRef.child(targetUserId).set({
+                    await userRolesRef.child(targetUserId).set({
                         name: roleName,
                         color: roleColor
                     });
                     // Send system message
                     const systemMessageRef = messagesRef.push();
-                    systemMessageRef.set({
+                    await systemMessageRef.set({
                         id: systemMessageRef.key,
                         username: 'System',
                         userRole: {name: 'system', color: '#000000'},
-                        text: `Admin telah menambahkan role ${roleName} (warna: ${roleColor}) ke ${targetUsername}`,
+                        text: `Admin telah menambahkan role ${roleName} (warna: ${roleColor}) ke @${parts[1].replace('@', '').trim()}`,
                         timestamp: firebase.database.ServerValue.TIMESTAMP
                     });
                     return true;
