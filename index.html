@@ -1416,6 +1416,7 @@ body.dark-mode .music-attachment {
         const messagesRef = database.ref('messages');
         const onlineRef = database.ref('online');
         const connectedRef = database.ref('.info/connected');
+        const userRolesRef = database.ref('userRoles'); // New ref for custom user roles
 
         // DOM elements
         const chatMessages = document.getElementById('chat-messages');
@@ -1473,7 +1474,13 @@ body.dark-mode .music-attachment {
         // Username handling with role assignment
         let username = localStorage.getItem('username') || 'User_' + Math.floor(Math.random() * 10000);
         usernameInput.value = username;
-        checkUserRole();
+        loadUserRole(); // Load custom role if exists
+
+        async function loadUserRole() {
+            const roleSnap = await userRolesRef.child(userId).once('value');
+            userRole = roleSnap.val() || getUserRole(username);
+            checkUserRole();
+        }
 
         function getUserRole(username) {
             const lowerUsername = username.toLowerCase().trim();
@@ -1488,8 +1495,6 @@ body.dark-mode .music-attachment {
         }
 
         function checkUserRole() {
-            const newRole = getUserRole(username);
-            userRole = newRole;
             if (userRole === 'admin' && adminVerified) {
                 adminControls.classList.add('show');
             } else {
@@ -1538,7 +1543,7 @@ body.dark-mode .music-attachment {
                 username = newUsername;
                 localStorage.setItem('username', username);
                 const oldRole = userRole;
-                checkUserRole();
+                await loadUserRole();
                 if (userRole === 'admin' && !adminVerified) {
                     const verified = await verifyAdmin();
                     if (!verified) {
@@ -1968,10 +1973,51 @@ body.dark-mode .music-attachment {
             replyPreview.classList.remove('show');
         });
 
+        // Handle add role command
+        async function handleAddRoleCommand(message) {
+            if (userRole !== 'admin' || !adminVerified) return false;
+            const parts = message.split(' ');
+            if (parts[0] === '/addrole' && parts.length >= 3) {
+                const targetUsername = parts[1].replace('@', '').trim();
+                const newRole = parts[2].trim();
+                // Find userId by username from onlineRef
+                const onlineSnap = await onlineRef.once('value');
+                let targetUserId = null;
+                onlineSnap.forEach(child => {
+                    if (child.val().username === targetUsername) {
+                        targetUserId = child.key;
+                    }
+                });
+                if (targetUserId) {
+                    userRolesRef.child(targetUserId).set(newRole);
+                    // Send system message
+                    const systemMessageRef = messagesRef.push();
+                    systemMessageRef.set({
+                        id: systemMessageRef.key,
+                        username: 'System',
+                        userRole: 'system',
+                        text: `Admin telah menambahkan role ${newRole} ke ${targetUsername}`,
+                        timestamp: firebase.database.ServerValue.TIMESTAMP
+                    });
+                    return true;
+                } else {
+                    alert('User tidak ditemukan atau tidak online.');
+                }
+            }
+            return false;
+        }
+
         // Enhanced send message function
         async function sendMessage() {
             const message = messageInput.value.trim();
             if (message !== '') {
+                // Check for addrole command
+                if (await handleAddRoleCommand(message)) {
+                    messageInput.value = '';
+                    messageInput.style.height = 'auto';
+                    return;
+                }
+
                 if (message.startsWith('/ai ')) {
                     const aiQuery = message.substring(4).trim();
                     if (aiQuery) {
@@ -2472,7 +2518,7 @@ body.dark-mode .music-attachment {
         });
 
         // Optimize performance by limiting rendered messages
-        const maxMessages = 100;
+        const maxMessages = 30;
         messagesRef.on('value', (snapshot) => {
             const messages = [];
             snapshot.forEach(child => {
