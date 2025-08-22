@@ -1198,7 +1198,7 @@
     <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-database-compat.js"></script>
     <script>
-        // Firebase configuration
+         // Firebase configuration
         const firebaseConfig = {
             apiKey: "AIzaSyAUYUeL05u0USxJzjrKzPChHVQRjANCDiw",
             authDomain: "chating-befb6.firebaseapp.com",
@@ -1275,6 +1275,39 @@
         let username = localStorage.getItem('username') || 'User_' + Math.floor(Math.random() * 10000);
         usernameInput.value = username;
         loadUserRole();
+        
+        // Fungsi untuk meminta izin notifikasi
+        async function requestNotificationPermission() {
+            if ('Notification' in window) {
+                const permission = await Notification.requestPermission();
+                return permission === 'granted';
+            }
+            return false;
+        }
+
+        // Fungsi untuk mengirim notifikasi
+        async function showNotification(title, options) {
+            if ('Notification' in window && Notification.permission === 'granted') {
+                // Coba gunakan Service Worker API terlebih dahulu
+                if ('serviceWorker' in navigator) {
+                    try {
+                        const registration = await navigator.serviceWorker.ready;
+                        registration.showNotification(title, {
+                            ...options,
+                            icon: '4ever.ico',
+                            badge: '4ever.ico',
+                            tag: 'chat-message'
+                        });
+                        return;
+                    } catch (error) {
+                        console.log('Service Worker notification failed, falling back to regular notification');
+                    }
+                }
+                
+                // Fallback ke Notification API biasa
+                new Notification(title, options);
+            }
+        }
         
         async function loadUserRole() {
             userRolesRef.child(userId).on('value', snap => {
@@ -1576,7 +1609,7 @@
                     
                     showNotification(`${username} sent a voice note`, {
                         body: caption || 'New voice message received',
-                        icon: '/path/to/icon.png'
+                        icon: '4ever.ico'
                     });
                 };
                 
@@ -1608,32 +1641,6 @@
                 stopRecording();
             }
         });
-        
-        async function requestNotificationPermission() {
-            if ('Notification' in window) {
-                const permission = await Notification.requestPermission();
-                return permission === 'granted';
-            }
-            return false;
-        }
-        
-        async function showNotification(title, options) {
-            if ('Notification' in window && Notification.permission === 'granted') {
-                try {
-                    const registration = await navigator.serviceWorker.getRegistration();
-                    if (registration) {
-                        registration.showNotification(title, {
-                            ...options,
-                            tag: 'hengki-chat-notification'
-                        });
-                    } else {
-                        new Notification(title, options);
-                    }
-                } catch (error) {
-                    console.error('Notification error:', error);
-                }
-            }
-        }
         
         connectedRef.on('value', (snap) => {
             if (snap.val() === true) {
@@ -1894,7 +1901,7 @@
                             
                             showNotification('AI Assistant responded', {
                                 body: aiResponse.substring(0, 50) + (aiResponse.length > 50 ? '...' : ''),
-                                icon: '/path/to/icon.png'
+                                icon: '4ever.ico'
                             });
                         } catch (error) {
                             console.error('AI request failed:', error);
@@ -1967,7 +1974,7 @@
                     
                     showNotification(`${username} sent a message`, {
                         body: message.substring(0, 50) + (message.length > 50 ? '...' : ''),
-                        icon: '/path/to/icon.png'
+                        icon: '4ever.ico'
                     });
                 }
             }
@@ -2064,7 +2071,7 @@
                     
                     showNotification(`${username} sent a file`, {
                         body: caption || `New ${fileType} uploaded: ${file.name}`,
-                        icon: '/path/to/icon.png'
+                        icon: '4ever.ico'
                     });
                 } catch (error) {
                     console.error('File upload error:', error);
@@ -2153,6 +2160,19 @@
             const messageId = snap.key;
             const isOwnMessage = message.userId === userId;
             const messageClass = message.isAI ? 'ai-message' : isOwnMessage ? 'user-message' : 'other-message';
+            
+            // Jangan tampilkan notifikasi untuk pesan sendiri atau jika halaman aktif
+            if (!isOwnMessage && document.hidden) {
+                const messageText = message.text 
+                    ? (message.text.length > 50 ? message.text.substring(0, 50) + '...' : message.text)
+                    : (message.image ? 'Mengirim gambar' : (message.audio ? 'Mengirim pesan suara' : 'Mengirim file'));
+                
+                showNotification(`${message.username} mengirim pesan`, {
+                    body: messageText,
+                    icon: '4ever.ico',
+                    tag: 'new-message'
+                });
+            }
             
             const messageElement = document.createElement('div');
             messageElement.className = `message ${messageClass} new-message`;
@@ -2268,13 +2288,34 @@
             }
         });
         
+        // Deteksi ketika halaman disembunyikan/ditampilkan
+        document.addEventListener('visibilitychange', () => {
+            if (document.hidden) {
+                console.log('Halaman tidak terlihat');
+            } else {
+                console.log('Halaman terlihat');
+            }
+        });
+        
         window.addEventListener('load', () => {
-            requestNotificationPermission();
-            
+            // Daftarkan Service Worker
             if ('serviceWorker' in navigator) {
-                navigator.serviceWorker.register('/service-worker.js').catch(error => {
-                    console.error('Service Worker registration failed:', error);
-                });
+                navigator.serviceWorker.register('/service-worker.js')
+                    .then(registration => {
+                        console.log('Service Worker registered with scope:', registration.scope);
+                        
+                        // Request permission untuk notifikasi
+                        return requestNotificationPermission();
+                    })
+                    .catch(error => {
+                        console.error('Service Worker registration failed:', error);
+                        // Fallback: request permission untuk notifikasi biasa
+                        requestNotificationPermission();
+                    });
+            } else {
+                console.log('Service Workers not supported');
+                // Fallback: request permission untuk notifikasi biasa
+                requestNotificationPermission();
             }
             
             autoResizeTextarea();
