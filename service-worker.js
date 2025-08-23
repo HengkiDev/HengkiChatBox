@@ -1,17 +1,14 @@
-// service-worker.js
 self.addEventListener('install', (event) => {
   self.skipWaiting();
-  console.log('Service Worker installed');
 });
 
 self.addEventListener('activate', (event) => {
   event.waitUntil(self.clients.claim());
-  console.log('Service Worker activated');
 });
 
 self.addEventListener('push', (event) => {
   if (!event.data) return;
-  
+
   const payload = event.data.json();
   const options = {
     body: payload.body,
@@ -33,6 +30,15 @@ self.addEventListener('notificationclick', (event) => {
   event.notification.close();
   
   event.waitUntil(
-    clients.openWindow(event.notification.data.url)
+    clients.matchAll({ type: 'window', includeUncontrolled: true }).then(clientsArr => {
+      const client = clientsArr.find(c => c.url === event.notification.data.url && 'focus' in c);
+      if (client) {
+        return client.focus();
+      } else if (clientsArr.length) {
+        return clientsArr[0].focus();
+      } else {
+        return clients.openWindow(event.notification.data.url);
+      }
+    })
   );
 });
