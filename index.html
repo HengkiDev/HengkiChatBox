@@ -28,6 +28,10 @@
             --moderator-color: #f39c12;
             --vip-color: #9b59b6;
             --voice-progress: #2ecc71;
+            --quote-bg: linear-gradient(135deg, #f8f9fa, #e9ecef);
+            --quote-border: #8e44ad;
+            --quote-text: #495057;
+            --quote-username: #3498db;
         }
 
         * {
@@ -344,178 +348,99 @@
             word-break: break-word;
         }
 
-        /* Quote Styling */
+
         .message-text .quote {
-            background: #f8f9fa;
-            padding: 12px 16px;
-            border-left: 4px solid var(--primary-color);
-            margin: 12px 0;
-            border-radius: 10px;
-            font-size: 0.9em;
-            color: #2c3e50;
+            background: var(--quote-bg);
+            padding: 12px 15px;
+            border-radius: 12px;
+            border-left: 4px solid var(--quote-border);
+            margin-bottom: 12px;
+            font-size: 0.85em;
+            color: var(--quote-text);
             position: relative;
-            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
             transition: all 0.3s ease;
+            overflow: hidden;
+            max-width: 100%;
         }
 
         .message-text .quote:hover {
             transform: translateY(-2px);
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
         }
 
         .message-text .quote::before {
-            content: '\f10d';
-            /* Font Awesome quote-left icon */
-            font-family: 'Font Awesome 5 Free';
-            font-weight: 900;
+            content: "";
             position: absolute;
-            top: 8px;
-            left: 8px;
-            color: var(--primary-color);
-            opacity: 0.2;
-            font-size: 1.5em;
+            top: 0;
+            left: 0;
+            width: 4px;
+            height: 100%;
+            background: var(--quote-border);
         }
 
         .message-text .quote strong {
             display: block;
-            margin-bottom: 6px;
-            color: var(--accent-color);
-            font-weight: 700;
-            font-size: 0.95em;
-            border-bottom: 1px solid rgba(0, 0, 0, 0.1);
-            padding-bottom: 4px;
+            margin-bottom: 4px;
+            color: var(--quote-username);
+            font-weight: 600;
+            font-size: 0.9em;
         }
 
-        .message-text .quote p {
-            margin: 0;
-            line-height: 1.5;
+        .message-text .quote::after {
+            content: "\\201C";
+            position: absolute;
+            top: 8px;
+            right: 15px;
+            font-size: 2em;
+            color: rgba(142, 68, 173, 0.2);
+            font-family: Arial, sans-serif;
         }
 
-        /* Dark mode for quote */
         body.dark-mode .message-text .quote {
-            background: #2a3654;
+            background: linear-gradient(135deg, #2a3654, #1f2b46);
             color: #e9ecef;
-            border-left-color: var(--primary-color);
-            box-shadow: 0 2px 8px rgba(255, 255, 255, 0.1);
-        }
-
-        body.dark-mode .message-text .quote:hover {
-            box-shadow: 0 4px 12px rgba(255, 255, 255, 0.15);
+            border-left-color: var(--quote-border);
         }
 
         body.dark-mode .message-text .quote strong {
-            color: var(--accent-color);
-            border-bottom-color: rgba(255, 255, 255, 0.1);
+            color: var(--quote-username);
         }
 
-        body.dark-mode .message-text .quote::before {
-            color: var(--primary-color);
-            opacity: 0.3;
+        body.dark-mode .message-text .quote::after {
+            color: rgba(142, 68, 173, 0.3);
         }
 
-        /* Message Info Styling */
-        .message-info {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            margin-bottom: 8px;
-            font-size: 0.9rem;
-            padding: 6px 10px;
-            background: rgba(0, 0, 0, 0.03);
-            border-radius: 8px;
-            font-weight: 600;
-            color: var(--text-color);
-            transition: background 0.3s ease;
+        @media (max-width: 768px) {
+            .message-text .quote {
+                padding: 10px 12px;
+                font-size: 0.8em;
+            }
+
+            .message-text .quote strong {
+                font-size: 0.85em;
+            }
+
+            .message-text .quote::after {
+                font-size: 1.8em;
+                right: 10px;
+            }
         }
 
-        .user-message .message-info {
-            color: var(--accent-color);
-            background: rgba(52, 152, 219, 0.1);
-        }
+        @media (max-width: 480px) {
+            .message-text .quote {
+                padding: 8px 10px;
+                font-size: 0.75em;
+            }
 
-        .other-message .message-info {
-            color: var(--secondary-color);
-            background: rgba(155, 89, 182, 0.1);
-        }
+            .message-text .quote strong {
+                font-size: 0.8em;
+            }
 
-        .ai-message .message-info {
-            color: #27ae60;
-            background: rgba(46, 204, 113, 0.1);
-        }
-
-        .message-info:hover {
-            background: rgba(0, 0, 0, 0.05);
-        }
-
-        .user-message .message-info:hover {
-            background: rgba(52, 152, 219, 0.15);
-        }
-
-        .other-message .message-info:hover {
-            background: rgba(155, 89, 182, 0.15);
-        }
-
-        .ai-message .message-info:hover {
-            background: rgba(46, 204, 113, 0.15);
-        }
-
-        .message-info i {
-            margin-right: 6px;
-            font-size: 1rem;
-        }
-
-        .role-badge {
-            padding: 3px 8px;
-            border-radius: 12px;
-            font-size: 0.7rem;
-            font-weight: 700;
-            color: white;
-            background-color: var(--primary-color);
-            margin-left: 8px;
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-        }
-
-        .message-time {
-            font-size: 0.75rem;
-            font-weight: normal;
-            opacity: 0.7;
-            margin-left: auto;
-            color: inherit;
-        }
-
-        /* Dark mode for message-info */
-        body.dark-mode .message-info {
-            background: rgba(255, 255, 255, 0.05);
-            color: #e9ecef;
-        }
-
-        body.dark-mode .user-message .message-info {
-            background: rgba(52, 152, 219, 0.2);
-        }
-
-        body.dark-mode .other-message .message-info {
-            background: rgba(155, 89, 182, 0.2);
-        }
-
-        body.dark-mode .ai-message .message-info {
-            background: rgba(46, 204, 113, 0.2);
-        }
-
-        body.dark-mode .message-info:hover {
-            background: rgba(255, 255, 255, 0.1);
-        }
-
-        body.dark-mode .user-message .message-info:hover {
-            background: rgba(52, 152, 219, 0.25);
-        }
-
-        body.dark-mode .other-message .message-info:hover {
-            background: rgba(155, 89, 182, 0.25);
-        }
-
-        body.dark-mode .ai-message .message-info:hover {
-            background: rgba(46, 204, 113, 0.25);
+            .message-text .quote::after {
+                font-size: 1.5em;
+                right: 8px;
+            }
         }
 
         .message-text img {
