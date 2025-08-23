@@ -5,12 +5,12 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>4ever</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
- <link rel="icon" type="image/x-icon" href="4ever.ico">
-<meta name="description" content="4ever Chat - Aplikasi chat real-time dengan fitur AI, voice notes, dan berbagi file. Chat dengan teman atau konsultasi dengan AI assistant secara gratis.">
-<meta name="keywords" content="chat, real-time chat, AI chat, voice message, file sharing, instant messaging">
-<meta name="author" content="Hengki Dev">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<meta name="theme-color" content="#8e44ad">
+    <link rel="icon" type="image/x-icon" href="4ever.ico">
+    <meta name="description" content="4ever Chat - Aplikasi chat real-time dengan fitur AI, voice notes, dan berbagi file. Chat dengan teman atau konsultasi dengan AI assistant secara gratis.">
+    <meta name="keywords" content="chat, real-time chat, AI chat, voice message, file sharing, instant messaging">
+    <meta name="author" content="Hengki Dev">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="theme-color" content="#8e44ad">
     <style>
         :root {
             --primary-color: #8e44ad;
@@ -273,13 +273,6 @@
         .delete-btn:hover {
             background: #c0392b;
         }
-        .reply-btn {
-            background: #3498db;
-            color: white;
-        }
-        .reply-btn:hover {
-            background: #2980b9;
-        }
         .message-info {
             display: flex;
             align-items: center;
@@ -318,19 +311,6 @@
         .message-text {
             line-height: 1.6;
             word-break: break-word;
-        }
-        .message-text .quote {
-            background: #f0f0f0;
-            padding: 8px;
-            border-left: 3px solid #ccc;
-            margin-bottom: 10px;
-            border-radius: 4px;
-            font-size: 0.9em;
-            color: #555;
-        }
-        .message-text .quote strong {
-            display: block;
-            margin-bottom: 2px;
         }
         .message-text img {
             max-width: 100%;
@@ -704,30 +684,6 @@
             flex: 1;
             position: relative;
         }
-        #reply-preview {
-            display: none;
-            background: #f0f0f0;
-            padding: 8px 12px;
-            border-radius: 20px 20px 0 0;
-            border-bottom: 1px solid #ddd;
-            font-size: 0.85rem;
-            color: #555;
-            position: relative;
-        }
-        #reply-preview.show {
-            display: block;
-        }
-        #reply-preview .cancel-reply {
-            position: absolute;
-            right: 10px;
-            top: 50%;
-            transform: translateY(-50%);
-            background: none;
-            border: none;
-            color: #e74c3c;
-            cursor: pointer;
-            font-size: 1rem;
-        }
         #message-input {
             width: 100%;
             padding: 12px 45px 12px 15px;
@@ -867,11 +823,6 @@
             border: 1px solid #364f7e;
             color: white;
         }
-        body.dark-mode #reply-preview {
-            background: #2a3654;
-            color: #ddd;
-            border-bottom: 1px solid #364f7e;
-        }
         body.dark-mode .emoji-button {
             color: #4A5683;
         }
@@ -885,11 +836,6 @@
             background: linear-gradient(90deg, #2a3654 25%, #1f2b46 50%, #2a3654 75%);
             background-size: 200% 100%;
             color: #666;
-        }
-        body.dark-mode .message-text .quote {
-            background: #2a3654;
-            border-left-color: #4A5683;
-            color: #ddd;
         }
         .theme-toggle {
             position: absolute;
@@ -1152,7 +1098,6 @@
         </div>
        
         <div id="chat-messages" class="chat-messages">
-            <!-- Messages will be displayed here -->
         </div>
        
         <div class="chat-input">
@@ -1163,10 +1108,6 @@
                 <i class="fas fa-microphone"></i>
             </button>
             <div class="message-input-container">
-                <div id="reply-preview">
-                    <span id="reply-text"></span>
-                    <button class="cancel-reply"><i class="fas fa-times"></i></button>
-                </div>
                 <textarea id="message-input" placeholder="Ketik pesan... (atau /ai untuk chat dengan AI)" rows="1"></textarea>
                 <button class="emoji-button" id="emoji-button">
                     <i class="far fa-smile"></i>
@@ -1178,7 +1119,6 @@
         </div>
     </div>
     <input type="file" id="file-input" accept="image/*,audio/mpeg,application/pdf,application/vnd.openxmlformats-officedocument.wordprocessingml.document,text/html,application/msword,application/vnd.ms-excel,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" style="display: none;">
-    <!-- Confirmation Modal -->
     <div class="modal" id="confirmation-modal">
         <div class="modal-content">
             <h3 id="modal-title">Konfirmasi</h3>
@@ -1189,17 +1129,14 @@
             </div>
         </div>
     </div>
-    <!-- Image Modal -->
     <div class="image-modal" id="image-modal">
         <span class="image-modal-close" id="image-modal-close">&times;</span>
         <img id="modal-image" src="" alt="Full Image">
     </div>
-    <!-- Firebase SDK -->
     <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-database-compat.js"></script>
     <script>
-         // Firebase configuration
-        const firebaseConfig = {
+         const firebaseConfig = {
             apiKey: "AIzaSyAUYUeL05u0USxJzjrKzPChHVQRjANCDiw",
             authDomain: "chating-befb6.firebaseapp.com",
             databaseURL: "https://chating-befb6-default-rtdb.firebaseio.com",
@@ -1210,7 +1147,6 @@
             measurementId: "G-LQ4FTSHJF1"
         };
         
-        // Initialize Firebase
         firebase.initializeApp(firebaseConfig);
         const database = firebase.database();
         const messagesRef = database.ref('messages');
@@ -1218,7 +1154,6 @@
         const connectedRef = database.ref('.info/connected');
         const userRolesRef = database.ref('userRoles');
         
-        // DOM elements
         const chatMessages = document.getElementById('chat-messages');
         const messageInput = document.getElementById('message-input');
         const sendButton = document.getElementById('send-button');
@@ -1239,11 +1174,7 @@
         const modalImage = document.getElementById('modal-image');
         const imageModalClose = document.getElementById('image-modal-close');
         const voiceButton = document.getElementById('voice-button');
-        const replyPreview = document.getElementById('reply-preview');
-        const replyText = document.getElementById('reply-text');
-        const cancelReply = replyPreview.querySelector('.cancel-reply');
         
-        // User roles and admin functionality
         let userRole = {name: 'user', color: '#3498db'};
         let userId = localStorage.getItem('userId');
         if (!userId) {
@@ -1251,19 +1182,16 @@
             localStorage.setItem('userId', userId);
         }
         
-        // Admin security
         const ADMIN_USERNAME = 'hengki';
         const ADMIN_SECRET_KEY = 'Hengki141516';
         let adminVerified = false;
         
-        // Load theme preference
         const isDarkMode = localStorage.getItem('darkMode') === 'true';
         if (isDarkMode) {
             document.body.classList.add('dark-mode');
             themeToggle.innerHTML = '<i class="fas fa-sun"></i>';
         }
         
-        // Theme toggle
         themeToggle.addEventListener('click', () => {
             document.body.classList.toggle('dark-mode');
             const isDark = document.body.classList.contains('dark-mode');
@@ -1271,12 +1199,10 @@
             themeToggle.innerHTML = isDark ? '<i class="fas fa-sun"></i>' : '<i class="fas fa-moon"></i>';
         });
         
-        // Username handling with role assignment
         let username = localStorage.getItem('username') || 'User_' + Math.floor(Math.random() * 10000);
         usernameInput.value = username;
         loadUserRole();
         
-        // Fungsi untuk meminta izin notifikasi
         async function requestNotificationPermission() {
             if ('Notification' in window) {
                 const permission = await Notification.requestPermission();
@@ -1285,10 +1211,8 @@
             return false;
         }
 
-        // Fungsi untuk mengirim notifikasi
         async function showNotification(title, options) {
             if ('Notification' in window && Notification.permission === 'granted') {
-                // Coba gunakan Service Worker API terlebih dahulu
                 if ('serviceWorker' in navigator) {
                     try {
                         const registration = await navigator.serviceWorker.ready;
@@ -1304,7 +1228,6 @@
                     }
                 }
                 
-                // Fallback ke Notification API biasa
                 new Notification(title, options);
             }
         }
@@ -1791,26 +1714,6 @@
             messageInput.style.overflowY = 'auto';
         });
         
-        let repliedTo = null;
-        
-        function replyToMessage(messageId) {
-            messagesRef.child(messageId).once('value').then(snap => {
-                const repliedData = snap.val();
-                if (repliedData) {
-                    repliedTo = messageId;
-                    const snippet = repliedData.text ? repliedData.text.substring(0, 50) + (repliedData.text.length > 50 ? '...' : '') : '[Media]';
-                    replyText.innerHTML = `Balas ke <strong>${repliedData.username}</strong>: ${snippet}`;
-                    replyPreview.classList.add('show');
-                    messageInput.focus();
-                }
-            });
-        }
-        
-        cancelReply.addEventListener('click', () => {
-            repliedTo = null;
-            replyPreview.classList.remove('show');
-        });
-        
         async function handleAddRoleCommand(message) {
             if (userRole.name !== 'admin' || !adminVerified) return false;
             
@@ -1936,38 +1839,15 @@
                         autoResizeTextarea();
                     }
                 } else {
-                    if (repliedTo) {
-                        const repliedSnap = await messagesRef.child(repliedTo).once('value');
-                        const repliedData = repliedSnap.val();
-                        
-                        if (repliedData) {
-                            const newMessageRef = messagesRef.push();
-                            newMessageRef.set({
-                                id: newMessageRef.key,
-                                username: username,
-                                userRole: userRole,
-                                userId: userId,
-                                text: message,
-                                repliedTo: repliedTo,
-                                repliedText: repliedData.text || '[Media]',
-                                repliedUsername: repliedData.username,
-                                timestamp: firebase.database.ServerValue.TIMESTAMP
-                            });
-                            
-                            repliedTo = null;
-                            replyPreview.classList.remove('show');
-                        }
-                    } else {
-                        const newMessageRef = messagesRef.push();
-                        newMessageRef.set({
-                            id: newMessageRef.key,
-                            username: username,
-                            userRole: userRole,
-                            userId: userId,
-                            text: message,
-                            timestamp: firebase.database.ServerValue.TIMESTAMP
-                        });
-                    }
+                    const newMessageRef = messagesRef.push();
+                    newMessageRef.set({
+                        id: newMessageRef.key,
+                        username: username,
+                        userRole: userRole,
+                        userId: userId,
+                        text: message,
+                        timestamp: firebase.database.ServerValue.TIMESTAMP
+                    });
                     
                     messageInput.value = '';
                     autoResizeTextarea();
@@ -2161,7 +2041,6 @@
             const isOwnMessage = message.userId === userId;
             const messageClass = message.isAI ? 'ai-message' : isOwnMessage ? 'user-message' : 'other-message';
             
-            // Jangan tampilkan notifikasi untuk pesan sendiri atau jika halaman aktif
             if (!isOwnMessage && document.hidden) {
                 const messageText = message.text 
                     ? (message.text.length > 50 ? message.text.substring(0, 50) + '...' : message.text)
@@ -2179,10 +2058,6 @@
             messageElement.setAttribute('data-id', messageId);
             
             let messageContent = '';
-            
-            if (message.repliedTo) {
-                messageContent += `<div class="quote"><strong>${message.repliedUsername}</strong>: ${message.repliedText}</div>`;
-            }
             
             if (message.text) {
                 messageContent += `<div class="message-text">${message.isAI ? formatAIResponse(message.text) : message.text}</div>`;
@@ -2231,9 +2106,6 @@
                 </div>
                 ${messageContent}
                 <div class="message-actions">
-                    <button class="message-action-btn reply-btn" onclick="replyToMessage('${messageId}')">
-                        <i class="fas fa-reply"></i>
-                    </button>
                     <button class="message-action-btn delete-btn" onclick="deleteMessage('${messageId}', this.closest('.message'), '${message.username}')">
                         <i class="fas fa-trash"></i>
                     </button>
@@ -2288,7 +2160,6 @@
             }
         });
         
-        // Deteksi ketika halaman disembunyikan/ditampilkan
         document.addEventListener('visibilitychange', () => {
             if (document.hidden) {
                 console.log('Halaman tidak terlihat');
@@ -2298,23 +2169,18 @@
         });
         
         window.addEventListener('load', () => {
-            // Daftarkan Service Worker
             if ('serviceWorker' in navigator) {
                 navigator.serviceWorker.register('/service-worker.js')
                     .then(registration => {
                         console.log('Service Worker registered with scope:', registration.scope);
-                        
-                        // Request permission untuk notifikasi
                         return requestNotificationPermission();
                     })
                     .catch(error => {
                         console.error('Service Worker registration failed:', error);
-                        // Fallback: request permission untuk notifikasi biasa
                         requestNotificationPermission();
                     });
             } else {
                 console.log('Service Workers not supported');
-                // Fallback: request permission untuk notifikasi biasa
                 requestNotificationPermission();
             }
             
