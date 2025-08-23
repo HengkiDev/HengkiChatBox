@@ -205,6 +205,101 @@
             transform: translateY(-1px);
         }
 
+/* Quote styling for replied messages */
+.quote {
+    background: linear-gradient(135deg, rgba(142, 68, 173, 0.1), rgba(52, 152, 219, 0.1));
+    border-left: 4px solid var(--primary-color);
+    padding: 8px 12px;
+    margin-bottom: 10px;
+    border-radius: 8px;
+    font-size: 0.85rem;
+    color: var(--text-color);
+    position: relative;
+    max-width: 100%;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    line-height: 1.4;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+    animation: slideInQuote 0.3s ease-out;
+}
+
+/* Quote username styling */
+.quote strong {
+    color: var(--accent-color);
+    font-weight: 600;
+    display: block;
+    margin-bottom: 4px;
+    font-size: 0.9rem;
+}
+
+/* Quote content */
+.quote::after {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    height: 1px;
+    background: rgba(0, 0, 0, 0.1);
+}
+
+/* Animation for quote appearance */
+@keyframes slideInQuote {
+    from {
+        opacity: 0;
+        transform: translateY(-5px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* Dark mode styles for quote */
+body.dark-mode .quote {
+    background: linear-gradient(135deg, rgba(106, 48, 147, 0.2), rgba(41, 83, 155, 0.2));
+    border-left-color: var(--secondary-color);
+    color: #ecf0f1;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
+}
+
+body.dark-mode .quote strong {
+    color: #3498db;
+}
+
+body.dark-mode .quote::after {
+    background: rgba(255, 255, 255, 0.1);
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+    .quote {
+        font-size: 0.8rem;
+        padding: 6px 10px;
+        margin-bottom: 8px;
+        border-radius: 6px;
+    }
+    
+    .quote strong {
+        font-size: 0.85rem;
+        margin-bottom: 3px;
+    }
+}
+
+@media (max-width: 480px) {
+    .quote {
+        font-size: 0.75rem;
+        padding: 5px 8px;
+        margin-bottom: 6px;
+        border-radius: 5px;
+    }
+    
+    .quote strong {
+        font-size: 0.8rem;
+        margin-bottom: 2px;
+    }
+}
+
         .chat-messages {
             flex: 1;
             overflow-y: auto;
