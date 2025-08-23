@@ -7,11 +7,9 @@ self.addEventListener('activate', (event) => {
 });
 
 self.addEventListener('push', (event) => {
-  if (!event.data) return;
-
-  const payload = event.data.json();
+  const payload = event.data ? event.data.json() : {};
   const options = {
-    body: payload.body,
+    body: payload.body || 'New message received',
     icon: '/4ever.ico',
     badge: '/4ever.ico',
     vibrate: [200, 100, 200],
@@ -22,21 +20,20 @@ self.addEventListener('push', (event) => {
   };
 
   event.waitUntil(
-    self.registration.showNotification(payload.title, options)
+    self.registration.showNotification(payload.title || '4ever Notification', options)
   );
 });
 
 self.addEventListener('notificationclick', (event) => {
   event.notification.close();
-  
   event.waitUntil(
-    clients.matchAll({ type: 'window', includeUncontrolled: true }).then(clientsArr => {
-      const client = clientsArr.find(c => c.url === event.notification.data.url && 'focus' in c);
-      if (client) {
-        return client.focus();
-      } else if (clientsArr.length) {
-        return clientsArr[0].focus();
-      } else {
+    clients.matchAll({ type: 'window', includeUncontrolled: true }).then((clientList) => {
+      for (const client of clientList) {
+        if (client.url === event.notification.data.url && 'focus' in client) {
+          return client.focus();
+        }
+      }
+      if (clients.openWindow) {
         return clients.openWindow(event.notification.data.url);
       }
     })
