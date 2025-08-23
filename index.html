@@ -339,38 +339,141 @@
             background: #2980b9;
         }
 
+        .message-text {
+            line-height: 1.6;
+            word-break: break-word;
+        }
+
+        /* Quote Styling */
+        .message-text .quote {
+            background: #f8f9fa;
+            padding: 12px 16px;
+            border-left: 4px solid var(--primary-color);
+            margin: 12px 0;
+            border-radius: 10px;
+            font-size: 0.9em;
+            color: #2c3e50;
+            position: relative;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+            transition: all 0.3s ease;
+        }
+
+        .message-text .quote:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+        }
+
+        .message-text .quote::before {
+            content: '\f10d';
+            /* Font Awesome quote-left icon */
+            font-family: 'Font Awesome 5 Free';
+            font-weight: 900;
+            position: absolute;
+            top: 8px;
+            left: 8px;
+            color: var(--primary-color);
+            opacity: 0.2;
+            font-size: 1.5em;
+        }
+
+        .message-text .quote strong {
+            display: block;
+            margin-bottom: 6px;
+            color: var(--accent-color);
+            font-weight: 700;
+            font-size: 0.95em;
+            border-bottom: 1px solid rgba(0, 0, 0, 0.1);
+            padding-bottom: 4px;
+        }
+
+        .message-text .quote p {
+            margin: 0;
+            line-height: 1.5;
+        }
+
+        /* Dark mode for quote */
+        body.dark-mode .message-text .quote {
+            background: #2a3654;
+            color: #e9ecef;
+            border-left-color: var(--primary-color);
+            box-shadow: 0 2px 8px rgba(255, 255, 255, 0.1);
+        }
+
+        body.dark-mode .message-text .quote:hover {
+            box-shadow: 0 4px 12px rgba(255, 255, 255, 0.15);
+        }
+
+        body.dark-mode .message-text .quote strong {
+            color: var(--accent-color);
+            border-bottom-color: rgba(255, 255, 255, 0.1);
+        }
+
+        body.dark-mode .message-text .quote::before {
+            color: var(--primary-color);
+            opacity: 0.3;
+        }
+
+        /* Message Info Styling */
         .message-info {
             display: flex;
             align-items: center;
-            margin-bottom: 5px;
+            justify-content: space-between;
+            margin-bottom: 8px;
+            font-size: 0.9rem;
+            padding: 6px 10px;
+            background: rgba(0, 0, 0, 0.03);
+            border-radius: 8px;
             font-weight: 600;
-            font-size: 0.85rem;
-            gap: 5px;
+            color: var(--text-color);
+            transition: background 0.3s ease;
         }
 
         .user-message .message-info {
-            color: #3498db;
-            justify-content: flex-end;
+            color: var(--accent-color);
+            background: rgba(52, 152, 219, 0.1);
         }
 
         .other-message .message-info {
-            color: #9b59b6;
+            color: var(--secondary-color);
+            background: rgba(155, 89, 182, 0.1);
         }
 
         .ai-message .message-info {
             color: #27ae60;
+            background: rgba(46, 204, 113, 0.1);
+        }
+
+        .message-info:hover {
+            background: rgba(0, 0, 0, 0.05);
+        }
+
+        .user-message .message-info:hover {
+            background: rgba(52, 152, 219, 0.15);
+        }
+
+        .other-message .message-info:hover {
+            background: rgba(155, 89, 182, 0.15);
+        }
+
+        .ai-message .message-info:hover {
+            background: rgba(46, 204, 113, 0.15);
+        }
+
+        .message-info i {
+            margin-right: 6px;
+            font-size: 1rem;
         }
 
         .role-badge {
-            padding: 2px 6px;
-            border-radius: 10px;
-            font-size: 0.65rem;
-            font-weight: 600;
-            display: inline-flex;
-            align-items: center;
-            gap: 3px;
-            margin-left: 5px;
+            padding: 3px 8px;
+            border-radius: 12px;
+            font-size: 0.7rem;
+            font-weight: 700;
             color: white;
+            background-color: var(--primary-color);
+            margin-left: 8px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
         }
 
         .message-time {
@@ -378,82 +481,41 @@
             font-weight: normal;
             opacity: 0.7;
             margin-left: auto;
+            color: inherit;
         }
 
-        .message-text {
-            line-height: 1.6;
-            word-break: break-word;
-        }
-
-        /* Quote styling separated from main chat message */
-        .message-text .quote {
-            background: #f8f9fa;
-            padding: 12px 15px;
-            border-left: 4px solid var(--primary-color);
-            margin: 12px 0;
-            border-radius: 10px;
-            font-size: 0.9em;
-            color: #2c3e50;
-            position: relative;
-            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
-            line-height: 1.5;
-            max-width: 100%;
-            overflow: hidden;
-        }
-
-        .message-text .quote::before {
-            content: "";
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 4px;
-            height: 100%;
-            background: var(--primary-color);
-        }
-
-        .message-text .quote strong {
-            display: block;
-            margin-bottom: 6px;
-            color: var(--accent-color);
-            font-weight: 600;
-            font-size: 0.95em;
-        }
-
-        /* Dark mode styles for quote */
-        body.dark-mode .message-text .quote {
-            background: #2a3654;
-            border-left-color: var(--primary-color);
+        /* Dark mode for message-info */
+        body.dark-mode .message-info {
+            background: rgba(255, 255, 255, 0.05);
             color: #e9ecef;
-            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
         }
 
-        body.dark-mode .message-text .quote strong {
-            color: #3498db;
+        body.dark-mode .user-message .message-info {
+            background: rgba(52, 152, 219, 0.2);
         }
 
-        /* Ensure quote is visually separated in all message types */
-        .user-message .message-text .quote,
-        .other-message .message-text .quote,
-        .ai-message .message-text .quote {
-            margin: 12px 8px;
-            border-radius: 10px;
+        body.dark-mode .other-message .message-info {
+            background: rgba(155, 89, 182, 0.2);
         }
 
-        /* Responsive adjustments */
-        @media (max-width: 768px) {
-            .message-text .quote {
-                margin: 10px 6px;
-                padding: 10px 12px;
-                font-size: 0.85em;
-            }
+        body.dark-mode .ai-message .message-info {
+            background: rgba(46, 204, 113, 0.2);
         }
 
-        @media (max-width: 480px) {
-            .message-text .quote {
-                margin: 8px 4px;
-                padding: 8px 10px;
-                font-size: 0.8em;
-            }
+        body.dark-mode .message-info:hover {
+            background: rgba(255, 255, 255, 0.1);
+        }
+
+        body.dark-mode .user-message .message-info:hover {
+            background: rgba(52, 152, 219, 0.25);
+        }
+
+        body.dark-mode .other-message .message-info:hover {
+            background: rgba(155, 89, 182, 0.25);
+        }
+
+        body.dark-mode .ai-message .message-info:hover {
+            background: rgba(46, 204, 113, 0.25);
         }
 
         .message-text img {
@@ -1219,17 +1281,6 @@
             background: linear-gradient(90deg, #2a3654 25%, #1f2b46 50%, #2a3654 75%);
             background-size: 200% 100%;
             color: #666;
-        }
-
-        body.dark-mode .message-text .quote {
-            background: #2a3654;
-            border-left-color: var(--primary-color);
-            color: #e9ecef;
-            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
-        }
-
-        body.dark-mode .message-text .quote strong {
-            color: #3498db;
         }
 
         .theme-toggle {
