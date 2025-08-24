@@ -1560,38 +1560,299 @@
         usernameInput.value = username;
         loadUserRole();
 
-        async function requestNotificationPermission() {
-            if ('Notification' in window) {
-                try {
-                    const permission = await Notification.requestPermission();
-                    if (permission === 'granted' && 'serviceWorker' in navigator) {
-                        await navigator.serviceWorker.register('/service-worker.js');
-                        console.log('Service Worker registered');
-                    }
-                    return permission === 'granted';
-                } catch (error) {
-                    console.error('Notification permission error:', error);
-                    return false;
-                }
+        // Ganti bagian notification di HTML Anda dengan kode ini
+
+        let serviceWorkerRegistration = null;
+        let notificationPermission = 'default';
+
+        // Inisialisasi Service Worker dan Notifications
+        async function initializeNotifications() {
+            // Cek apakah browser mendukung notifications
+            if (!('Notification' in window)) {
+                console.log('Browser tidak mendukung notifications');
+                return false;
             }
-            return false;
+
+            // Cek apakah browser mendukung service worker
+            if (!('serviceWorker' in navigator)) {
+                console.log('Browser tidak mendukung service worker');
+                return false;
+            }
+
+            try {
+                // Register service worker
+                serviceWorkerRegistration = await navigator.serviceWorker.register('/service-worker.js', {
+                    scope: '/'
+                });
+
+                console.log('Service Worker registered successfully:', serviceWorkerRegistration);
+
+                // Tunggu service worker aktif
+                await navigator.serviceWorker.ready;
+
+                return true;
+            } catch (error) {
+                console.error('Service Worker registration failed:', error);
+                return false;
+            }
         }
 
-        async function showNotification(title, options) {
-            if ('Notification' in window && Notification.permission === 'granted') {
+        // Request permission dengan user gesture
+        async function requestNotificationPermission() {
+            if (!('Notification' in window)) {
+                console.log('Browser tidak mendukung notifications');
+                return false;
+            }
+
+            // Cek permission saat ini
+            if (Notification.permission === 'granted') {
+                notificationPermission = 'granted';
+                return true;
+            }
+
+            if (Notification.permission === 'denied') {
+                console.log('Notification permission denied');
+                return false;
+            }
+
+            try {
+                // Request permission (harus dipanggil dari user gesture)
+                const permission = await Notification.requestPermission();
+                notificationPermission = permission;
+
+                if (permission === 'granted') {
+                    console.log('Notification permission granted');
+
+                    // Test notification untuk memastikan bekerja
+                    await showTestNotification();
+                    return true;
+                } else {
+                    console.log('Notification permission not granted:', permission);
+                    return false;
+                }
+            } catch (error) {
+                console.error('Error requesting notification permission:', error);
+                return false;
+            }
+        }
+
+        // Show test notification
+        async function showTestNotification() {
+            if (serviceWorkerRegistration && notificationPermission === 'granted') {
                 try {
-                    const registration = await navigator.serviceWorker.ready;
-                    await registration.showNotification(title, {
-                        ...options,
+                    await serviceWorkerRegistration.showNotification('4ever Chat', {
+                        body: 'Notifications are now enabled!',
                         icon: '/4ever.ico',
                         badge: '/4ever.ico',
-                        tag: 'chat-message'
+                        tag: 'test-notification',
+                        requireInteraction: false,
+                        silent: false,
+                        timestamp: Date.now(),
+                        actions: [
+                            {
+                                action: 'ok',
+                                title: 'OK'
+                            }
+                        ]
                     });
                 } catch (error) {
-                    console.error('Notification error:', error);
-                    new Notification(title, options);
+                    console.error('Error showing test notification:', error);
                 }
             }
+        }
+
+        // Improved notification function
+        async function showChatNotification(title, options = {}) {
+            // Cek apakah notifications diizinkan
+            if (notificationPermission !== 'granted') {
+                console.log('Notifications not permitted');
+                return false;
+            }
+
+            // Cek apakah halaman sedang aktif (focused)
+            if (document.hasFocus() && document.visibilityState === 'visible') {
+                console.log('Page is active, skipping notification');
+                return false;
+            }
+
+            try {
+                const notificationOptions = {
+                    body: options.body || 'New message received',
+                    icon: options.icon || '/4ever.ico',
+                    badge: '/4ever.ico',
+                    tag: 'chat-message',
+                    requireInteraction: true,
+                    silent: false,
+                    timestamp: Date.now(),
+                    data: {
+                        url: window.location.href,
+                        timestamp: Date.now()
+                    },
+                    actions: [
+                        {
+                            action: 'view',
+                            title: 'View Message'
+                        },
+                        {
+                            action: 'close',
+                            title: 'Close'
+                        }
+                    ],
+                    ...options
+                };
+
+                if (serviceWorkerRegistration) {
+                    // Gunakan service worker notification (recommended)
+                    await serviceWorkerRegistration.showNotification(title, notificationOptions);
+                    console.log('Service worker notification sent');
+                } else {
+                    // Fallback ke regular notification
+                    new Notification(title, notificationOptions);
+                    console.log('Regular notification sent');
+                }
+
+                return true;
+            } catch (error) {
+                console.error('Error showing notification:', error);
+                return false;
+            }
+        }
+
+        // Enhanced notification permission request dengan UI yang user-friendly
+        function showNotificationPermissionDialog() {
+            // Buat modal permission custom
+            const modal = document.createElement('div');
+            modal.style.cssText = `
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(0,0,0,0.5);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        z-index: 9999;
+    `;
+
+            const dialog = document.createElement('div');
+            dialog.style.cssText = `
+        background: white;
+        padding: 24px;
+        border-radius: 12px;
+        max-width: 400px;
+        margin: 16px;
+        text-align: center;
+    `;
+
+            dialog.innerHTML = `
+        <h3 style="margin: 0 0 16px 0; color: #333;">Enable Notifications</h3>
+        <p style="margin: 0 0 24px 0; color: #666;">
+            Get notified when you receive new messages even when the app is in the background.
+        </p>
+        <div style="display: flex; gap: 12px; justify-content: center;">
+            <button id="deny-notifications" style="padding: 10px 20px; border: 1px solid #ddd; background: white; border-radius: 6px; cursor: pointer;">
+                Not Now
+            </button>
+            <button id="enable-notifications" style="padding: 10px 20px; background: #3498db; color: white; border: none; border-radius: 6px; cursor: pointer;">
+                Enable Notifications
+            </button>
+        </div>
+    `;
+
+            modal.appendChild(dialog);
+            document.body.appendChild(modal);
+
+            // Handle button clicks
+            document.getElementById('enable-notifications').onclick = async () => {
+                document.body.removeChild(modal);
+                const granted = await requestNotificationPermission();
+                if (granted) {
+                    console.log('Notifications enabled successfully!');
+                }
+            };
+
+            document.getElementById('deny-notifications').onclick = () => {
+                document.body.removeChild(modal);
+                console.log('User declined notifications');
+            };
+        }
+
+        // Check notification settings dan Android-specific fixes
+        function checkAndroidNotificationSettings() {
+            const isAndroid = /Android/i.test(navigator.userAgent);
+
+            if (isAndroid) {
+                console.log('Android device detected, applying specific fixes...');
+
+                // Android-specific notification options
+                return {
+                    requireInteraction: true,
+                    silent: false,
+                    vibrate: [200, 100, 200],
+                    timestamp: Date.now()
+                };
+            }
+
+            return {};
+        }
+
+        // Initialize everything when page loads
+        window.addEventListener('load', async () => {
+            console.log('Initializing notifications...');
+
+            // Initialize service worker
+            const swInitialized = await initializeNotifications();
+
+            if (!swInitialized) {
+                console.log('Service Worker initialization failed');
+                return;
+            }
+
+            // Cek permission yang ada
+            if (Notification.permission === 'default') {
+                // Tampilkan dialog permission setelah user berinteraksi
+                setTimeout(() => {
+                    showNotificationPermissionDialog();
+                }, 5000); // Tunggu 5 detik setelah load
+            } else if (Notification.permission === 'granted') {
+                notificationPermission = 'granted';
+                console.log('Notifications already enabled');
+            }
+        });
+
+        // Perbaiki fungsi showNotification yang ada
+        async function showNotification(title, options) {
+            const androidOptions = checkAndroidNotificationSettings();
+            const finalOptions = { ...options, ...androidOptions };
+
+            return await showChatNotification(title, finalOptions);
+        }
+
+        // Tambahkan event listener untuk visibility change
+        document.addEventListener('visibilitychange', () => {
+            if (document.visibilityState === 'visible') {
+                // Clear notifications when user returns to app
+                if (serviceWorkerRegistration) {
+                    navigator.serviceWorker.ready.then(registration => {
+                        registration.getNotifications().then(notifications => {
+                            notifications.forEach(notification => {
+                                if (notification.tag === 'chat-message') {
+                                    notification.close();
+                                }
+                            });
+                        });
+                    });
+                }
+            }
+        });
+
+        // Test notification function untuk debugging
+        async function testNotification() {
+            await showChatNotification('Test Notification', {
+                body: 'This is a test notification from 4ever Chat',
+                tag: 'test'
+            });
         }
 
         async function loadUserRole() {
@@ -2269,7 +2530,7 @@
         function createMessageElement(messageData) {
             const messageElement = document.createElement('div');
             messageElement.className = `message new-message ${messageData.userId === userId ? 'user-message' :
-                    messageData.isAI ? 'ai-message' : 'other-message'
+                messageData.isAI ? 'ai-message' : 'other-message'
                 }`;
             messageElement.dataset.id = messageData.id;
 
