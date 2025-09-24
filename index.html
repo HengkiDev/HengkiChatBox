@@ -1357,19 +1357,16 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-css.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-html.min.js"></script>
     <script>
-        // Firebase configuration
-       const firebaseConfig = {
- apiKey: "AIzaSyBpDBO7dQDpXp6N2mHSXh8r-TO0H-8eXCg",
- authDomain: "ever-413bd.firebaseapp.com",
- projectId: "ever-413bd",
- storageBucket: "ever-413bd.firebasestorage.app",
- messagingSenderId: "159903401968",
- appId: "1:159903401968:web:5e60baaa9621f22eec7f35",
- measurementId: "G-PSNBR6QH2Z"
-};
+        const firebaseConfig = {
+            apiKey: "AIzaSyBpDBO7dQDpXp6N2mHSXh8r-TO0H-8eXCg",
+            authDomain: "ever-413bd.firebaseapp.com",
+            projectId: "ever-413bd",
+            storageBucket: "ever-413bd.firebasestorage.app",
+            messagingSenderId: "159903401968",
+            appId: "1:159903401968:web:5e60baaa9621f22eec7f35",
+            measurementId: "G-PSNBR6QH2Z"
+        };
 
-
-        // Initialize Firebase
         firebase.initializeApp(firebaseConfig);
         const database = firebase.database();
         const messagesRef = database.ref('messages');
@@ -1377,7 +1374,6 @@
         const connectedRef = database.ref('.info/connected');
         const userRolesRef = database.ref('userRoles');
 
-        // DOM elements
         const chatMessages = document.getElementById('chat-messages');
         const messageInput = document.getElementById('message-input');
         const sendButton = document.getElementById('send-button');
@@ -1401,7 +1397,6 @@
         const replyPreview = document.getElementById('reply-preview');
         const closeReplyButton = replyPreview.querySelector('.close-reply');
 
-        // Initialize variables
         let userRole = { name: 'user', color: '#3498db' };
         let userId = localStorage.getItem('userId') || database.ref().push().key;
         localStorage.setItem('userId', userId);
@@ -1412,18 +1407,15 @@
         let currentUser = localStorage.getItem('username') || `User_${Math.floor(Math.random() * 10000)}`;
         usernameInput.value = currentUser;
 
-        // AI request queue
         let aiRequestQueue = [];
         let isProcessingQueue = false;
 
-        // Theme initialization
         const isDarkMode = localStorage.getItem('darkMode') === 'true';
         if (isDarkMode) {
             document.body.classList.add('dark-mode');
             themeToggle.innerHTML = '<i class="fas fa-sun"></i>';
         }
 
-        // Theme toggle event
         themeToggle.addEventListener('click', () => {
             document.body.classList.toggle('dark-mode');
             const isDark = document.body.classList.contains('dark-mode');
@@ -1431,7 +1423,6 @@
             themeToggle.innerHTML = isDark ? '<i class="fas fa-sun"></i>' : '<i class="fas fa-moon"></i>';
         });
 
-        // Sanitize input to prevent XSS
         function sanitizeInput(input) {
             const div = document.createElement('div');
             div.textContent = input;
@@ -1494,21 +1485,16 @@
             }
         }
 
-        // --- [FIX 1] SETUP REAL-TIME ROLE LISTENER ---
-        // This function now listens for real-time changes to the user's role.
         function setupRoleListener() {
             try {
                 userRolesRef.child(userId).on('value', (snap) => {
                     const roleData = snap.val();
-                    // If role data exists in the database, use it.
-                    // Otherwise, get the default role based on username.
                     userRole = roleData || getDefaultUserRole(currentUser);
-                    checkUserRole(); // Re-check admin controls visibility after role update
+                    checkUserRole();
                     console.log('User role updated in real-time:', userRole);
                 });
             } catch (error) {
                 console.error('Error setting up role listener:', error);
-                // Fallback to default if listener fails
                 userRole = getDefaultUserRole(currentUser);
                 checkUserRole();
             }
@@ -1552,7 +1538,7 @@
                 if (adminSession) {
                     const sessionTime = parseInt(adminSession);
                     const currentTime = Date.now();
-                    if (currentTime - sessionTime < 3600000) { // 1 hour session
+                    if (currentTime - sessionTime < 3600000) {
                         adminVerified = true;
                         checkUserRole();
                     } else {
@@ -1572,7 +1558,6 @@
                 currentUser = newUsername;
                 localStorage.setItem('username', newUsername);
                 
-                // Get the latest role after name change
                 const snap = await userRolesRef.child(userId).once('value');
                 userRole = snap.val() || getDefaultUserRole(currentUser);
 
@@ -2027,7 +2012,7 @@
             try {
                 const onlineSnap = await onlineRef.once('value');
                 let targetUserId = null;
-                let targetCurrentUsername = null; // Store the case-sensitive username
+                let targetCurrentUsername = null;
                 onlineSnap.forEach(child => {
                     if (child.val().username.toLowerCase() === targetUsername) {
                         targetUserId = child.key;
@@ -2052,10 +2037,9 @@
                 });
                 
                 const notificationRef = messagesRef.push();
-                // --- [FIX 2] MAKE SYSTEM NOTIFICATION MESSAGE CONSISTENT ---
                 await notificationRef.set({
                     id: notificationRef.key,
-                    userId: 'system-user', // Added for consistency
+                    userId: 'system-user',
                     username: 'System',
                     userRole: { name: 'system', color: '#e74c3c' },
                     text: `Pengguna ${targetCurrentUsername} telah diberikan role ${roleName} oleh admin ${currentUser}.`,
@@ -2147,7 +2131,7 @@
         fileInput.addEventListener('change', async () => {
             const file = fileInput.files[0];
             if (!file) return;
-            const maxSize = 5 * 1024 * 1024; // 5MB
+            const maxSize = 5 * 1024 * 1024;
             if (file.size > maxSize) {
                 alert('Ukuran file terlalu besar. Maksimal 5MB.');
                 fileInput.value = '';
@@ -2443,16 +2427,13 @@
             }
         });
 
-        // Initialize
         async function initialize() {
             await requestNotificationPermission();
             
-            // --- [FIX 1] CALL THE NEW ROLE LISTENER FUNCTION ---
             setupRoleListener();
             
-            checkAdminSession(); // Check if admin session is still valid
+            checkAdminSession();
 
-            // Set initial online status
             const userRef = onlineRef.child(userId);
             userRef.set({
                 username: currentUser,
