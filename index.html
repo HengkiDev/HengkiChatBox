@@ -1873,11 +1873,11 @@
                 const language = lang ? lang.toLowerCase() : 'text';
                 const prismLang = ['javascript', 'css', 'html'].includes(language) ? language : 'text';
                 return `<div class="code-block" data-lang="${prismLang}">
-                        <button class="code-copy-btn" onclick="copyCode(this)">
-                            <i class="fas fa-copy"></i> Copy
-                        </button>
-                        <pre><code class="language-${prismLang}">${code.trim()}</code></pre>
-                    </div>`;
+                            <button class="code-copy-btn" onclick="copyCode(this)">
+                                <i class="fas fa-copy"></i> Copy
+                            </button>
+                            <pre><code class="language-${prismLang}">${code.trim()}</code></pre>
+                        </div>`;
             });
             formatted = formatted.replace(/`([^`]+)`/g, '<span class="inline-code">$1</span>');
             formatted = formatted.replace(/^### (.*$)/gim, '<h3>$1</h3>');
@@ -2037,15 +2037,17 @@
         messageInput.addEventListener('scroll', () => {
             messageInput.style.overflowY = messageInput.scrollHeight > 100 ? 'auto' : 'hidden';
         });
-
-        // Handle add role command
+        
+        // --- [NEW] Handle add role command ---
         async function handleAddRoleCommand(message) {
             if (userRole.name !== 'admin' || !adminVerified) return false;
             const parts = message.split(' ');
             if (parts[0] !== '/addrole' || parts.length < 4) return false;
+
             const targetUsername = parts[1].replace('@', '').trim().toLowerCase();
             const roleName = parts[2].trim();
             const roleColor = parts[3].trim();
+            
             try {
                 const onlineSnap = await onlineRef.once('value');
                 let targetUserId = null;
@@ -2054,28 +2056,32 @@
                         targetUserId = child.key;
                     }
                 });
-                // Handle add role command (continued)
+
                 if (!targetUserId) {
                     alert('Pengguna tidak ditemukan atau tidak sedang online.');
                     return true;
                 }
+
                 const validRoles = ['user', 'vip', 'moderator', 'admin'];
                 if (!validRoles.includes(roleName)) {
                     alert('Role tidak valid. Pilih dari: ' + validRoles.join(', '));
                     return true;
                 }
+
                 await userRolesRef.child(targetUserId).set({
                     name: roleName,
                     color: roleColor.startsWith('#') ? roleColor : `#${roleColor}`
                 });
+                
                 const notificationRef = messagesRef.push();
                 await notificationRef.set({
                     id: notificationRef.key,
                     username: 'System',
                     userRole: { name: 'system', color: '#e74c3c' },
-                    text: `${targetUsername} telah diberikan role ${roleName} oleh ${currentUser}`,
+                    text: `Pengguna ${targetUsername} telah diberikan role ${roleName} oleh admin ${currentUser}.`,
                     timestamp: firebase.database.ServerValue.TIMESTAMP
                 });
+
                 return true;
             } catch (error) {
                 console.error('Error adding role:', error);
@@ -2083,7 +2089,7 @@
                 return true;
             }
         }
-        
+
         // --- [MODIFIKASI 3] FUNGSI BARU UNTUK DETEKSI BAHASA OTOMATIS ---
         function detectCodeLanguage(code) {
             const trimmedCode = code.trim().toLowerCase();
@@ -2221,10 +2227,13 @@
             let message = messageInput.value.trim();
             if (!message) return;
             
+            // --- [UPDATED] Check for admin commands first ---
             if (await handleAddRoleCommand(message)) {
                 messageInput.value = '';
+                autoResizeTextarea();
                 return;
             };
+            
             if (await handleSendCodeCommand(message)) {
                 return;
             };
@@ -2252,7 +2261,7 @@
                     username: currentUser,
                     userRole,
                     userId,
-                    text: message, // Message is already trimmed, no need to re-sanitize here
+                    text: message,
                     timestamp: firebase.database.ServerValue.TIMESTAMP
                 };
                 if (replyingTo) {
