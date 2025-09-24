@@ -1438,14 +1438,12 @@
             return div.innerHTML;
         }
 
-        // --- [MODIFIKASI 1] FUNGSI BARU UNTUK MEMBUAT LINK BISA DIKLIK ---
         function formatUserMessage(text) {
             let sanitizedText = sanitizeInput(text);
             const urlRegex = /(https?:\/\/[^\s]+)/g;
             return sanitizedText.replace(urlRegex, '<a href="$1" target="_blank" rel="noopener noreferrer" style="color: #3498db; text-decoration: underline;">$1</a>');
         }
 
-        // Request notification permission
         async function requestNotificationPermission() {
             if ('Notification' in window) {
                 try {
@@ -1470,7 +1468,6 @@
             return false;
         }
 
-        // Show notification
         async function showNotification(title, options, messageUsername) {
             if (messageUsername === currentUser || !document.hidden || Notification.permission !== 'granted') {
                 return;
@@ -1497,21 +1494,26 @@
             }
         }
 
-        // Load user role
-        async function loadUserRole() {
+        // --- [FIX 1] SETUP REAL-TIME ROLE LISTENER ---
+        // This function now listens for real-time changes to the user's role.
+        function setupRoleListener() {
             try {
-                const snap = await userRolesRef.child(userId).once('value');
-                const roleData = snap.val();
-                userRole = roleData || getDefaultUserRole(currentUser);
-                checkUserRole();
+                userRolesRef.child(userId).on('value', (snap) => {
+                    const roleData = snap.val();
+                    // If role data exists in the database, use it.
+                    // Otherwise, get the default role based on username.
+                    userRole = roleData || getDefaultUserRole(currentUser);
+                    checkUserRole(); // Re-check admin controls visibility after role update
+                    console.log('User role updated in real-time:', userRole);
+                });
             } catch (error) {
-                console.error('Error loading user role:', error);
+                console.error('Error setting up role listener:', error);
+                // Fallback to default if listener fails
                 userRole = getDefaultUserRole(currentUser);
                 checkUserRole();
             }
         }
 
-        // Get default user role
         function getDefaultUserRole(username) {
             const lowerUsername = username.toLowerCase().trim();
             if (lowerUsername === ADMIN_USERNAME) {
@@ -1521,12 +1523,10 @@
             return vipUsers.includes(lowerUsername) ? { name: 'vip', color: '#9b59b6' } : { name: 'user', color: '#3498db' };
         }
 
-        // Check user role
         function checkUserRole() {
             adminControls.classList.toggle('show', userRole.name === 'admin' && adminVerified);
         }
 
-        // Verify admin
         async function verifyAdmin() {
             if (userRole.name !== 'admin') return false;
             try {
@@ -1546,14 +1546,13 @@
             }
         }
 
-        // Check admin session
         function checkAdminSession() {
             if (userRole.name === 'admin') {
                 const adminSession = localStorage.getItem('adminSession');
                 if (adminSession) {
                     const sessionTime = parseInt(adminSession);
                     const currentTime = Date.now();
-                    if (currentTime - sessionTime < 3600000) {
+                    if (currentTime - sessionTime < 3600000) { // 1 hour session
                         adminVerified = true;
                         checkUserRole();
                     } else {
@@ -1563,7 +1562,6 @@
             }
         }
 
-        // Save username
         saveNameButton.addEventListener('click', async () => {
             const newUsername = sanitizeInput(usernameInput.value.trim());
             if (!newUsername) {
@@ -1573,12 +1571,15 @@
             try {
                 currentUser = newUsername;
                 localStorage.setItem('username', newUsername);
-                await loadUserRole();
+                
+                // Get the latest role after name change
+                const snap = await userRolesRef.child(userId).once('value');
+                userRole = snap.val() || getDefaultUserRole(currentUser);
+
                 if (userRole.name === 'admin' && !adminVerified) {
                     const verified = await verifyAdmin();
                     if (!verified) {
                         userRole = { name: 'user', color: '#3498db' };
-                        checkUserRole();
                     }
                 }
                 checkUserRole();
@@ -1600,10 +1601,6 @@
             }
         });
 
-        checkAdminSession();
-        loadUserRole();
-
-        // Image modal handling
         function showImageModal(imageSrc) {
             modalImage.src = imageSrc;
             imageModal.classList.add('show');
@@ -1619,7 +1616,6 @@
             if (e.target === imageModal) hideImageModal();
         });
 
-        // Modal handling
         function showModal(title, message, confirmText, onConfirm, onCancel) {
             modalTitle.textContent = title;
             modalMessage.textContent = message;
@@ -1645,7 +1641,6 @@
             confirmationModal.classList.remove('show');
         }
 
-        // Clear all messages
         function clearAllMessages() {
             if (userRole.name !== 'admin' || !adminVerified) {
                 alert('Akses ditolak. Hanya admin yang dapat menghapus semua pesan.');
@@ -1668,7 +1663,6 @@
             );
         }
 
-        // Delete message
         function deleteMessage(messageId, messageElement, messageUsername) {
             const canDelete = (userRole.name === 'admin' && adminVerified) || messageUsername === currentUser;
             if (!canDelete) {
@@ -1682,11 +1676,6 @@
                 async () => {
                     try {
                         await messagesRef.child(messageId).remove();
-                        messageElement.style.animation = 'fadeOut 0.3s forwards';
-                        setTimeout(() => {
-                            if (messageElement.parentNode) messageElement.remove();
-                        }, 300);
-                        console.log('Message deleted:', messageId);
                     } catch (error) {
                         console.error('Error deleting message:', error);
                         alert('Gagal menghapus pesan.');
@@ -1695,7 +1684,6 @@
             );
         }
 
-        // Reply to message
         function replyMessage(messageId, messageUsername, messageContent, userRole) {
             replyingTo = { id: messageId, username: messageUsername, content: messageContent, userRole };
             replyPreview.querySelector('.username').textContent = sanitizeInput(messageUsername);
@@ -1712,7 +1700,6 @@
             autoResizeTextarea();
         });
 
-        // Compress image
         function compressImage(file, maxWidth = 600, maxHeight = 400, quality = 0.7) {
             return new Promise((resolve, reject) => {
                 const canvas = document.createElement('canvas');
@@ -1741,7 +1728,6 @@
             });
         }
 
-        // Convert file to Base64
         function fileToBase64(file) {
             return new Promise((resolve, reject) => {
                 const reader = new FileReader();
@@ -1751,7 +1737,6 @@
             });
         }
 
-        // Voice recording
         let mediaRecorder = null;
         let audioChunks = [];
         let isRecording = false;
@@ -1840,7 +1825,6 @@
             else stopRecording();
         });
 
-        // Online status handling
         connectedRef.on('value', (snap) => {
             if (snap.val() === true) {
                 const userRef = onlineRef.child(userId);
@@ -1857,7 +1841,6 @@
             onlineCountElement.textContent = `${snap.numChildren()} Pengguna Online`;
         });
 
-        // Format AI response
         function formatAIResponse(text) {
             if (!text) return '';
             const escapeHtml = (unsafe) => {
@@ -1896,7 +1879,6 @@
             return formatted;
         }
 
-        // --- [MODIFIKASI 2] PERBAIKAN FUNGSI formatCodeMessage ---
         function formatCodeMessage(code, lang) {
             const escapeHtmlForCode = (str) => {
                 return str.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
@@ -1915,7 +1897,6 @@
         }
 
 
-        // Copy code
         window.copyCode = function (button) {
             const codeBlock = button.parentElement.querySelector('code');
             const code = codeBlock.textContent.trim();
@@ -1934,7 +1915,6 @@
             });
         };
 
-        // Call AI with retry mechanism
         async function callAI(query, retries = 3, delay = 2000) {
             for (let attempt = 1; attempt <= retries; attempt++) {
                 try {
@@ -1961,7 +1941,6 @@
             }
         }
 
-        // Process AI request queue
         async function processAIQueue() {
             if (isProcessingQueue || aiRequestQueue.length === 0) return;
             isProcessingQueue = true;
@@ -2002,7 +1981,6 @@
             processAIQueue();
         }
 
-        // Show AI thinking
         function showAIThinking() {
             const thinkingElement = document.createElement('div');
             thinkingElement.id = `ai-thinking-${Date.now()}`;
@@ -2026,7 +2004,6 @@
             return thinkingElement;
         }
 
-        // Auto-resize textarea
         function autoResizeTextarea() {
             messageInput.style.height = 'auto';
             messageInput.style.height = `${Math.max(messageInput.scrollHeight, 44)}px`;
@@ -2038,7 +2015,6 @@
             messageInput.style.overflowY = messageInput.scrollHeight > 100 ? 'auto' : 'hidden';
         });
         
-        // --- [NEW] Handle add role command ---
         async function handleAddRoleCommand(message) {
             if (userRole.name !== 'admin' || !adminVerified) return false;
             const parts = message.split(' ');
@@ -2051,9 +2027,11 @@
             try {
                 const onlineSnap = await onlineRef.once('value');
                 let targetUserId = null;
+                let targetCurrentUsername = null; // Store the case-sensitive username
                 onlineSnap.forEach(child => {
                     if (child.val().username.toLowerCase() === targetUsername) {
                         targetUserId = child.key;
+                        targetCurrentUsername = child.val().username;
                     }
                 });
 
@@ -2074,11 +2052,13 @@
                 });
                 
                 const notificationRef = messagesRef.push();
+                // --- [FIX 2] MAKE SYSTEM NOTIFICATION MESSAGE CONSISTENT ---
                 await notificationRef.set({
                     id: notificationRef.key,
+                    userId: 'system-user', // Added for consistency
                     username: 'System',
                     userRole: { name: 'system', color: '#e74c3c' },
-                    text: `Pengguna ${targetUsername} telah diberikan role ${roleName} oleh admin ${currentUser}.`,
+                    text: `Pengguna ${targetCurrentUsername} telah diberikan role ${roleName} oleh admin ${currentUser}.`,
                     timestamp: firebase.database.ServerValue.TIMESTAMP
                 });
 
@@ -2090,17 +2070,15 @@
             }
         }
 
-        // --- [MODIFIKASI 3] FUNGSI BARU UNTUK DETEKSI BAHASA OTOMATIS ---
         function detectCodeLanguage(code) {
             const trimmedCode = code.trim().toLowerCase();
             if (trimmedCode.startsWith('<?php')) return 'php';
             if (trimmedCode.startsWith('<') && trimmedCode.endsWith('>')) return 'html';
             if (/^\s*([.#]\w+|\w+)\s*\{[\s\S]*\}\s*$/.test(trimmedCode)) return 'css';
             if (trimmedCode.includes('function') || trimmedCode.includes('const') || trimmedCode.includes('let') || trimmedCode.includes('var') || trimmedCode.includes('=>')) return 'javascript';
-            return 'text'; // Default
+            return 'text';
         }
 
-        // --- [MODIFIKASI 4] FUNGSI handleSendCodeCommand YANG DIPERBARUI ---
         async function handleSendCodeCommand(message) {
             if (!message.startsWith('/sendcode')) return false;
 
@@ -2162,7 +2140,6 @@
         }
 
 
-        // Handle file attachment
         attachButton.addEventListener('click', () => {
             fileInput.click();
         });
@@ -2222,12 +2199,10 @@
             }
         });
 
-        // Send message
         async function sendMessage() {
             let message = messageInput.value.trim();
             if (!message) return;
             
-            // --- [UPDATED] Check for admin commands first ---
             if (await handleAddRoleCommand(message)) {
                 messageInput.value = '';
                 autoResizeTextarea();
@@ -2291,7 +2266,6 @@
             }
         });
 
-        // Emoji handling
         emojiButton.addEventListener('click', () => {
             const emojis = ['😊', '😂', '😍', '👍', '👌', '🎉', '🔥', '🌟', '🚀', '😎'];
             const currentPos = messageInput.selectionStart;
@@ -2303,7 +2277,6 @@
             autoResizeTextarea();
         });
 
-        // Render waveform for audio
         function renderWaveform(audioElement, waveformContainer, durationElement) {
             const totalBars = 30;
             waveformContainer.innerHTML = '';
@@ -2328,7 +2301,6 @@
             };
         }
 
-        // Render message
         function renderMessage(messageData) {
             const messageElement = document.createElement('div');
             const isOwnMessage = messageData.userId === userId;
@@ -2349,7 +2321,6 @@
             } else if (isAI) {
                 messageContent += formatAIResponse(messageData.text);
             } else {
-                 // --- [MODIFIKASI 5] MENGGUNAKAN FUNGSI BARU DI RENDER ---
                 messageContent += formatUserMessage(messageData.text);
             }
             if (messageData.image) {
@@ -2425,7 +2396,6 @@
             setTimeout(() => messageElement.classList.remove('new-message'), 300);
         }
 
-        // Toggle audio playback
         window.toggleAudio = function (button, audioId) {
             const audio = document.getElementById(audioId);
             const isPlaying = !audio.paused;
@@ -2450,7 +2420,6 @@
             }
         };
 
-        // Format timestamp
         function formatTimestamp(timestamp) {
             if (!timestamp) return 'sekarang';
             const date = new Date(timestamp);
@@ -2459,7 +2428,6 @@
             return `${hours}:${minutes}`;
         }
 
-        // Load messages
         messagesRef.on('child_added', (snap) => {
             const messageData = snap.val();
             renderMessage(messageData);
@@ -2478,7 +2446,13 @@
         // Initialize
         async function initialize() {
             await requestNotificationPermission();
-            await loadUserRole();
+            
+            // --- [FIX 1] CALL THE NEW ROLE LISTENER FUNCTION ---
+            setupRoleListener();
+            
+            checkAdminSession(); // Check if admin session is still valid
+
+            // Set initial online status
             const userRef = onlineRef.child(userId);
             userRef.set({
                 username: currentUser,
@@ -2486,6 +2460,7 @@
                 timestamp: firebase.database.ServerValue.TIMESTAMP
             });
             userRef.onDisconnect().remove();
+            
             autoResizeTextarea();
         }
 
