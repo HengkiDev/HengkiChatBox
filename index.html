@@ -45,7 +45,7 @@
             min-height: 100vh;
         }
 
-       .chat-container {
+        .chat-container {
             flex: 1;
             display: flex;
             flex-direction: column;
@@ -1359,14 +1359,15 @@
     <script>
         // Firebase configuration
        const firebaseConfig = {
-  apiKey: "AIzaSyBpDBO7dQDpXp6N2mHSXh8r-TO0H-8eXCg",
-  authDomain: "ever-413bd.firebaseapp.com",
-  projectId: "ever-413bd",
-  storageBucket: "ever-413bd.firebasestorage.app",
-  messagingSenderId: "159903401968",
-  appId: "1:159903401968:web:5e60baaa9621f22eec7f35",
-  measurementId: "G-PSNBR6QH2Z"
+ apiKey: "AIzaSyBpDBO7dQDpXp6N2mHSXh8r-TO0H-8eXCg",
+ authDomain: "ever-413bd.firebaseapp.com",
+ projectId: "ever-413bd",
+ storageBucket: "ever-413bd.firebasestorage.app",
+ messagingSenderId: "159903401968",
+ appId: "1:159903401968:web:5e60baaa9621f22eec7f35",
+ measurementId: "G-PSNBR6QH2Z"
 };
+
 
         // Initialize Firebase
         firebase.initializeApp(firebaseConfig);
@@ -1435,6 +1436,13 @@
             const div = document.createElement('div');
             div.textContent = input;
             return div.innerHTML;
+        }
+
+        // --- [MODIFIKASI 1] FUNGSI BARU UNTUK MEMBUAT LINK BISA DIKLIK ---
+        function formatUserMessage(text) {
+            let sanitizedText = sanitizeInput(text);
+            const urlRegex = /(https?:\/\/[^\s]+)/g;
+            return sanitizedText.replace(urlRegex, '<a href="$1" target="_blank" rel="noopener noreferrer" style="color: #3498db; text-decoration: underline;">$1</a>');
         }
 
         // Request notification permission
@@ -1865,11 +1873,11 @@
                 const language = lang ? lang.toLowerCase() : 'text';
                 const prismLang = ['javascript', 'css', 'html'].includes(language) ? language : 'text';
                 return `<div class="code-block" data-lang="${prismLang}">
-                    <button class="code-copy-btn" onclick="copyCode(this)">
-                        <i class="fas fa-copy"></i> Copy
-                    </button>
-                    <pre><code class="language-${prismLang}">${code.trim()}</code></pre>
-                </div>`;
+                        <button class="code-copy-btn" onclick="copyCode(this)">
+                            <i class="fas fa-copy"></i> Copy
+                        </button>
+                        <pre><code class="language-${prismLang}">${code.trim()}</code></pre>
+                    </div>`;
             });
             formatted = formatted.replace(/`([^`]+)`/g, '<span class="inline-code">$1</span>');
             formatted = formatted.replace(/^### (.*$)/gim, '<h3>$1</h3>');
@@ -1888,17 +1896,24 @@
             return formatted;
         }
 
-        // Format code message
+        // --- [MODIFIKASI 2] PERBAIKAN FUNGSI formatCodeMessage ---
         function formatCodeMessage(code, lang) {
-            const prismLang = ['javascript', 'css', 'html'].includes(lang.toLowerCase()) ? lang.toLowerCase() : 'text';
+            const escapeHtmlForCode = (str) => {
+                return str.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+            };
+            
+            const prismLang = ['javascript', 'css', 'html', 'php'].includes(lang.toLowerCase()) ? lang.toLowerCase() : 'text';
+            const escapedCode = escapeHtmlForCode(code.trim());
+
             return `
                 <div class="code-block" data-lang="${prismLang}">
                     <button class="code-copy-btn" onclick="copyCode(this)">
                         <i class="fas fa-copy"></i> Copy
                     </button>
-                    <pre><code class="language-${prismLang}">${sanitizeInput(code.trim())}</code></pre>
+                    <pre><code class="language-${prismLang}">${escapedCode}</code></pre>
                 </div>`;
         }
+
 
         // Copy code
         window.copyCode = function (button) {
@@ -2068,21 +2083,45 @@
                 return true;
             }
         }
+        
+        // --- [MODIFIKASI 3] FUNGSI BARU UNTUK DETEKSI BAHASA OTOMATIS ---
+        function detectCodeLanguage(code) {
+            const trimmedCode = code.trim().toLowerCase();
+            if (trimmedCode.startsWith('<?php')) return 'php';
+            if (trimmedCode.startsWith('<') && trimmedCode.endsWith('>')) return 'html';
+            if (/^\s*([.#]\w+|\w+)\s*\{[\s\S]*\}\s*$/.test(trimmedCode)) return 'css';
+            if (trimmedCode.includes('function') || trimmedCode.includes('const') || trimmedCode.includes('let') || trimmedCode.includes('var') || trimmedCode.includes('=>')) return 'javascript';
+            return 'text'; // Default
+        }
 
-        // Handle sendcode command
+        // --- [MODIFIKASI 4] FUNGSI handleSendCodeCommand YANG DIPERBARUI ---
         async function handleSendCodeCommand(message) {
             if (!message.startsWith('/sendcode')) return false;
+
             const parts = message.split(' ');
-            if (parts.length < 3) {
-                alert('Format perintah salah. Gunakan: /sendcode <bahasa> <kode>');
+            if (parts.length < 2) {
+                alert('Format perintah salah. Gunakan: /sendcode [bahasa] <code>');
                 return true;
             }
-            const language = parts[1].toLowerCase();
-            const code = parts.slice(2).join(' ').trim();
+
+            let language;
+            let code;
+            const potentialLang = parts[1].toLowerCase();
+            const knownLanguages = ['javascript', 'js', 'html', 'css', 'php', 'text'];
+
+            if (knownLanguages.includes(potentialLang)) {
+                language = potentialLang === 'js' ? 'javascript' : potentialLang;
+                code = parts.slice(2).join(' ').trim();
+            } else {
+                code = parts.slice(1).join(' ').trim();
+                language = detectCodeLanguage(code);
+            }
+
             if (!code) {
                 alert('Kode tidak boleh kosong.');
                 return true;
             }
+            
             try {
                 const newMessageRef = messagesRef.push();
                 const messageData = {
@@ -2092,7 +2131,7 @@
                     userId,
                     text: formatCodeMessage(code, language),
                     isCode: true,
-                    language,
+                    language: language,
                     timestamp: firebase.database.ServerValue.TIMESTAMP
                 };
                 if (replyingTo) {
@@ -2115,6 +2154,7 @@
                 return true;
             }
         }
+
 
         // Handle file attachment
         attachButton.addEventListener('click', () => {
@@ -2180,9 +2220,15 @@
         async function sendMessage() {
             let message = messageInput.value.trim();
             if (!message) return;
-            message = sanitizeInput(message);
-            if (await handleAddRoleCommand(message)) return;
-            if (await handleSendCodeCommand(message)) return;
+            
+            if (await handleAddRoleCommand(message)) {
+                messageInput.value = '';
+                return;
+            };
+            if (await handleSendCodeCommand(message)) {
+                return;
+            };
+
             if (message.startsWith('/ai')) {
                 const query = message.slice(3).trim();
                 if (!query) {
@@ -2198,6 +2244,7 @@
                 processAIQueue();
                 return;
             }
+
             try {
                 const newMessageRef = messagesRef.push();
                 const messageData = {
@@ -2205,7 +2252,7 @@
                     username: currentUser,
                     userRole,
                     userId,
-                    text: message,
+                    text: message, // Message is already trimmed, no need to re-sanitize here
                     timestamp: firebase.database.ServerValue.TIMESTAMP
                 };
                 if (replyingTo) {
@@ -2293,7 +2340,8 @@
             } else if (isAI) {
                 messageContent += formatAIResponse(messageData.text);
             } else {
-                messageContent += messageData.text;
+                 // --- [MODIFIKASI 5] MENGGUNAKAN FUNGSI BARU DI RENDER ---
+                messageContent += formatUserMessage(messageData.text);
             }
             if (messageData.image) {
                 messageContent += `<img src="${messageData.image}" alt="Attachment" loading="lazy">`;
@@ -2355,11 +2403,8 @@
                 const img = messageElement.querySelector('img');
                 img.addEventListener('click', () => showImageModal(img.src));
             }
-            if (isCode) {
-                Prism.highlightElement(messageElement.querySelector('code'));
-            }
-            if (isAI) {
-                messageElement.querySelectorAll('code').forEach(code => Prism.highlightElement(code));
+            if (isCode || isAI) {
+                messageElement.querySelectorAll('pre code').forEach(code => Prism.highlightElement(code));
             }
             chatMessages.scrollTop = chatMessages.scrollHeight;
             if (!isOwnMessage && !isAI) {
@@ -2376,17 +2421,23 @@
             const audio = document.getElementById(audioId);
             const isPlaying = !audio.paused;
             document.querySelectorAll('audio').forEach(a => {
-                a.pause();
-                const btn = a.parentElement.querySelector('.play-btn');
-                if (btn) {
-                    btn.classList.remove('playing');
-                    btn.innerHTML = '<i class="fas fa-play"></i>';
+                if (a.id !== audioId) {
+                    a.pause();
+                    const btn = a.parentElement.querySelector('.play-btn');
+                    if (btn) {
+                        btn.classList.remove('playing');
+                        btn.innerHTML = '<i class="fas fa-play"></i>';
+                    }
                 }
             });
             if (!isPlaying) {
                 audio.play();
                 button.classList.add('playing');
                 button.innerHTML = '<i class="fas fa-pause"></i>';
+            } else {
+                audio.pause();
+                button.classList.remove('playing');
+                button.innerHTML = '<i class="fas fa-play"></i>';
             }
         };
 
